@@ -3,7 +3,7 @@ import { mount } from 'lithent';
 import { computed } from 'lithent/helper';
 import LoadingText from '@/components/Loading';
 import { getPreloadData } from '@/base/data';
-import clsx from '@/helper/clsx';
+// import clsx from '@/helper/clsx';
 import { routeWatch } from '@/base/route';
 import '@/main.css';
 
@@ -24,14 +24,7 @@ const Layout = mount<{
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>{preload.value?.title || 'unknown'}</title>
       </head>
-      <body
-        class={clsx(
-          params?.type
-            ? `bg-pokemon-${params.type}`
-            : 'bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 via-indigo-500 via-violet-500 to-blue-500',
-          'flex items-center justify-center min-h-screen'
-        )}
-      >
+      <body class="dark:text-gray-100 max-w-2xl m-auto">
         <div class="flex">
           {routeRef.loading.value ? (
             <LoadingText />
@@ -39,6 +32,28 @@ const Layout = mount<{
             <Page params={params} query={query} />
           )}
         </div>
+        <footer class="p-6 pt-3 pb-6 flex text-xs text-center mt-3 dark:text-gray-400 text-gray-500 font-mono">
+          <div class="grow text-left">
+            superlucky84 (
+            <a
+              class="border-b text-gray-600 border-gray-300 transition-[border-color] hover:border-gray-600 dark:text-white dark:border-gray-500 dark:hover:border-white "
+              target="_blank"
+              href="https://twitter.com/superlucky84"
+            >
+              @superlucky84
+            </a>
+            )
+          </div>
+          <div>
+            <a
+              class="border-b text-gray-600 border-gray-300 transition-[border-color] hover:border-gray-600 dark:text-white dark:border-gray-500 dark:hover:border-white "
+              target="_blank"
+              href="https://github.com/superlucky84/blog"
+            >
+              Source
+            </a>
+          </div>
+        </footer>
       </body>
     </html>
   );

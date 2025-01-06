@@ -1,13 +1,10 @@
 import { mount } from 'lithent';
 import { navigate } from '@/base/route';
 import { getPreloadData } from '@/base/data';
-import { fetchTypeList } from '@/helper/request';
 import { TYPE_DESCRIPT } from '@/helper/constants';
 
 export const preload = async () => {
-  const data = await fetchTypeList();
-
-  return { layout: { title: 'EXPRESS-LITHENT' }, data };
+  return { layout: { title: 'Superlucky84' } };
 };
 
 const Index = mount(() => {
