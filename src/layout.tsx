@@ -33,7 +33,12 @@ const Layout = mount<{
         <main class="p-6 pt-3 md:pt-6 min-h-screen">
           <header class="flex mb-5 md:mb-10 items-center">
             <span class="text-md md:text-lg whitespace-nowrap font-bold">
-              <span class="cursor-default pr-2">Superlucky84</span>
+              <a
+                class="hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424] p-2 rounded-sm -ml-2 transition-[background-color]"
+                href="/"
+              >
+                Superlucky84
+              </a>
             </span>
             <nav class="font-mono text-xs grow justify-end items-center flex gap-1 md:gap-3">
               <button
@@ -85,7 +90,7 @@ const Layout = mount<{
                 About
               </a>
               <a
-                href="https://twitter.com/rauchg"
+                href="https://twitter.com/superlucky84"
                 target="_blank"
                 class="inline-flex hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424] items-center p-2 rounded-sm transition-[background-color] whitespace-nowrap -mr-2"
               >
