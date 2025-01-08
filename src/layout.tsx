@@ -18,7 +18,7 @@ const Layout = mount<{
   const routeRef = routeWatch(r);
 
   return ({ page: Page, params, query }) => (
-    <html lang="en" class="light" style="color-scheme: light;">
+    <html lang="en">
       <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
