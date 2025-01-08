@@ -42,6 +42,19 @@ async function createServer() {
 
   const sortedRouteList = sortFiles(Object.keys(entries));
 
+  /**
+   * 블로그 리스트
+   */
+  app.get(`/api/bloglist`, async (req, res, next) => {
+    console.log(sortedRouteList);
+    const blogFiles = sortedRouteList.filter(file => /^[0-9]+\./.test(file));
+
+    res
+      .status(200)
+      .set({ 'Content-Type': 'application/json' })
+      .end(JSON.stringify(blogFiles));
+  });
+
   sortedRouteList.forEach(key => {
     const pathSplit = key.split('.');
     const newPathSplit = pathSplit.slice(0, pathSplit.length - 1);
