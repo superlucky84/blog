@@ -1,6 +1,6 @@
 import type { TagFunction } from 'lithent';
-import { mount } from 'lithent';
-import { computed } from 'lithent/helper';
+import { mount, mountCallback } from 'lithent';
+import { computed, state } from 'lithent/helper';
 import LoadingText from '@/components/Loading';
 import { getPreloadData } from '@/base/data';
 // import clsx from '@/helper/clsx';
@@ -12,13 +12,18 @@ const Layout = mount<{
   params: Record<string, string>;
   query: Record<string, string>;
 }>(r => {
+  const isDark = state(true, r);
   const preload = computed(
     () => getPreloadData<{ layout: { title: string } }>()?.layout
   );
   const routeRef = routeWatch(r);
 
+  mountCallback(() => {
+    isDark.v = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
+
   return ({ page: Page, params, query }) => (
-    <html lang="en">
+    <html lang="en" class={isDark.v ? 'dark' : 'light'}>
       <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
