@@ -97,6 +97,7 @@ const Layout = mount<{
               </button>
               <a
                 class="inline-flex hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424] rounded-sm p-2 transition-[background-color]"
+                href="/about"
                 onClick={goAbout}
               >
                 About
