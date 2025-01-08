@@ -3,6 +3,7 @@ import { mount, mountCallback } from 'lithent';
 import { computed, state } from 'lithent/helper';
 import LoadingText from '@/components/Loading';
 import { getPreloadData } from '@/base/data';
+import { navigate } from '@/base/route';
 // import clsx from '@/helper/clsx';
 import { routeWatch } from '@/base/route';
 import '@/main.css';
@@ -17,6 +18,16 @@ const Layout = mount<{
     () => getPreloadData<{ layout: { title: string } }>()?.layout
   );
   const routeRef = routeWatch(r);
+
+  const goHome = (event: Event) => {
+    event.preventDefault();
+    navigate('/');
+  };
+
+  const goAbout = (event: Event) => {
+    event.preventDefault();
+    navigate('/about');
+  };
 
   mountCallback(() => {
     isDark.v = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -36,6 +47,7 @@ const Layout = mount<{
               <a
                 class="hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424] p-2 rounded-sm -ml-2 transition-[background-color]"
                 href="/"
+                onClick={goHome}
               >
                 Superlucky84
               </a>
@@ -85,7 +97,7 @@ const Layout = mount<{
               </button>
               <a
                 class="inline-flex hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424] rounded-sm p-2 transition-[background-color]"
-                href="/about"
+                onClick={goAbout}
               >
                 About
               </a>
@@ -113,6 +125,21 @@ const Layout = mount<{
               </a>
             </nav>
           </header>
+
+          <main class="max-w-2xl font-mono m-auto mb-10 text-sm">
+            <header class="text-gray-500 dark:text-gray-600 flex items-center text-xs">
+              <button class="w-12 h-9 text-left  ">date</button>
+              <span class="grow pl-2">title</span>
+              <button
+                class="
+                  h-9
+                  pl-4
+                "
+              >
+                views
+              </button>
+            </header>
+          </main>
 
           {routeRef.loading.value ? (
             <LoadingText />
