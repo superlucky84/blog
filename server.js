@@ -7,12 +7,17 @@ import createMakePage from './serverHelper/createMakePage.js';
 import { getEntries, excludeRoutePath } from './serverHelper/helper.js';
 import tailwindcss from 'tailwindcss';
 import autoprefixer from 'autoprefixer';
+import mdx from '@mdx-js/rollup';
+import babel from 'vite-plugin-babel';
+import commonjs from '@rollup/plugin-commonjs';
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
 const isDev = process.env.NODE_ENV !== 'production';
 let vite;
 if (isDev) {
+  // const mdx = await import('@mdx-js/rollup');
+
   vite = await createViteServer({
     css: {
       postcss: {
@@ -21,7 +26,24 @@ if (isDev) {
     },
     server: { middlewareMode: 'ssr', hmr: true },
     root: process.cwd(),
-    plugins: [],
+    plugins: [
+      mdx({
+        jsxImportSource: 'lithent', // Preact의 JSX pragma 사용
+      }),
+      commonjs(), // CommonJS 모듈 처리
+      babel({
+        babelConfig: {
+          extensions: ['.js', '.jsx', '.cjs', '.mjs', '.md', '.mdx'],
+          presets: [
+            '@babel/preset-env', // 최신 JavaScript 변환
+          ],
+          plugins: [
+            '@babel/plugin-transform-arrow-functions', // 화살표 함수로 변환
+            '@babel/plugin-transform-block-scoped-functions', // 블록 범위 함수 변환
+          ],
+        },
+      }),
+    ],
     resolve: {
       alias: {
         '@': '/src',
@@ -70,6 +92,8 @@ async function createServer() {
         return;
       }
 
+      console.log('EXPRESSPATH', expressPath, key);
+
       const props = { params: req.params, query: req.query };
       let finalHtml = '';
 
@@ -78,7 +102,7 @@ async function createServer() {
         finalHtml = await pageIns.run();
       } catch (e) {
         isDev && vite.ssrFixStacktrace(e);
-        console.error(e.stack);
+        console.error(e, e.stack);
 
         const pageIns = createMakePage({
           key: 'oops',
