@@ -1,4 +1,4 @@
-import { mount } from 'lithent';
+import { mount, Fragment } from 'lithent';
 // import { state } from 'lithent/helper';
 // import { getPreloadData } from '@/base/data';
 // import { navigate } from '@/base/route';
@@ -11,9 +11,11 @@ import type { PageProps } from '@/base/types';
 // const Main = mount<PageProps>((_r, { params: { aa } }) => {
 const Main = mount<PageProps>(_r => {
   return () => (
-    <div class="bg-pokemon-${params.type} container px-8 mx-auto xl:px-5 max-w-screen-lg py-5 lg:py-8">
-      about
-    </div>
+    <Fragment>
+      <h1>Title 블로그 진우</h1>
+      <h1>sdgag</h1>
+      <h1>sdgsAAAAAAAAAAAAAA</h1>
+    </Fragment>
   );
 });
 

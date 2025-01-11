@@ -11,7 +11,6 @@ export default async function load(
   initProp?: any
 ) {
   let res;
-  console.log('KEY', key, pageModules);
   if (key === 'oops') {
     res = await import('@/components/Oops');
   } else if (key === 'notfound') {
@@ -24,7 +23,6 @@ export default async function load(
   const { pathname, search } = location;
 
   (globalThis as any).pagedata = initProp;
-
   // const Page = h(res!.default as TagFunction, props) as WDom;
   const LayoutWDom = h(
     Layout as TagFunction,
@@ -36,6 +34,7 @@ export default async function load(
       props
     )
   ) as WDom;
+  console.log(LayoutWDom);
   const renewRoot =
     (LayoutWDom.compKey && componentUpdate(LayoutWDom.compKey)) || (() => {});
 

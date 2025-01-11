@@ -1,4 +1,4 @@
-import { mount } from 'lithent';
+import { mount, Fragment } from 'lithent';
 // import { navigate } from '@/base/route';
 // import { getPreloadData } from '@/base/data';
 // import { TYPE_DESCRIPT } from '@/helper/constants';
@@ -16,11 +16,7 @@ const Index = mount(() => {
   };
    */
 
-  return () => (
-    <div class="container px-8 mx-auto xl:px-5  max-w-screen-lg py-5 lg:py-8">
-      INDEX
-    </div>
-  );
+  return () => <Fragment>INDEX</Fragment>;
 });
 
 export default Index;

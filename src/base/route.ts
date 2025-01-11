@@ -100,6 +100,7 @@ async function loadPage(dynamicPath: string) {
       rVDom.compProps.query = query;
       rVDom.compProps.params = params;
       routeRef.renew.value();
+      console.log('211111111');
     }
     routeRef.loading.value = false;
   } else if (rVDom?.compProps) {
@@ -107,6 +108,7 @@ async function loadPage(dynamicPath: string) {
     rVDom.compProps.query = query;
     rVDom.compProps.params = params;
     routeRef.renew.value();
+    console.log('222222222');
   }
 }
 
