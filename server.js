@@ -8,10 +8,38 @@ import { getEntries, excludeRoutePath } from './serverHelper/helper.js';
 import tailwindcss from 'tailwindcss';
 import autoprefixer from 'autoprefixer';
 import mdx from '@mdx-js/rollup';
-import babel from 'vite-plugin-babel';
-import commonjs from '@rollup/plugin-commonjs';
+import babel from '@rollup/plugin-babel';
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
+
+function fixMdxExports() {
+  return {
+    name: 'fix-mdx-exports',
+    transform(code, id) {
+      if (id.endsWith('.mdx')) {
+        // 중복 export 방지 및 중복 선언 방지
+        const fixedCode = code
+          // 이미 export가 포함된 함수 선언은 건너뜀
+          .replace(
+            /^(?!export )function\s+_createMdxContent/gm,
+            'export function _createMdxContent'
+          )
+          .replace(
+            /^(?!export )function\s+MDXContent/gm,
+            'export default function MDXContent'
+          );
+
+        // 변환된 코드 출력 (디버깅용)
+
+        return {
+          code: fixedCode,
+          map: null,
+        };
+      }
+      return null;
+    },
+  };
+}
 
 const isDev = process.env.NODE_ENV !== 'production';
 let vite;
@@ -29,20 +57,9 @@ if (isDev) {
     plugins: [
       mdx({
         jsxImportSource: 'lithent', // Preact의 JSX pragma 사용
+        outputFormat: 'esm',
       }),
-      commonjs(), // CommonJS 모듈 처리
-      babel({
-        babelConfig: {
-          extensions: ['.js', '.jsx', '.cjs', '.mjs', '.md', '.mdx'],
-          presets: [
-            '@babel/preset-env', // 최신 JavaScript 변환
-          ],
-          plugins: [
-            '@babel/plugin-transform-arrow-functions', // 화살표 함수로 변환
-            '@babel/plugin-transform-block-scoped-functions', // 블록 범위 함수 변환
-          ],
-        },
-      }),
+      fixMdxExports(),
     ],
     resolve: {
       alias: {

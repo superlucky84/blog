@@ -3,9 +3,37 @@ import { defineConfig, build } from 'vite';
 import checker from 'vite-plugin-checker';
 import dts from 'vite-plugin-dts';
 import fs from 'fs';
-import babel from 'vite-plugin-babel';
 
 const cachedEntries = getEntries();
+
+function fixMdxExports() {
+  return {
+    name: 'fix-mdx-exports',
+    transform(code, id) {
+      if (id.endsWith('.mdx')) {
+        // 중복 export 방지 및 중복 선언 방지
+        const fixedCode = code
+          // 이미 export가 포함된 함수 선언은 건너뜀
+          .replace(
+            /^(?!export )function\s+_createMdxContent/gm,
+            'export function _createMdxContent'
+          )
+          .replace(
+            /^(?!export )function\s+MDXContent/gm,
+            'export default function MDXContent'
+          );
+
+        // 변환된 코드 출력 (디버깅용)
+
+        return {
+          code: fixedCode,
+          map: null,
+        };
+      }
+      return null;
+    },
+  };
+}
 
 export default defineConfig(async ({ mode }) => {
   const mdx = await import('@mdx-js/rollup');
@@ -23,14 +51,9 @@ export default defineConfig(async ({ mode }) => {
       }),
       mdx.default({
         jsxImportSource: 'lithent', // Preact의 JSX pragma 사용
+        outputFormat: 'esm',
       }),
-      babel({
-        extensions: ['.js', '.jsx', '.cjs', '.mjs', '.md', '.mdx'],
-        plugins: [
-          '@babel/plugin-transform-arrow-functions', // 화살표 함수로 변환
-          '@babel/plugin-transform-block-scoped-functions', // 블록 범위 함수 변환
-        ],
-      }),
+      fixMdxExports(),
     ],
     resolve: {
       alias: {
