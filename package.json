@@ -18,7 +18,7 @@
     "@rollup/plugin-commonjs": "^28.0.2",
     "cross-env": "^7.0.3",
     "express": "^4.21.1",
-    "lithent": "^1.17.3",
+    "lithent": "^1.18.0",
     "state-ref": "^1.1.4",
     "vite-plugin-babel": "^1.3.0"
   },

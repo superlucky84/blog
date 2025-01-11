@@ -7,39 +7,8 @@ import createMakePage from './serverHelper/createMakePage.js';
 import { getEntries, excludeRoutePath } from './serverHelper/helper.js';
 import tailwindcss from 'tailwindcss';
 import autoprefixer from 'autoprefixer';
-import mdx from '@mdx-js/rollup';
-import babel from '@rollup/plugin-babel';
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
-
-function fixMdxExports() {
-  return {
-    name: 'fix-mdx-exports',
-    transform(code, id) {
-      if (id.endsWith('.mdx')) {
-        // 중복 export 방지 및 중복 선언 방지
-        const fixedCode = code
-          // 이미 export가 포함된 함수 선언은 건너뜀
-          .replace(
-            /^(?!export )function\s+_createMdxContent/gm,
-            'export function _createMdxContent'
-          )
-          .replace(
-            /^(?!export )function\s+MDXContent/gm,
-            'export default function MDXContent'
-          );
-
-        // 변환된 코드 출력 (디버깅용)
-
-        return {
-          code: fixedCode,
-          map: null,
-        };
-      }
-      return null;
-    },
-  };
-}
 
 const isDev = process.env.NODE_ENV !== 'production';
 let vite;
@@ -54,13 +23,6 @@ if (isDev) {
     },
     server: { middlewareMode: 'ssr', hmr: true },
     root: process.cwd(),
-    plugins: [
-      mdx({
-        jsxImportSource: 'lithent', // Preact의 JSX pragma 사용
-        outputFormat: 'esm',
-      }),
-      fixMdxExports(),
-    ],
     resolve: {
       alias: {
         '@': '/src',

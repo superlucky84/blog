@@ -1,7 +1,7 @@
 import { h, componentUpdate } from 'lithent';
 import type { WDom, Props, TagFunction } from 'lithent';
 import { hydration } from 'lithent/ssr';
-const pageModules = import.meta.glob('../pages/*.tsx');
+const pageModules = import.meta.glob('../pages/*.(tsx|mdx)');
 import { makeRoute } from '@/base/route';
 import Layout from '@/layout';
 
@@ -11,6 +11,7 @@ export default async function load(
   initProp?: any
 ) {
   let res;
+  console.log('KEY', key, pageModules);
   if (key === 'oops') {
     res = await import('@/components/Oops');
   } else if (key === 'notfound') {
