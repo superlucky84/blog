@@ -1,7 +1,9 @@
+import typography from '@tailwindcss/typography';
+
 /** @type {import('tailwindcss').Config} */
 export default {
   darkMode: 'class',
-  content: ['./src/**/*.{tsx,ts,js,jsx}', './server.js'],
+  content: ['./src/**/*.{tsx,ts,js,jsx,mdx}', './server.js'],
   safelist: [],
   theme: {
     extend: {
@@ -19,6 +21,8 @@ export default {
       },
     },
   },
-
-  plugins: [],
+  plugins: [typography],
+  future: {
+    hoverOnlyWhenSupported: true,
+  },
 };

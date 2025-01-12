@@ -1,5 +1,5 @@
 import type { TagFunction } from 'lithent';
-import { mount, mountCallback, Fragment } from 'lithent';
+import { mount, mountCallback } from 'lithent';
 import { computed, state } from 'lithent/helper';
 import LoadingText from '@/components/Loading';
 import { getPreloadData } from '@/base/data';
@@ -145,9 +145,9 @@ const Layout = mount<{
           {routeRef.loading.value ? (
             <LoadingText />
           ) : (
-            <Fragment>
+            <article class="whitespace-normal break-all prose dark:prose-invert prose-sm">
               <Page params={params} query={query} />
-            </Fragment>
+            </article>
           )}
         </main>
         <footer class="p-6 pt-3 pb-6 flex text-xs text-center mt-3 dark:text-gray-400 text-gray-500 font-mono">

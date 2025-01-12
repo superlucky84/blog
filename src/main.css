@@ -6,9 +6,3 @@
     color-scheme: dark;
     background-color: rgb(28 28 28 / var(--tw-bg-opacity));
 }
-
-@media (hover: none) {
-  [class*=":hover"]:hover {
-    pointer-events: none;
-  }
-}

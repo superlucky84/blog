@@ -7,7 +7,7 @@ import Oops from '@/components/Oops';
 import NotFound from '@/components/NotFound';
 
 let initPage = '';
-const pageModules = import.meta.glob('../pages/*.tsx');
+const pageModules = import.meta.glob('../pages/*.(tsx|mdx)');
 
 function compareArraysWithUnderscore(arr1: string[], arr2: string[]) {
   const params: Record<string, string> = {};
@@ -35,6 +35,7 @@ function findMatch(targetSegments: string[], pageModuleKeys: string[]) {
 
   const matchItem = pageModuleKeys.find(item => {
     const moduleSegmentList = item.split(/(?:\/|\.)/);
+    moduleSegmentList.pop();
     const res = compareArraysWithUnderscore(targetSegments, moduleSegmentList);
 
     params = res[1] as Record<string, string>;
@@ -67,10 +68,11 @@ function parseQueryStringToMap(queryString: string) {
 }
 
 async function loadPage(dynamicPath: string) {
-  const orgPage = `../pages${dynamicPath === '/' ? '/index' : dynamicPath}.tsx`;
+  const orgPage = `../pages${dynamicPath === '/' ? '/index' : dynamicPath}`;
   const comparePage = orgPage.replace(/\?[^\.]*/, '');
-  const queryOrg = orgPage.replace(/.*(\?[^\.]*).tsx/, '$1');
+  const queryOrg = orgPage.replace(/.*(\?[^\.]*)/, '$1');
   const query = /\?/.test(queryOrg) ? parseQueryStringToMap(queryOrg) : {};
+
   const { key, params } = findPageModlueKey(
     Object.keys(pageModules),
     comparePage
@@ -100,7 +102,6 @@ async function loadPage(dynamicPath: string) {
       rVDom.compProps.query = query;
       rVDom.compProps.params = params;
       routeRef.renew.value();
-      console.log('211111111');
     }
     routeRef.loading.value = false;
   } else if (rVDom?.compProps) {
@@ -108,7 +109,6 @@ async function loadPage(dynamicPath: string) {
     rVDom.compProps.query = query;
     rVDom.compProps.params = params;
     routeRef.renew.value();
-    console.log('222222222');
   }
 }
 
@@ -156,7 +156,9 @@ export function navigate(pagePath: string) {
   const urlA = new URL(`${pathname}${search}`, origin);
   const urlB = new URL(pagePath, origin);
 
-  execRoute(urlA, urlB, true);
+  if (urlA.toString() !== urlB.toString()) {
+    execRoute(urlA, urlB, true);
+  }
 }
 
 function execRoute(urlA: URL, urlB: URL, isPush?: boolean) {

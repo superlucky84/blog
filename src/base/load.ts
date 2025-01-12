@@ -34,7 +34,7 @@ export default async function load(
       props
     )
   ) as WDom;
-  console.log(LayoutWDom);
+
   const renewRoot =
     (LayoutWDom.compKey && componentUpdate(LayoutWDom.compKey)) || (() => {});
 

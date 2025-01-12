@@ -42,12 +42,9 @@ export default class DevMakePage extends MakePage {
 
   async makeComponents() {
     const { default: Layout } = await this.vite.ssrLoadModule(`@/layout`);
-    console.log('111111111111', this.key);
     const { default: Page, preload } = await this.vite.ssrLoadModule(
       `@/pages/${this.key}`
     );
-
-    console.log('PAGE', Page);
 
     return { Layout, Page, preload };
   }

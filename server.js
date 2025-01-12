@@ -47,7 +47,6 @@ async function createServer() {
    * 블로그 리스트
    */
   app.get(`/api/bloglist`, async (req, res, next) => {
-    console.log(sortedRouteList);
     const blogFiles = sortedRouteList.filter(file => /^[0-9]+\./.test(file));
 
     res
@@ -70,8 +69,6 @@ async function createServer() {
         next();
         return;
       }
-
-      console.log('EXPRESSPATH', expressPath, key);
 
       const props = { params: req.params, query: req.query };
       let finalHtml = '';
