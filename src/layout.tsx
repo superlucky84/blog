@@ -2,6 +2,7 @@ import type { TagFunction } from 'lithent';
 import { mount, mountCallback } from 'lithent';
 import { computed, state } from 'lithent/helper';
 import LoadingText from '@/components/Loading';
+import clsx from '@/helper/clsx';
 import { getPreloadData } from '@/base/data';
 import { navigate } from '@/base/route';
 // import clsx from '@/helper/clsx';
@@ -13,7 +14,11 @@ const Layout = mount<{
   params: Record<string, string>;
   query: Record<string, string>;
 }>(r => {
-  const isDark = state(true, r);
+  let systemColor = 'dark';
+  const mode = state('init', r);
+  const isDark = computed(() => {
+    return mode.v === 'system' ? systemColor : mode.v === 'dark';
+  });
   const preload = computed(
     () => getPreloadData<{ layout: { title: string } }>()?.layout
   );
@@ -29,12 +34,36 @@ const Layout = mount<{
     navigate('/about');
   };
 
+  const toggleMode = () => {
+    if (mode.v === 'system') {
+      mode.v = isDark.v ? 'light' : 'dark';
+    } else if (mode.v === 'dark') {
+      mode.v = systemColor === 'dark' ? 'system' : 'light';
+    } else if (mode.v === 'light') {
+      mode.v = systemColor === 'light' ? 'system' : 'dark';
+    }
+
+    if (mode.v === 'system') {
+      localStorage.removeItem('theme');
+    } else {
+      localStorage.setItem('theme', mode.v);
+    }
+  };
+
   mountCallback(() => {
-    isDark.v = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    systemColor = window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'dark'
+      : 'light';
+
+    const pref = localStorage.getItem('theme');
+    mode.v = pref || 'system';
   });
 
   return ({ page: Page, params, query }) => (
-    <html lang="en" class={isDark.v ? 'dark' : 'light'}>
+    <html
+      lang="en"
+      class={mode.v === 'init' ? 'init' : isDark.v ? 'dark' : 'light'}
+    >
       <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -53,16 +82,19 @@ const Layout = mount<{
               </a>
             </span>
             <nav class="font-mono text-xs grow justify-end items-center flex gap-1 md:gap-3">
+              <span>{mode.v}</span>
               <button
+                onClick={toggleMode}
                 aria-label="Toggle theme"
-                class="inline-flex  active:bg-gray-300 transition-[background-color] dark:active:bg-[#242424] rounded-sm p-2 
-          bg-gray-200
-          dark:bg-[#313131]
-          theme-system:!bg-inherit
-          [&amp;_.sun-icon]:hidden
-          dark:[&amp;_.moon-icon]:hidden
-          dark:[&amp;_.sun-icon]:inline
-        }"
+                class={clsx([
+                  'inline-flex  active:bg-gray-300 transition-[background-color] dark:active:bg-[#242424] rounded-sm p-2',
+                  mode.v !== 'system' ? 'bg-gray-200' : false,
+                  mode.v !== 'system' ? 'dark:bg-[#313131]' : false,
+                  'theme-system:!bg-inherit',
+                  '[&_.sun-icon]:hidden',
+                  'dark:[&_.moon-icon]:hidden',
+                  'dark:[&_.sun-icon]:inline',
+                ])}
               >
                 <span class="sun-icon">
                   <svg
@@ -145,7 +177,7 @@ const Layout = mount<{
           {routeRef.loading.value ? (
             <LoadingText />
           ) : (
-            <article class="whitespace-normal break-all prose dark:prose-invert prose-sm">
+            <article class="whitespace-normal break-all prose dark:prose-invert prose-sm sm:prose">
               <Page params={params} query={query} />
             </article>
           )}

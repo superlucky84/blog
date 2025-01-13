@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+:root.init {
+    color-scheme: dark;
+    opacity: 0;
+}
 :root.dark {
     color-scheme: dark;
     background-color: rgb(28 28 28 / var(--tw-bg-opacity));
