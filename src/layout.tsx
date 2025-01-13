@@ -16,8 +16,9 @@ const Layout = mount<{
 }>(r => {
   let systemColor = 'dark';
   const mode = state('init', r);
+  const showMode = state(false, r);
   const isDark = computed(() => {
-    return mode.v === 'system' ? systemColor : mode.v === 'dark';
+    return mode.v === 'system' ? systemColor === 'dark' : mode.v === 'dark';
   });
   const preload = computed(
     () => getPreloadData<{ layout: { title: string } }>()?.layout
@@ -34,13 +35,14 @@ const Layout = mount<{
     navigate('/about');
   };
 
+  let timeout: number | null = null;
   const toggleMode = () => {
     if (mode.v === 'system') {
-      mode.v = isDark.v ? 'light' : 'dark';
+      mode.v = 'dark';
     } else if (mode.v === 'dark') {
-      mode.v = systemColor === 'dark' ? 'system' : 'light';
+      mode.v = 'light';
     } else if (mode.v === 'light') {
-      mode.v = systemColor === 'light' ? 'system' : 'dark';
+      mode.v = 'system';
     }
 
     if (mode.v === 'system') {
@@ -48,15 +50,24 @@ const Layout = mount<{
     } else {
       localStorage.setItem('theme', mode.v);
     }
+
+    if (timeout) {
+      clearTimeout(timeout);
+      timeout = null;
+    }
+
+    showMode.v = true;
+    timeout = setTimeout(() => {
+      showMode.v = false;
+    }, 1000);
   };
 
   mountCallback(() => {
-    systemColor = window.matchMedia('(prefers-color-scheme: dark)').matches
-      ? 'dark'
-      : 'light';
+    systemColor = String(
+      window.matchMedia('(prefers-color-scheme: dark)').matches || 'light'
+    );
 
-    const pref = localStorage.getItem('theme');
-    mode.v = pref || 'system';
+    mode.v = localStorage.getItem('theme') || 'system';
   });
 
   return ({ page: Page, params, query }) => (
@@ -82,7 +93,11 @@ const Layout = mount<{
               </a>
             </span>
             <nav class="font-mono text-xs grow justify-end items-center flex gap-1 md:gap-3">
-              <span>{mode.v}</span>
+              <span
+                class={`text-[9px] text-gray-400 mr-[-5px] ${showMode.v ? '' : 'hidden'}`}
+              >
+                {mode.v}
+              </span>
               <button
                 onClick={toggleMode}
                 aria-label="Toggle theme"
