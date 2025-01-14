@@ -47,7 +47,24 @@ async function createServer() {
    * 블로그 리스트
    */
   app.get(`/api/bloglist`, async (req, res, next) => {
-    const blogFiles = sortedRouteList.filter(file => /^[0-9]+\./.test(file));
+    const blogFiles = sortedRouteList
+      .filter(file => /^[0-9]+\./.test(file))
+      .sort((a, b) => {
+        // 날짜 부분을 추출하여 Date 객체로 변환
+        const dateA = new Date(
+          a.split('.')[0],
+          a.split('.')[1] - 1,
+          a.split('.')[2]
+        );
+        const dateB = new Date(
+          b.split('.')[0],
+          b.split('.')[1] - 1,
+          b.split('.')[2]
+        );
+
+        // 최근일 순으로 정렬
+        return dateB - dateA;
+      });
 
     res
       .status(200)
@@ -70,7 +87,11 @@ async function createServer() {
         return;
       }
 
-      const props = { params: req.params, query: req.query };
+      const protocol = req.protocol;
+      const host = req.get('host');
+      const origin = `${protocol}://${host}`;
+
+      const props = { params: req.params, query: req.query, origin };
       let finalHtml = '';
 
       try {

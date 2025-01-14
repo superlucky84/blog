@@ -72,6 +72,7 @@ async function loadPage(dynamicPath: string) {
   const comparePage = orgPage.replace(/\?[^\.]*/, '');
   const queryOrg = orgPage.replace(/.*(\?[^\.]*)/, '$1');
   const query = /\?/.test(queryOrg) ? parseQueryStringToMap(queryOrg) : {};
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
 
   const { key, params } = findPageModlueKey(
     Object.keys(pageModules),
@@ -89,7 +90,7 @@ async function loadPage(dynamicPath: string) {
       const preload = res.preload;
       let initProp = null;
       if (preload) {
-        initProp = await preload({ query, params });
+        initProp = await preload({ query, params, origin });
       }
       (globalThis as any).pagedata = initProp;
       //@ts-ignore
