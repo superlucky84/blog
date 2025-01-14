@@ -2,6 +2,7 @@ import { mount, Fragment } from 'lithent';
 // import { navigate } from '@/base/route';
 import { getPreloadData } from '@/base/data';
 import { groupByYear } from '@/helper/calculator';
+import clsx from '@/helper/clsx';
 
 // import { TYPE_DESCRIPT } from '@/helper/constants';
 
@@ -15,8 +16,9 @@ export const preload = async ({ origin }: { origin: string }) => {
 
 const Index = mount(() => {
   const preload = getPreloadData<{ list: string[] }>();
+  const list = groupByYear(preload.list);
 
-  console.log(groupByYear(preload.list));
+  console.log(list);
 
   return () => (
     <Fragment>
@@ -34,37 +36,37 @@ const Index = mount(() => {
           </button>
         </header>
         <ul>
-          <li>
-            <a href="/2020/books-people-reread">
-              <span class="flex transition-[background-color] hover:bg-gray-100 dark:hover:bg-[#242424] active:bg-gray-200 dark:active:bg-[#222] border-y border-gray-200 dark:border-[#313131]">
-                <span class="py-3 flex grow items-center">
-                  <span class="w-14 inline-block self-start shrink-0 text-gray-500 dark:text-gray-500">
-                    2021
+          {list.map(({ year, list }, wIndex) =>
+            list.map((item, index) => (
+              <li>
+                <a href="/2020/books-people-reread">
+                  <span
+                    class={clsx(
+                      'flex transition-[background-color] hover:bg-gray-100 dark:hover:bg-[#242424] active:bg-gray-200 dark:active:bg-[#222] border-y border-gray-200 dark:border-[#313131]',
+                      wIndex > 0 || index > 0 ? 'border-t-0' : false
+                    )}
+                  >
+                    <span
+                      class={clsx(
+                        'py-3 flex grow items-center',
+                        index !== 0 ? 'ml-14' : false
+                      )}
+                    >
+                      {index === 0 && (
+                        <span class="w-14 inline-block self-start shrink-0 text-gray-500 dark:text-gray-500">
+                          {year}
+                        </span>
+                      )}
+                      <span class="grow dark:text-gray-100">{item}</span>
+                      <span class="text-gray-500 dark:text-gray-500 text-xs">
+                        31,797
+                      </span>
+                    </span>
                   </span>
-                  <span class="grow dark:text-gray-100">
-                    Books people re-read
-                  </span>
-                  <span class="text-gray-500 dark:text-gray-500 text-xs">
-                    31,797
-                  </span>
-                </span>
-              </span>
-            </a>
-          </li>
-          <li>
-            <a href="/2020/books-people-reread">
-              <span class="flex transition-[background-color] hover:bg-gray-100 dark:hover:bg-[#242424] active:bg-gray-200 dark:active:bg-[#222] border-y border-gray-200 dark:border-[#313131] border-t-0">
-                <span class="py-3 flex grow items-center">
-                  <span class="grow dark:text-gray-100 ml-14">
-                    Books people re-read
-                  </span>
-                  <span class="text-gray-500 dark:text-gray-500 text-xs">
-                    31,797
-                  </span>
-                </span>
-              </span>
-            </a>
-          </li>
+                </a>
+              </li>
+            ))
+          )}
         </ul>
       </main>
     </Fragment>

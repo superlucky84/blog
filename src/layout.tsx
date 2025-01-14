@@ -18,6 +18,7 @@ const Layout = mount<{
   const mode = state('init', r);
   const showMode = state(false, r);
   const isDark = computed(() => {
+    console.log(systemColor);
     return mode.v === 'system' ? systemColor === 'dark' : mode.v === 'dark';
   });
   const preload = computed(
@@ -63,9 +64,9 @@ const Layout = mount<{
   };
 
   mountCallback(() => {
-    systemColor = String(
-      window.matchMedia('(prefers-color-scheme: dark)').matches || 'light'
-    );
+    systemColor = window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'dark'
+      : 'light';
 
     mode.v = localStorage.getItem('theme') || 'system';
   });
