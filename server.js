@@ -8,6 +8,21 @@ import { getEntries, excludeRoutePath } from './serverHelper/helper.js';
 import tailwindcss from 'tailwindcss';
 import autoprefixer from 'autoprefixer';
 
+// https://known-feline-53619.upstash.io
+// AdFzAAIjcDFkNTQ1NDA5NzdjZTA0MjZiYmEzMGY4NTdiZmRiZjBkMHAxMA
+
+/*
+import { Redis } from '@upstash/redis'
+
+const redis = new Redis({
+  url: 'https://known-feline-53619.upstash.io',
+  token: '********',
+})
+
+await redis.set('foo', 'bar');
+const data = await redis.get('foo');
+*/
+
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
 const isDev = process.env.NODE_ENV !== 'production';
