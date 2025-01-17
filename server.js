@@ -35,8 +35,6 @@ const __dirname = path.dirname(new URL(import.meta.url).pathname);
 const isDev = process.env.NODE_ENV !== 'production';
 let vite;
 if (isDev) {
-  // const mdx = await import('@mdx-js/rollup');
-
   vite = await createViteServer({
     css: {
       postcss: {
@@ -65,9 +63,6 @@ async function createServer() {
 
   const sortedRouteList = sortFiles(Object.keys(entries));
 
-  /**
-   * 블로그 리스트
-   */
   app.get(`/api/bloglist`, async (req, res, next) => {
     const blogFiles = sortedRouteList
       .filter(file => /^[0-9]+\./.test(file))
