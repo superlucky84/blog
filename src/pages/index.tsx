@@ -16,7 +16,7 @@ export const preload = async ({ origin }: { origin: string }) => {
 
 const Index = mount(() => {
   const preload = getPreloadData<{
-    list: { id: string; date: string; title: string }[];
+    list: { id: string; date: string; title: string; view: number }[];
   }>();
   const list = groupByYear(preload.list);
 
@@ -54,7 +54,7 @@ const Index = mount(() => {
                       )}
                       <span class="grow dark:text-gray-100">{item.title}</span>
                       <span class="text-gray-500 dark:text-gray-500 text-xs">
-                        31,797
+                        {item.view}
                       </span>
                     </span>
                   </span>

@@ -7,7 +7,7 @@ import createMakePage from './serverHelper/createMakePage.js';
 import { getEntries, excludeRoutePath } from './serverHelper/helper.js';
 import tailwindcss from 'tailwindcss';
 import autoprefixer from 'autoprefixer';
-import { readFileSync } from 'fs'; // For ESM
+import { readFileSync } from 'fs';
 
 const postsData = JSON.parse(readFileSync('./src/posts.json', 'utf-8')).posts;
 
@@ -70,12 +70,19 @@ async function createServer() {
     const sortedPosts = postsData.sort(
       (a, b) => new Date(b.date) - new Date(a.date)
     );
-    console.log('SORTEDPOSTS', sortedPosts);
+    const allViews = (await redis.hgetall('views')) || {};
+
+    const sortedPostsWithView = sortedPosts.map(item => {
+      return {
+        ...item,
+        view: allViews[item.id] || 0,
+      };
+    });
 
     res
       .status(200)
       .set({ 'Content-Type': 'application/json' })
-      .end(JSON.stringify(sortedPosts));
+      .end(JSON.stringify(sortedPostsWithView));
   });
 
   sortedRouteList.forEach(key => {

@@ -1,8 +1,10 @@
+type PostItem = { id: string; date: string; title: string; view: number };
+
 export function groupByYear(
-  posts: { id: string; date: string; title: string }[]
-): { year: string; list: { id: string; date: string; title: string }[] }[] {
+  posts: PostItem[]
+): { year: string; list: PostItem[] }[] {
   const groupedByYear: {
-    [year: string]: { id: string; date: string; title: string }[];
+    [year: string]: PostItem[];
   } = {};
 
   posts.forEach(post => {
@@ -15,7 +17,7 @@ export function groupByYear(
 
   const orderedResult: {
     year: string;
-    list: { id: string; date: string; title: string }[];
+    list: PostItem[];
   }[] = [];
 
   Object.keys(groupedByYear)
