@@ -1,7 +1,7 @@
 import { mount, Fragment } from 'lithent';
-// import { navigate } from '@/base/route';
+import { navigate } from '@/base/route';
 import { getPreloadData } from '@/base/data';
-import { groupByYear } from '@/helper/calculator';
+import { groupByYear, transformFilename } from '@/helper/calculator';
 import clsx from '@/helper/clsx';
 
 // import { TYPE_DESCRIPT } from '@/helper/constants';
@@ -20,7 +20,12 @@ const Index = mount(() => {
   }>();
   const list = groupByYear(preload.list);
 
-  console.log('777', list);
+  const moveLink = (event: Event, path: string) => {
+    event.preventDefault();
+    navigate(path);
+  };
+
+  console.log('777', JSON.stringify(list));
 
   return () => (
     <Fragment>
@@ -34,7 +39,12 @@ const Index = mount(() => {
           {list.map(({ year, list }, wIndex) =>
             list.map((item, index) => (
               <li>
-                <a href="/2020/books-people-reread">
+                <a
+                  onClick={(event: Event) =>
+                    moveLink(event, transformFilename(item.id))
+                  }
+                  href={transformFilename(item.id)}
+                >
                   <span
                     class={clsx(
                       'flex transition-[background-color] hover:bg-gray-100 dark:hover:bg-[#242424] active:bg-gray-200 dark:active:bg-[#222] border-y border-gray-200 dark:border-[#313131]',

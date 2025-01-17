@@ -31,3 +31,7 @@ export function groupByYear(
 
   return orderedResult;
 }
+
+export function transformFilename(filename: string) {
+  return '/' + filename.replace(/\.[^.]+$/, '').replace(/\./g, '/');
+}
