@@ -15,10 +15,12 @@ export const preload = async ({ origin }: { origin: string }) => {
 };
 
 const Index = mount(() => {
-  const preload = getPreloadData<{ list: string[] }>();
+  const preload = getPreloadData<{
+    list: { id: string; date: string; title: string }[];
+  }>();
   const list = groupByYear(preload.list);
 
-  console.log(list);
+  console.log('777', list);
 
   return () => (
     <Fragment>
@@ -26,14 +28,7 @@ const Index = mount(() => {
         <header class="text-gray-500 dark:text-gray-600 flex items-center text-xs">
           <button class="w-12 h-9 text-left  ">date</button>
           <span class="grow pl-2">title</span>
-          <button
-            class="
-                  h-9
-                  pl-4
-                "
-          >
-            views
-          </button>
+          <button class=" h-9 pl-4 ">views</button>
         </header>
         <ul>
           {list.map(({ year, list }, wIndex) =>
@@ -57,7 +52,7 @@ const Index = mount(() => {
                           {year}
                         </span>
                       )}
-                      <span class="grow dark:text-gray-100">{item}</span>
+                      <span class="grow dark:text-gray-100">{item.title}</span>
                       <span class="text-gray-500 dark:text-gray-500 text-xs">
                         31,797
                       </span>

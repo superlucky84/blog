@@ -7,6 +7,9 @@ import createMakePage from './serverHelper/createMakePage.js';
 import { getEntries, excludeRoutePath } from './serverHelper/helper.js';
 import tailwindcss from 'tailwindcss';
 import autoprefixer from 'autoprefixer';
+import { readFileSync } from 'fs'; // For ESM
+
+const postsData = JSON.parse(readFileSync('./src/posts.json', 'utf-8')).posts;
 
 const redis = new Redis({
   url: 'https://known-feline-53619.upstash.io',
@@ -64,31 +67,15 @@ async function createServer() {
   const sortedRouteList = sortFiles(Object.keys(entries));
 
   app.get(`/api/bloglist`, async (req, res, next) => {
-    const blogFiles = sortedRouteList
-      .filter(file => /^[0-9]+\./.test(file))
-      .sort((a, b) => {
-        // 날짜 부분을 추출하여 Date 객체로 변환
-        const dateA = new Date(
-          a.split('.')[0],
-          a.split('.')[1] - 1,
-          a.split('.')[2]
-        );
-        const dateB = new Date(
-          b.split('.')[0],
-          b.split('.')[1] - 1,
-          b.split('.')[2]
-        );
-
-        // 최근일 순으로 정렬
-        return dateB - dateA;
-      });
-
-    console.log('BLOGFILES', blogFiles);
+    const sortedPosts = postsData.sort(
+      (a, b) => new Date(b.date) - new Date(a.date)
+    );
+    console.log('SORTEDPOSTS', sortedPosts);
 
     res
       .status(200)
       .set({ 'Content-Type': 'application/json' })
-      .end(JSON.stringify(blogFiles));
+      .end(JSON.stringify(sortedPosts));
   });
 
   sortedRouteList.forEach(key => {
