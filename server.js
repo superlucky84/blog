@@ -1,4 +1,4 @@
-// server.js
+import { Redis } from '@upstash/redis';
 import path, { resolve } from 'path';
 import express from 'express';
 import { createServer as createViteServer } from 'vite';
@@ -8,19 +8,26 @@ import { getEntries, excludeRoutePath } from './serverHelper/helper.js';
 import tailwindcss from 'tailwindcss';
 import autoprefixer from 'autoprefixer';
 
-// https://known-feline-53619.upstash.io
-// AdFzAAIjcDFkNTQ1NDA5NzdjZTA0MjZiYmEzMGY4NTdiZmRiZjBkMHAxMA
-
-/*
-import { Redis } from '@upstash/redis'
-
 const redis = new Redis({
   url: 'https://known-feline-53619.upstash.io',
-  token: '********',
-})
+  token: 'AdFzAAIjcDFkNTQ1NDA5NzdjZTA0MjZiYmEzMGY4NTdiZmRiZjBkMHAxMA',
+});
 
+/*
 await redis.set('foo', 'bar');
 const data = await redis.get('foo');
+
+const result = await redis.del('foo');
+console.log(result); // 삭제된 키의 수 (보통 1)
+
+const exists = await redis.exists('foo');
+console.log(exists); // 키가 존재하면 1, 존재하지 않으면 0
+
+await redis.incr('counter'); // counter 값을 1 증가시킴
+await redis.decr('counter'); // counter 값을 1 감소시킴
+
+const data = await redis.mget('foo', 'bar');
+console.log(data); // ['value of foo', 'value of bar']
 */
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
@@ -80,6 +87,8 @@ async function createServer() {
         // 최근일 순으로 정렬
         return dateB - dateA;
       });
+
+    console.log('BLOGFILES', blogFiles);
 
     res
       .status(200)
