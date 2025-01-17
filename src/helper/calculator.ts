@@ -1,27 +1,24 @@
-export function shuffleArray<T>(array: T[]) {
-  const shuffled = [...array];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const randomIndex = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[i]];
-  }
-  return shuffled;
-}
+type PostItem = { id: string; date: string; title: string; view: number };
 
 export function groupByYear(
-  files: string[]
-): { year: string; list: string[] }[] {
-  const groupedByYear: { [year: string]: string[] } = {};
+  posts: PostItem[]
+): { year: string; list: PostItem[] }[] {
+  const groupedByYear: {
+    [year: string]: PostItem[];
+  } = {};
 
-  files.forEach(file => {
-    const year = file.split('.')[0]; // 파일에서 연도 추출
+  posts.forEach(post => {
+    const year = new Date(post.date).getFullYear();
     if (!groupedByYear[year]) {
-      groupedByYear[year] = []; // 연도가 처음 등장하면 빈 배열 생성
+      groupedByYear[year] = [];
     }
-    groupedByYear[year].push(file); // 해당 연도의 배열에 파일 추가
+    groupedByYear[year].push(post);
   });
 
-  // 연도를 배열 순서대로 반환
-  const orderedResult: { year: string; list: string[] }[] = [];
+  const orderedResult: {
+    year: string;
+    list: PostItem[];
+  }[] = [];
 
   Object.keys(groupedByYear)
     .sort((a, b) => Number(b) - Number(a)) // 내림차순으로 정렬
@@ -33,4 +30,8 @@ export function groupByYear(
     });
 
   return orderedResult;
+}
+
+export function transformFilename(filename: string) {
+  return '/' + filename.replace(/\.[^.]+$/, '').replace(/\./g, '/');
 }

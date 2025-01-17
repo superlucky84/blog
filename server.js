@@ -1,4 +1,4 @@
-// server.js
+import { Redis } from '@upstash/redis';
 import path, { resolve } from 'path';
 import express from 'express';
 import { createServer as createViteServer } from 'vite';
@@ -7,20 +7,30 @@ import createMakePage from './serverHelper/createMakePage.js';
 import { getEntries, excludeRoutePath } from './serverHelper/helper.js';
 import tailwindcss from 'tailwindcss';
 import autoprefixer from 'autoprefixer';
+import { readFileSync } from 'fs';
 
-// https://known-feline-53619.upstash.io
-// AdFzAAIjcDFkNTQ1NDA5NzdjZTA0MjZiYmEzMGY4NTdiZmRiZjBkMHAxMA
-
-/*
-import { Redis } from '@upstash/redis'
+const postsData = JSON.parse(readFileSync('./src/posts.json', 'utf-8')).posts;
 
 const redis = new Redis({
   url: 'https://known-feline-53619.upstash.io',
-  token: '********',
-})
+  token: 'AdFzAAIjcDFkNTQ1NDA5NzdjZTA0MjZiYmEzMGY4NTdiZmRiZjBkMHAxMA',
+});
 
+/*
 await redis.set('foo', 'bar');
 const data = await redis.get('foo');
+
+const result = await redis.del('foo');
+console.log(result); // 삭제된 키의 수 (보통 1)
+
+const exists = await redis.exists('foo');
+console.log(exists); // 키가 존재하면 1, 존재하지 않으면 0
+
+await redis.incr('counter'); // counter 값을 1 증가시킴
+await redis.decr('counter'); // counter 값을 1 감소시킴
+
+const data = await redis.mget('foo', 'bar');
+console.log(data); // ['value of foo', 'value of bar']
 */
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
@@ -28,8 +38,6 @@ const __dirname = path.dirname(new URL(import.meta.url).pathname);
 const isDev = process.env.NODE_ENV !== 'production';
 let vite;
 if (isDev) {
-  // const mdx = await import('@mdx-js/rollup');
-
   vite = await createViteServer({
     css: {
       postcss: {
@@ -58,33 +66,23 @@ async function createServer() {
 
   const sortedRouteList = sortFiles(Object.keys(entries));
 
-  /**
-   * 블로그 리스트
-   */
   app.get(`/api/bloglist`, async (req, res, next) => {
-    const blogFiles = sortedRouteList
-      .filter(file => /^[0-9]+\./.test(file))
-      .sort((a, b) => {
-        // 날짜 부분을 추출하여 Date 객체로 변환
-        const dateA = new Date(
-          a.split('.')[0],
-          a.split('.')[1] - 1,
-          a.split('.')[2]
-        );
-        const dateB = new Date(
-          b.split('.')[0],
-          b.split('.')[1] - 1,
-          b.split('.')[2]
-        );
+    const sortedPosts = postsData.sort(
+      (a, b) => new Date(b.date) - new Date(a.date)
+    );
+    const allViews = (await redis.hgetall('views')) || {};
 
-        // 최근일 순으로 정렬
-        return dateB - dateA;
-      });
+    const sortedPostsWithView = sortedPosts.map(item => {
+      return {
+        ...item,
+        view: allViews[item.id] || 0,
+      };
+    });
 
     res
       .status(200)
       .set({ 'Content-Type': 'application/json' })
-      .end(JSON.stringify(blogFiles));
+      .end(JSON.stringify(sortedPostsWithView));
   });
 
   sortedRouteList.forEach(key => {
