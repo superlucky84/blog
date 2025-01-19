@@ -1,4 +1,5 @@
 import { mount, mountCallback } from 'lithent';
+import { formatNumberWithCommas, isExity } from '@/helper/calculator';
 
 const PageWrap = mount<{ id: string; preload: any }>(
   (_r, { id, preload }, ...children) => {
@@ -28,7 +29,12 @@ const PageWrap = mount<{ id: string; preload: any }>(
             <span>June 23, 2021 (4y ago)</span>
           </span>
           <span class="pr-1.5">
-            <span>78,282 views</span>
+            <span>
+              {formatNumberWithCommas(
+                isExity(preload.v?.views) ? preload.v.views : 0
+              )}{' '}
+              views
+            </span>
           </span>
         </p>
         <section class="mt-5 whitespace-normal break-all prose dark:prose-invert prose-sm sm:prose">

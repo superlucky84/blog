@@ -1,16 +1,25 @@
-export const preload = () => ({
-  layout: {
-    title: '바람과 함께 나타나다',
-    description:
-      'How to improve DX by making errors shareable and collaborative.',
-    openGraph: {
-      title: 'Addressable Errors',
+export const preload = async ({
+  id,
+  origin
+}) => {
+  const { views } = await fetch(`${origin}/api/views/${id}`).then(response =>
+    response.json()
+  );
+  return {
+    layout: {
+      views,
+      title: '바람과 함께 나타나다',
       description:
         'How to improve DX by making errors shareable and collaborative.',
-      images: [{ url: '/og/addressable-errors' }],
+      openGraph: {
+        title: 'Addressable Errors',
+        description:
+          'How to improve DX by making errors shareable and collaborative.',
+        images: [{ url: '/og/addressable-errors' }],
+      },
     },
-  },
-});
+  };
+};
 
 asdglkjve
 

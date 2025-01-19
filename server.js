@@ -68,8 +68,12 @@ async function createServer() {
 
   app.get(`/api/views/:id`, async (req, res, next) => {
     const id = req.params.id;
-    // redis.hincrby("views", id, 1);
-    // const allViews = (await redis.hgetall('views')) || {};
+    const views = (await redis.hincrby('views', id, 1)) ?? 0;
+
+    res
+      .status(200)
+      .set({ 'Content-Type': 'application/json' })
+      .end(JSON.stringify({ views }));
   });
 
   app.get(`/api/bloglist`, async (req, res, next) => {
