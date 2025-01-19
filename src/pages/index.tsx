@@ -25,8 +25,6 @@ const Index = mount(() => {
     navigate(path);
   };
 
-  console.log('777', JSON.stringify(list));
-
   return () => (
     <Fragment>
       <main class="max-w-2xl font-mono m-auto mb-10 text-sm">

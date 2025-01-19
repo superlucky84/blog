@@ -2,6 +2,7 @@ import type { TagFunction } from 'lithent';
 import { mount, mountCallback } from 'lithent';
 import { computed, state } from 'lithent/helper';
 // import LoadingText from '@/components/Loading';
+import PageWrap from '@/components/PageWrap';
 import clsx from '@/helper/clsx';
 import { getPreloadData } from '@/base/data';
 import { navigate } from '@/base/route';
@@ -11,6 +12,7 @@ import '@/main.css';
 
 const Layout = mount<{
   page: TagFunction;
+  id: string;
   params: Record<string, string>;
   query: Record<string, string>;
 }>(r => {
@@ -71,7 +73,7 @@ const Layout = mount<{
     mode.v = localStorage.getItem('theme') || 'system';
   });
 
-  return ({ page: Page }) => (
+  return ({ page: Page, id }) => (
     <html
       lang="en"
       class={mode.v === 'init' ? 'init' : isDark.v ? 'dark' : 'light'}
@@ -174,7 +176,13 @@ const Layout = mount<{
               </a>
             </nav>
           </header>
-          <Page />
+          {id === 'index.tsx' ? (
+            <Page />
+          ) : (
+            <PageWrap preload={preload} id={id}>
+              <Page />
+            </PageWrap>
+          )}
         </main>
         <footer class="p-6 pt-3 pb-6 flex text-xs text-center mt-3 dark:text-gray-400 text-gray-500 font-mono">
           <div class="grow text-left">
@@ -203,29 +211,3 @@ const Layout = mount<{
 });
 
 export default Layout;
-
-/*
- *
-          <main class="max-w-2xl font-mono m-auto mb-10 text-sm">
-            <header class="text-gray-500 dark:text-gray-600 flex items-center text-xs">
-              <button class="w-12 h-9 text-left  ">date</button>
-              <span class="grow pl-2">title</span>
-              <button
-                class="
-                  h-9
-                  pl-4
-                "
-              >
-                views
-              </button>
-            </header>
-          </main>
-
-          {routeRef.loading.value ? (
-            <LoadingText />
-          ) : (
-            <article class="whitespace-normal break-all prose dark:prose-invert prose-sm sm:prose">
-              <Page params={params} query={query} />
-            </article>
-          )}
- * */

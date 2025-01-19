@@ -66,11 +66,19 @@ async function createServer() {
 
   const sortedRouteList = sortFiles(Object.keys(entries));
 
+  app.get(`/api/views/:id`, async (req, res, next) => {
+    const id = req.params.id;
+    // redis.hincrby("views", id, 1);
+    // const allViews = (await redis.hgetall('views')) || {};
+  });
+
   app.get(`/api/bloglist`, async (req, res, next) => {
     const sortedPosts = postsData.sort(
       (a, b) => new Date(b.date) - new Date(a.date)
     );
     const allViews = (await redis.hgetall('views')) || {};
+
+    console.log('777', sortedPosts);
 
     const sortedPostsWithView = sortedPosts.map(item => {
       return {
@@ -104,7 +112,7 @@ async function createServer() {
       const host = req.get('host');
       const origin = `${protocol}://${host}`;
 
-      const props = { params: req.params, query: req.query, origin };
+      const props = { id: key, params: req.params, query: req.query, origin };
       let finalHtml = '';
 
       try {

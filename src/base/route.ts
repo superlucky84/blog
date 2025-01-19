@@ -80,6 +80,7 @@ async function loadPage(dynamicPath: string) {
   );
 
   const rVDom = routeRef.rVDom.value;
+  const id = (key || 'index.tsx').split('/').at(-1);
 
   if (key && pageModules[key]) {
     routeRef.loading.value = true;
@@ -100,6 +101,7 @@ async function loadPage(dynamicPath: string) {
     }
     if (rVDom?.compProps) {
       rVDom.compProps.page = Page;
+      rVDom.compProps.id = id;
       rVDom.compProps.query = query;
       rVDom.compProps.params = params;
       routeRef.renew.value();
@@ -107,6 +109,7 @@ async function loadPage(dynamicPath: string) {
     routeRef.loading.value = false;
   } else if (rVDom?.compProps) {
     rVDom.compProps.page = NotFound;
+    rVDom.compProps.id = id;
     rVDom.compProps.query = query;
     rVDom.compProps.params = params;
     routeRef.renew.value();
