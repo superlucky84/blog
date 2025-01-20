@@ -11,7 +11,7 @@ export const preload = async ({ origin }: { origin: string }) => {
     response.json()
   );
 
-  return { layout: { title: 'Superlucky84' }, list };
+  return { layout: { title: "Superlucky84's blog" }, list };
 };
 
 const Index = mount(() => {

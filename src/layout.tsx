@@ -13,9 +13,10 @@ import '@/main.css';
 const Layout = mount<{
   page: TagFunction;
   id: string;
+  origin: string;
   params: Record<string, string>;
   query: Record<string, string>;
-}>(r => {
+}>((r, { origin }) => {
   let systemColor = 'dark';
   const mode = state('init', r);
   const showMode = state(false, r);
@@ -24,7 +25,19 @@ const Layout = mount<{
     return mode.v === 'system' ? systemColor === 'dark' : mode.v === 'dark';
   });
   const preload = computed(
-    () => getPreloadData<{ layout: { title: string } }>()?.layout
+    () =>
+      getPreloadData<{
+        layout: {
+          views: number;
+          title: string;
+          description: string;
+          openGraph: {
+            title: string;
+            description: string;
+            images: { url: string }[];
+          };
+        };
+      }>()?.layout
   );
   // const routeRef = routeWatch(r);
 
@@ -73,15 +86,68 @@ const Layout = mount<{
     mode.v = localStorage.getItem('theme') || 'system';
   });
 
+  console.log(preload.value);
+
   return ({ page: Page, id }) => (
     <html
       lang="en"
       class={mode.v === 'init' ? 'init' : isDark.v ? 'dark' : 'light'}
     >
       <head>
+        <title>{preload.value?.title || "superlucky84's blog"}</title>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>{preload.value?.title || 'unknown'}</title>
+        <meta
+          name="description"
+          content={
+            preload.value?.description ||
+            'superlucky84 is a software programmer and creator of Lithent, State-Ref open source.'
+          }
+        />
+        <meta
+          property="og:url"
+          content={
+            `${origin}/${id.replace(/\./g, '\/').replace(/(index\/tsx$|\/mdx$|\/tsx$)/, '')}` ||
+            origin
+          }
+        />
+        <meta
+          property="og:title"
+          content={preload.value?.openGraph?.title || "superlucky84's blog"}
+        />
+        <meta
+          property="og:description"
+          content={preload.value?.openGraph?.description}
+        />
+        {(preload.value?.openGraph?.images || []).length > 0 ? (
+          preload.value.openGraph.images.map(item => (
+            <meta property="og:image" content={origin + item.url} />
+          ))
+        ) : (
+          <meta property="og:image" content={origin + '/assets/kim.jpg'} />
+        )}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@superlucky84" />
+        <meta name="twitter:creator" content="@superlucky84" />
+        <meta
+          name="twitter:title"
+          content={preload.value?.openGraph?.title || "superlucky84's blog"}
+        />
+        <meta
+          name="twitter:description"
+          content={
+            preload.value?.openGraph?.description ||
+            'superlucky84 is a software programmer and creator of Lithent, State-Ref open source.'
+          }
+        />
+        {(preload.value?.openGraph?.images || []).length > 0 ? (
+          <meta
+            property="twitter:image"
+            content={origin + preload.value?.openGraph?.images[0].url}
+          />
+        ) : (
+          <meta property="twitter:image" content={origin + '/assets/kim.jpg'} />
+        )}
       </head>
       <body class="dark:text-gray-100 max-w-2xl m-auto">
         <main class="p-6 pt-3 md:pt-6 min-h-screen">
@@ -176,7 +242,7 @@ const Layout = mount<{
               </a>
             </nav>
           </header>
-          {id === 'index.tsx' ? (
+          {['index.tsx', 'about.tsx'].includes(id) ? (
             <Page />
           ) : (
             <PageWrap preload={preload} id={id}>

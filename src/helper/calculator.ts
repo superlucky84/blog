@@ -40,7 +40,6 @@ export function formatNumberWithCommas(num: number): string {
   return num.toLocaleString('en-US');
 }
 
-
 export function isExity(target: unknown) {
   return target !== undefined && target !== null;
 }
