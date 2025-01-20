@@ -32,7 +32,6 @@ await redis.decr('counter'); // counter 값을 1 감소시킴
 const data = await redis.mget('foo', 'bar');
 console.log(data); // ['value of foo', 'value of bar']
 */
-
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
 const isDev = process.env.NODE_ENV !== 'production';
