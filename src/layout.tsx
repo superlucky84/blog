@@ -164,10 +164,13 @@ const Layout = mount<{
         />
       </head>
       <body class="dark:text-gray-100 max-w-2xl m-auto">
-        {/*
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KWM544DZ"
-height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-          */}
+        <noscript
+          innerHTML={`<iframe
+                src="https://www.googletagmanager.com/ns.html?id=GTM-KWM544DZ"
+                height="0"
+                width="0"
+                style="display:none;visibility:hidden"></iframe>`}
+        />
         <main class="p-6 pt-3 md:pt-6 min-h-screen">
           <header class="flex mb-5 md:mb-10 items-center">
             <span class="text-md md:text-lg whitespace-nowrap font-bold">
