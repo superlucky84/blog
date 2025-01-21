@@ -7,7 +7,7 @@ import clsx from '@/helper/clsx';
 // import { TYPE_DESCRIPT } from '@/helper/constants';
 
 export const preload = async ({ origin }: { origin: string }) => {
-  const list = await fetch(`${origin}/api/bloglist`).then(response =>
+  const list = await fetch(`${origin}/api/blog/list`).then(response =>
     response.json()
   );
 

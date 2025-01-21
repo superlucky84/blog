@@ -1,12 +1,10 @@
-import { mount, mountCallback } from 'lithent';
+import { mount } from 'lithent';
+//@ts-ignore
+import timeago from 'time-ago';
 import { formatNumberWithCommas, isExity } from '@/helper/calculator';
 
 const PageWrap = mount<{ id: string; preload: any }>(
-  (_r, { id, preload }, ...children) => {
-    mountCallback(() => {
-      console.log('PRELOAD = ', id, preload);
-    });
-
+  (_r, { preload }, ...children) => {
     return () => (
       <article class="text-gray-800 dark:text-gray-300 mb-10">
         <h1 class="text-2xl font-bold mb-1 dark:text-gray-100">
@@ -17,16 +15,21 @@ const PageWrap = mount<{ id: string; preload: any }>(
             <span class="hidden md:inline">
               <span>
                 <a
-                  href="https://twitter.com/rauchg"
+                  href="https://twitter.com/superlucky84"
                   class="hover:text-gray-800 dark:hover:text-gray-400"
                   target="_blank"
                 >
                   @superlucky84
                 </a>
               </span>
-              <span class="mx-2">|</span>
+              {preload.value?.date && <span class="mx-2">|</span>}
             </span>
-            <span>June 23, 2021 (4y ago)</span>
+            {preload.value?.date && (
+              <span>
+                {preload.value.date} ({timeago.ago(preload.value.date, true)}{' '}
+                ago)
+              </span>
+            )}
           </span>
           <span class="pr-1.5">
             <span>

@@ -8,30 +8,17 @@ import { getEntries, excludeRoutePath } from './serverHelper/helper.js';
 import tailwindcss from 'tailwindcss';
 import autoprefixer from 'autoprefixer';
 import { readFileSync } from 'fs';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const postsData = JSON.parse(readFileSync('./src/posts.json', 'utf-8')).posts;
 
 const redis = new Redis({
-  url: 'https://known-feline-53619.upstash.io',
-  token: 'AdFzAAIjcDFkNTQ1NDA5NzdjZTA0MjZiYmEzMGY4NTdiZmRiZjBkMHAxMA',
+  url: process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN,
 });
 
-/*
-await redis.set('foo', 'bar');
-const data = await redis.get('foo');
-
-const result = await redis.del('foo');
-console.log(result); // 삭제된 키의 수 (보통 1)
-
-const exists = await redis.exists('foo');
-console.log(exists); // 키가 존재하면 1, 존재하지 않으면 0
-
-await redis.incr('counter'); // counter 값을 1 증가시킴
-await redis.decr('counter'); // counter 값을 1 감소시킴
-
-const data = await redis.mget('foo', 'bar');
-console.log(data); // ['value of foo', 'value of bar']
-*/
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
 const isDev = process.env.NODE_ENV !== 'production';
@@ -68,14 +55,16 @@ async function createServer() {
   app.get(`/api/views/:id`, async (req, res, next) => {
     const id = req.params.id;
     const views = (await redis.hincrby('views', id, 1)) ?? 0;
+    const item = postsData.find(item => item.id === id);
+    const result = { ...item, views };
 
     res
       .status(200)
       .set({ 'Content-Type': 'application/json' })
-      .end(JSON.stringify({ views }));
+      .end(JSON.stringify(result));
   });
 
-  app.get(`/api/bloglist`, async (req, res, next) => {
+  app.get(`/api/blog/list`, async (req, res, next) => {
     const sortedPosts = postsData.sort(
       (a, b) => new Date(b.date) - new Date(a.date)
     );

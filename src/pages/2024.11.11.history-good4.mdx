@@ -2,12 +2,13 @@ export const preload = async ({
   id,
   origin
 }) => {
-  const { views } = await fetch(`${origin}/api/views/${id}`).then(response =>
+  const { views, date } = await fetch(`${origin}/api/views/${id}`).then(response =>
     response.json()
   );
   return {
     layout: {
       views,
+      date,
       title: '바람과 함께 나타나다',
       description:
         'How to improve DX by making errors shareable and collaborative.',
