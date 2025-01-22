@@ -3,6 +3,8 @@ import { navigate } from '@/base/route';
 import { getPreloadData } from '@/base/data';
 import { groupByYear, transformFilename } from '@/helper/calculator';
 import clsx from '@/helper/clsx';
+//@ts-ignore
+import timeago from 'time-ago';
 
 // import { TYPE_DESCRIPT } from '@/helper/constants';
 
@@ -25,16 +27,37 @@ const Index = mount(() => {
     navigate(path);
   };
 
+  console.log('LIST', list);
+
   return () => (
     <Fragment>
-      <main class="max-w-2xl font-mono m-auto mb-10 text-sm">
-        <header class="text-gray-500 dark:text-gray-600 flex items-center text-xs">
-          <button class="w-12 h-9 text-left  ">date</button>
-          <span class="grow pl-2">title</span>
-          <button class=" h-9 pl-4 ">views</button>
-        </header>
-        <ul>
-          {list.map(({ year, list }, wIndex) =>
+      <main class="max-w-2xl m-auto mb-10 text-base">
+        <div class="pb-1 flex text-sm text-center dark:text-gray-400 text-gray-500 mb-negative-4">
+          Kim Jinwoo's Blog
+        </div>
+        <div class="pb-6 flex text-xs text-center dark:text-gray-400 text-gray-500">
+          <div class="grow text-left">
+            Created with{' '}
+            <a
+              class="border-b text-gray-600 border-gray-300 transition-[border-color] hover:border-gray-600 dark:text-white dark:border-gray-500 dark:hover:border-white "
+              target="_blank"
+              href="https://github.com/superlucky84/lithent/tree/master/createLithent/express#welcome-to-lithent-ssr-boilerplate"
+            >
+              Lithent SSR Boilerplate
+            </a>
+          </div>
+          <div>
+            <a
+              class="border-b text-gray-600 border-gray-300 transition-[border-color] hover:border-gray-600 dark:text-white dark:border-gray-500 dark:hover:border-white "
+              target="_blank"
+              href="https://github.com/superlucky84/blog"
+            >
+              Source
+            </a>
+          </div>
+        </div>
+        <ul class="mt-10">
+          {list.map(({ year, list }) =>
             list.map((item, index) => (
               <li>
                 <a
@@ -45,13 +68,12 @@ const Index = mount(() => {
                 >
                   <span
                     class={clsx(
-                      'flex transition-[background-color] hover:bg-gray-100 dark:hover:bg-[#242424] active:bg-gray-200 dark:active:bg-[#222] border-y border-gray-200 dark:border-[#313131]',
-                      wIndex > 0 || index > 0 ? 'border-t-0' : false
+                      'flex flex-col transition-[background-color] hover:bg-gray-100 dark:hover:bg-[#242424] active:bg-gray-200 dark:active:bg-[#222] border-b  border-gray-200 dark:border-[#313131] '
                     )}
                   >
                     <span
                       class={clsx(
-                        'py-3 flex grow items-center',
+                        'pt-2 flex grow items-center text-xl',
                         index !== 0 ? 'ml-14' : false
                       )}
                     >
@@ -60,10 +82,18 @@ const Index = mount(() => {
                           {year}
                         </span>
                       )}
-                      <span class="grow dark:text-gray-100">{item.title}</span>
-                      <span class="text-gray-500 dark:text-gray-500 text-xs">
-                        {item.view}
+                      <span class="grow text-title-light dark:text-title-dark">
+                        {item.title}
                       </span>
+                    </span>
+                    <span class="flex pt-1 pb-1 ml-14 text-gray-500 dark:text-gray-500 text-xs">
+                      <span class="flex-grow">
+                        {item.date}{' '}
+                        <span class="sm:inline hidden">
+                          ({timeago.ago(item.date)})
+                        </span>
+                      </span>
+                      <span>{item.view} views</span>
                     </span>
                   </span>
                 </a>

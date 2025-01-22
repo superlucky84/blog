@@ -59,7 +59,8 @@ const Meta = mount<{ origin: string; id: string; preload: { v: Preload } }>(
             preload.v?.openGraph?.description ||
             'superlucky84 is a software programmer and creator of Lithent, State-Ref open source.'
           }
-        />{' '}
+        />
+        {'   '}
         {(preload.v?.openGraph?.images || []).length > 0 ? (
           <meta
             property="twitter:image"

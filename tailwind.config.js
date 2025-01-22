@@ -7,6 +7,18 @@ export default {
   safelist: [],
   theme: {
     extend: {
+      colors: {
+        'title-dark': 'lab(80.574 30.6 -11.24)',
+        'title-light': 'lab(58.739 56.873 -7.396)',
+      },
+      spacing: {
+        'negative-4': '-4px',
+      },
+      fontFamily: {
+        montserrat: ['Montserrat', 'sans-serif'],
+        pretendard: ['Pretendard', 'sans-serif'],
+        blog: ['Pretendard', 'Montserrat', 'sans-serif'],
+      },
       animation: {
         dots: 'dots 1.5s infinite steps(1, end)',
       },

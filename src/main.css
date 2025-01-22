@@ -3,10 +3,17 @@
 @tailwind utilities;
 
 :root.init {
-    color-scheme: dark;
-    opacity: 0;
+  color-scheme: dark;
+  opacity: 0;
 }
 :root.dark {
-    color-scheme: dark;
-    background-color: rgb(28 28 28 / var(--tw-bg-opacity));
+  color-scheme: dark;
+  background-color: rgb(28 28 28 / var(--tw-bg-opacity));
+}
+
+@font-face {
+  font-family: 'Pretendard';
+  src: url('/assets/PretendardStd-Light.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
 }

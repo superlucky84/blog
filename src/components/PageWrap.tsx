@@ -7,10 +7,10 @@ const PageWrap = mount<{ id: string; preload: any }>(
   (_r, { preload }, ...children) => {
     return () => (
       <article class="text-gray-800 dark:text-gray-300 mb-10">
-        <h1 class="text-2xl font-bold mb-1 dark:text-gray-100">
+        <h1 class="text-2xl font-light mb-1 dark:text-gray-100">
           {preload.value?.title || "superlucky84's blog"}
         </h1>
-        <p class="font-mono flex text-xs text-gray-500 dark:text-gray-500">
+        <p class="font-blog flex text-xs text-gray-500 dark:text-gray-500">
           <span class="flex-grow">
             <span class="hidden md:inline">
               <span>

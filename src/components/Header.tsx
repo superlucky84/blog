@@ -55,7 +55,7 @@ const Header = mount<{ mode: { v: string } }>((r, props) => {
           Superlucky84
         </a>
       </span>
-      <nav class="font-mono text-xs grow justify-end items-center flex gap-1 md:gap-3">
+      <nav class="text-xs grow justify-end items-center flex gap-1 md:gap-3">
         <span
           class={`text-[9px] text-gray-400 mr-[-5px] ${showMode.v ? '' : 'hidden'}`}
         >
@@ -113,23 +113,20 @@ const Header = mount<{ mode: { v: string } }>((r, props) => {
           About
         </a>
         <a
-          href="https://twitter.com/superlucky84"
+          href="https://bsky.app/profile/superlucky84.bsky.social"
           target="_blank"
           class="inline-flex hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424] items-center p-2 rounded-sm transition-[background-color] whitespace-nowrap -mr-2"
         >
           <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
+            class="mr-1"
+            fill="none"
+            viewBox="0 0 64 57"
+            width="13"
             height="16"
-            viewBox="0 0 24 24"
-            style="margin-right:4px"
           >
             <path
               fill="currentColor"
-              fill-rule="nonzero"
-              stroke="none"
-              stroke-width="1"
-              d="M8.28 20.26c7.55 0 11.68-6.26 11.68-11.67v-.53c.8-.58 1.49-1.3 2.04-2.13-.74.33-1.53.54-2.36.65.85-.5 1.5-1.32 1.8-2.28-.78.48-1.66.81-2.6 1a4.1 4.1 0 0 0-7 3.74c-3.4-.17-6.43-1.8-8.46-4.29a4.1 4.1 0 0 0 1.28 5.48c-.68-.02-1.3-.2-1.86-.5v.05a4.11 4.11 0 0 0 3.29 4.02 4 4 0 0 1-1.85.08 4.1 4.1 0 0 0 3.83 2.85A8.23 8.23 0 0 1 2 18.43a11.67 11.67 0 0 0 6.28 1.83"
+              d="M13.873 3.805C21.21 9.332 29.103 20.537 32 26.55v15.882c0-.338-.13.044-.41.867-1.512 4.456-7.418 21.847-20.923 7.944-7.111-7.32-3.819-14.64 9.125-16.85-7.405 1.264-15.73-.825-18.014-9.015C1.12 23.022 0 8.51 0 6.55 0-3.268 8.579-.182 13.873 3.805ZM50.127 3.805C42.79 9.332 34.897 20.537 32 26.55v15.882c0-.338.13.044.41.867 1.512 4.456 7.418 21.847 20.923 7.944 7.111-7.32 3.819-14.64-9.125-16.85 7.405 1.264 15.73-.825 18.014-9.015C62.88 23.022 64 8.51 64 6.55c0-9.818-8.578-6.732-13.873-2.745Z"
             ></path>
           </svg>{' '}
           Follow<span class="hidden md:inline">&nbsp;me</span>

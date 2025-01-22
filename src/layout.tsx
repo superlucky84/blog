@@ -5,7 +5,6 @@ import { computed, state } from 'lithent/helper';
 import PageWrap from '@/components/PageWrap';
 import Header from '@/components/Header';
 import Meta from '@/components/Meta';
-import Footer from '@/components/Footer';
 import { getPreloadData } from '@/base/data';
 // import clsx from '@/helper/clsx';
 // import { routeWatch } from '@/base/route';
@@ -57,6 +56,16 @@ const Layout = mount<{
       <head>
         <title>{preload.value?.title || "superlucky84's blog"}</title>
         <Meta origin={origin} preload={preload} id={id} />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap"
+          rel="stylesheet"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap"
+          rel="stylesheet"
+        />
         <script
           innerHTML={`
           (function (w, d, s, l, i) {
@@ -72,7 +81,7 @@ const Layout = mount<{
           `}
         />
       </head>
-      <body class="dark:text-gray-100 max-w-2xl m-auto">
+      <body class="font-blog dark:text-gray-100 max-w-2xl m-auto">
         <noscript
           innerHTML={`<iframe
                 src="https://www.googletagmanager.com/ns.html?id=GTM-KWM544DZ"
@@ -90,7 +99,6 @@ const Layout = mount<{
             </PageWrap>
           )}
         </main>
-        <Footer />
       </body>
     </html>
   );

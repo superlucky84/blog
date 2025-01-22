@@ -2,7 +2,7 @@ import { mount } from 'lithent';
 
 const Footer = mount(() => {
   return () => (
-    <footer class="p-6 pt-3 pb-6 flex text-xs text-center mt-3 dark:text-gray-400 text-gray-500 font-mono">
+    <footer class="p-6 pt-3 pb-6 flex text-xs text-center mt-3 dark:text-gray-400 text-gray-500">
       <div class="grow text-left">
         Built with{' '}
         <a
