@@ -56,7 +56,7 @@ const Index = mount(() => {
             </a>
           </div>
         </div>
-        <ul class="mt-10">
+        <ul>
           {list.map(({ year, list }) =>
             list.map((item, index) => (
               <li>
@@ -82,11 +82,11 @@ const Index = mount(() => {
                           {year}
                         </span>
                       )}
-                      <span class="grow text-title-light dark:text-title-dark">
+                      <span class="pl-4 grow text-title-light dark:text-title-dark">
                         {item.title}
                       </span>
                     </span>
-                    <span class="flex pt-1 pb-1 ml-14 text-gray-500 dark:text-gray-500 text-xs">
+                    <span class="flex pt-1 pl-4 pb-1 ml-14 text-gray-500 dark:text-gray-500 text-xs">
                       <span class="flex-grow">
                         {item.date}{' '}
                         <span class="sm:inline hidden">
