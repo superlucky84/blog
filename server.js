@@ -70,8 +70,6 @@ async function createServer() {
     );
     const allViews = (await redis.hgetall('views')) || {};
 
-    console.log('777', sortedPosts);
-
     const sortedPostsWithView = sortedPosts.map(item => {
       return {
         ...item,

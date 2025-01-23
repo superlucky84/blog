@@ -46,8 +46,6 @@ const Layout = mount<{
     mode.v = localStorage.getItem('theme') || 'system';
   });
 
-  console.log(preload.value);
-
   return ({ page: Page, id }) => (
     <html
       lang="en"

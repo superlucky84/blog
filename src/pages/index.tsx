@@ -27,8 +27,6 @@ const Index = mount(() => {
     navigate(path);
   };
 
-  console.log('LIST', list);
-
   return () => (
     <Fragment>
       <main class="max-w-2xl m-auto mb-10 text-base">

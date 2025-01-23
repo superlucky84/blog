@@ -1,6 +1,11 @@
 {
   "posts": [
     {
+      "id": "2022.9.4.my-custom-react-creation.mdx",
+      "date": "September 4, 2022",
+      "title": "나만의 커스텀 React 제작기"
+    },
+    {
       "id": "2024.11.11.history-good4.mdx",
       "date": "November 11, 2024",
       "title": "history good 4"
