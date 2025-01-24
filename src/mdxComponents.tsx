@@ -12,11 +12,24 @@ export default {
     return <code {...properties} innerHTML={code} />;
   },
   a({ href, ...properties }: any, children: any) {
-    console.log(href, properties);
     return (
       <a href={href} {...properties} target="_blank">
         {children}
       </a>
+    );
+  },
+  h1({ properties }: any, children: unknown) {
+    return (
+      <h1 class="border-b py-2" {...properties}>
+        {children}
+      </h1>
+    );
+  },
+  h2({ properties }: any, children: unknown) {
+    return (
+      <h2 class="border-b" {...properties}>
+        {children}
+      </h2>
     );
   },
 };

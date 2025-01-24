@@ -1,0 +1,234 @@
+export const preload = async ({ id, origin }) => {
+  const { views, date } = await fetch(`${origin}/api/views/${id}`).then(
+    response => response.json()
+  );
+  return {
+    layout: {
+      views,
+      date,
+      title: '함수형 elseIf 유틸리티 함수 제작기',
+      description:
+        '종종 함수형 코딩에 관한 책이나 자료를 접할 때마다, 현실의 내 회사 업무에서 pipe를 실제 코드에 자유자재로 적용할 정도의 수준이 되려면 뭐가 더 필요한지 무의식 중에 고민했던 것 같습니다.',
+      openGraph: {
+        title: '함수형 elseIf 유틸리티 함수 제작기',
+        description:
+          '종종 함수형 코딩에 관한 책이나 자료를 접할 때마다, 현실의 내 회사 업무에서 pipe를 실제 코드에 자유자재로 적용할 정도의 수준이 되려면 뭐가 더 필요한지 무의식 중에 고민했던 것 같습니다.',
+        images: [{ url: '/assets/test11.webp' }],
+      },
+    },
+  };
+};
+
+* 목차
+	* 사건의 계기
+	* 마구잡이 구현
+	* 조금 더 나아간 구현
+	* 그래서 뭐가 좋은거지?
+
+
+## 사건의 계기
+
+원래 함수형 코딩에 대해 전혀 몰랐던 건 아니지만 “쏙쏙 들어오는 함수형 코딩” 이란 책을 우연히 접한 후 함수형 프로그래밍을 제 코드에 더 적극적으로 적용해보고 싶다는 생각을 하게 되었습니다.
+
+함수형 코딩을 도와주는 코드 유틸 중에 [pipe](https://ahnanne.tistory.com/93)라는 도구가 있는데 여러 함수들의 입출력을 콤마로 엮어 합성하여 새로운 함수를 만들어 줍니다. 여러 함수의 입력과 출력의 흐름을 파악하기가 한결 수월해지죠.
+
+종종 함수형 코딩에 관한 책이나 자료를 접할 때마다, 현실의 내 회사 업무에서 pipe를 실제 코드에 자유자재로 적용할 정도의 수준이 되려면 뭐가 더 필요한지 무의식 중에 고민했던 것 같습니다.
+
+> pipe 사용 예
+
+```javascript
+const f = R.pipe(
+    Math.pow,
+    R.negate,
+    R.inc
+);
+f(3, 4); // -(3^4) + 1
+```
+
+어느 한가한 쉬는 날, 이른 아침부터 게임을 하려고 컴퓨터를 켰는데.. 느닷없이 무의식중에 있던 함수형 프로그래밍에 대한 호기심이 갑자기 나에게 말을 겁니다 “`if else` 와 같은 처리는 `pipe`에 어떻게 연결할까?”.. 궁금증을 잠깐 해결하고 게임을 해야 마음이 편할 것 같습니다.
+
+잘 알려진 함수형 라이브러리들을 뒤져서 제가 찾던 모습과 비슷한 기능을 하는 유틸[ramdaJs(ifElse)](https://ramdajs.com/docs/#ifElse), [fxJs(ifElse)](https://github.com/marpple/FxJS/blob/master/Strict/ifElse.js)을 손쉽게 찾았습니다. 아래는 RamdaJs에서 사용되는 예입니다.
+
+```javascript
+const incCount = R.ifElse(
+  R.has('count'),
+  R.over(R.lensProp('count'), R.inc),
+  R.assoc('count', 1)
+);
+
+pipe(
+    incCount(), //=> 결과 { count: 2 }
+    ...
+    ...
+)({ count: 1 })
+```
+
+이 코드에 다른 ifElse 동작을 추가로 체이닝 하려면 아래처럼 해야 됩니다.
+
+```javascript
+const incCount = R.ifElse(
+    R.has('count'),
+    R.over(R.lensProp('count'), R.inc),
+    R.ifElse(
+        R.has('chk'),
+        R.assoc('count', 3),
+        R.assoc('count', 1)
+    );
+);
+```
+
+
+## 마구잡이 구현
+
+
+깨끗하게 1depth로 표현되면 좋을 텐데, 더 많은 `if else` 조건을 붙이려면 depth 가 점점 깊어져서 마음에 들지 않네요. 결론부터 말하자면 결국 제가 원하는 인터페이스와 완벽하게 일치하는 다른 유틸함수를 찾아내긴 했습니다. 하지만 너무 늦게 찾아내는 바람에 그 사이 중간에 혼자 이상한 걸 만들어 버렸습니다.
+
+제가 만든 이상한 유틸함수의 사용 인터페이스는 아래와 같은 모습입니다. `elseIf`의 첫 번째 인자는 판별식을 두 번째 인자는 판별식이 참일 경우에 그에 맞는 리턴값을 반환합니다.
+
+
+```javascript
+const getGrade = pipe(
+  elseIf((value) => value === 1, () => "골드회원"),
+  elseIf((value) => value === 2, () => "실버회원"),
+  elseIf((value) => value === 3, () => "일반회원"),
+  elseEnd(() => "나머지")
+);
+chkGrade(2) //실버회원
+```
+
+이걸 구현하기 위한 핵심 사실은 순서상 앞에 있는 `elseIf`문의 판별식이 참일 경우 뒤의 `elseIf`문은 더 이상 필요 없어집니다. 앞에서 이미 값을 결정해 버리면 뒤의 `elseIf`함수에서는 값을 처리할 필요 없이 흘려버려야 하죠.
+
+제가 찾은 해결책은 값이 결정되면 Decision이란 객체로 값을 감싸버린 후, 뒤에 체이닝 된 다른 elseIf문에서 Decision으로 감싸인 값을 만나면 통과시켜 버렸습니다. 아래코드처럼요.
+
+```javascript
+const elseIf = curry((is, run, value) =>
+  value instanceof Decision ? value :   // Decision 객체일경우 그대로 리턴
+  is(value) ? Decision.of(run(value)) : // Desision 객체가 아니면서 판별식이 참일경우, 값을 처리하여 Desision객체로 감싸서 리턴
+  value                                 // 판별식이 거짓일경우 원본값을 그대로 리턴
+);
+```
+
+이러면 1depth로만 함수를 계속 연결해도 잘 처리되죠.
+
+제가 왜 이렇게 짰냐면, 함수형 프로그래밍에 관련된 책을 보다가 ”모나드” 라는 개념을 알게 되었는데요. 값을 그대로 사용하지 않고 값을 보호하는 특수한 객체로 값을 감싸줍니다. 함수가 처리하는 값에 예상하지 못한 값이 있을 경우 값을 싸고 있는 객체가 값이 파이프라인의 끝까지 도달될 때까지 아무 문제 없이 매끄럽게 작동되도록 처리해줍니다.
+
+사람들이 모나드에 대해 설명할 때 가장 빈번히 예로 드는 예제가 [MayBe 모나드](https://nakta.dev/fp-in-js-4-functor-maybe) 입니다. 저도 MayBe 모나드를 보고 얻은 힌트로 `elseIf` 구현했는데요. 제가 구현한 건 정확한 모나드의 기술적 구현은 아닙니다만 코드의 볼륨이 커지는 것도 싫고 최소한의 코드로 빠르게 생각을 옮기고 싶다 보니 어찌어찌 이렇게 되어버렸네요. 값을 감싼 객체의 타입만 검사해서 흘리는 방식으로 구현해 봤습니다.
+
+마지막 elseIf 이후에는 elseEnd 를 연결하여 Decision 객체로 쌓인 값을 빼내어 리턴해줍니다.
+
+```js
+const elseEnd = curry((run, value) =>
+  value instanceof Decision ? value.get() : run(value)
+);
+```
+
+## 조금 더 나아간 구현
+
+구현(말이 구현이지 그냥 파일 하나 열어 넣고 내가 생각한 데로 되는지 뚝딱뚝딱 테스트해 본 겁니다)하고 나서 이게 과연 실용적으로 쓰일 수 있을지, 잠시 집에 밀린 설거지를 하며 생각해 봤습니다. 이것저것 찾아보고 고민하다 보니 오전이 훌쩍 지나가 버려서 속상했지만, 아무리 생각해도 뭔가 잘못되고 놓친 부분이 있는 거 같아서 다른 라이브러리들이 구현한 유틸함수들을 더 찾아보았습니다.
+
+아니나 다를까 제가 찾던 모습의 유틸은`cond` 라는 이름으로 존재하고 있었습니다 [ramdaJs(cond)](https://ramdajs.com/docs/#cond), [remedaJs(cond)](https://remedajs.com/docs/#conditional), [fxJs(cond)](https://github.com/marpple/FxJS/blob/master/Strict/cond.js)사용법은 아래와 같습니다.
+
+중첩된 배열에 첫 번째 인자가 if문 안에 들어가는 판별식이고 두 번째 인자가 판별식이 참일 때 실제로 실행되는 if 스코프의 본체에 해당하는 구문입니다.
+
+> RamdaJs에서 cond 사용 예
+
+```js
+const fn = R.cond([
+  [R.equals(0),   R.always('water freezes at 0°C')],
+  [R.equals(100), R.always('water boils at 100°C')],
+  [R.T,           temp => 'nothing special happens at ' + temp + '°C']
+]);
+fn(0); //=> 'water freezes at 0°C'
+fn(50); //=> 'nothing special happens at 50°C'
+fn(100); //=> 'water boils at 100°C'
+```
+
+
+애초에 처음부터 발견했다면 제가 이것 때문에 이것저것 고민하느라 반나절을 날리지 않고 게임에만 열중했을 텐데 안타까웠습니다. 그래도 깔끔하게 생각을 마무리하기 위해 제가 만든 `elseIf` `elseEnd` 함수를 이용해서 `cond`를 구현해 봤습니다.
+
+`showcases([if: () => boolen, run: () => any][])`의 형태를 `IelseIf[]` 의 형태로 바꿔주면 됩니다. 아래처럼요.
+
+> 구현
+
+```js
+const cond = curry((conditaion) => {
+  const condPipe = pipe(
+    map(([arg1, arg2]) => (arg2 ? elseIf(arg1, arg2) : elseEnd(arg1))),
+    (arr) => [...arr, elseEnd((value) => value)]
+  )(conditaion);
+
+  return pipe(...condPipe);
+
+  // 위의 코드가 만들어주는 것은 아래코드와 같습니다.
+  // pipe(
+  //     ...[
+  //       elseIf(arg1, arg2),
+  //       elseIf(arg1, arg2),
+  //       elseIf(arg1, arg2),
+  //       ... // conditions 개수만큼 반복
+  //       elseEnd(value => value),
+  //     ]
+  // )
+});
+```
+
+너무 간단해서 설명할 것도 없네요. 아래처럼 사용하면 됩니다. 어쨌거나 이것 때문에 어이없이 귀중한 휴일의 반나절을 날려버렸네요.
+
+
+```js
+const chkGrade = cond([
+  [(value) => value === 1, () => "골드회원"],
+  [(value) => value === 2, () => "실버회원"],
+  [(value) => value === 3, () => "일반회원"],
+  [() => "나머지"],
+]);
+
+chkGrade(2) //실버회원
+```
+
+## 그래서 뭐가 좋은 거지?
+
+반나절을 불쑥 찾아온 엉뚱한 생각으로 삽질한 게 억울하기도 하고 이게 도대체 무슨 의미가 있는지, 휴일의 반나절을 날려버릴 만한 가치가 있는 유용한 고민이었는지 생각해 봤습니다.
+
+제가 읽은 함수형 프로그래밍 책에서 공통적으로 설명하는 함수형의 장점 중에 하나는 산술연산자(+,-)나 지시어(if문 등)처럼 일급이 아닌(값처럼 취급하지 않는)것들을 함수로 만들면 일급(값처럼 취급할 수 있게)으로 바뀌게 되어 더 유연하게 코드를 만들 수 있다는 겁니다.
+
+예를 들어 앞서 보여드린 chkGrade 함수 예제에서 골드회원이 아닌 것들은 전부 나머지로 표시하고 싶은 기능을 추가하고 싶다면 아래처럼 손쉽게 예외처리하여 elseIf문을 조합해 주면 됩니다.
+
+
+> elseIf 사용 예
+
+```js
+const chkGrade = (value, chkOnlyVip) => {
+    return pipe(
+      ...[
+        elseIf((value) => value === 1, () => "골드회원"),
+        !chkOnlyVip && elseIf((value) => value === 2, () => "실버회원"),
+        !chkOnlyVip && elseIf((value) => value === 3, () => "일반회원"),
+        elseEnd(() => "나머지")
+      ].filter(item => item)
+    )(value);
+}
+chkGrade(2, true) //나머지
+```
+
+> cond 사용 예
+
+```js
+const chkGrade = (value, chkOnlyVip) => {
+    return cond([
+      [(value) => value === 1, () => "골드회원"],
+      !chkOnlyVip && [(value) => value === 2, () => "실버회원"],
+      !chkOnlyVip && [(value) => value === 3, () => "일반회원"],
+      [() => "나머지"],
+    ].filter(item => item))(value);
+}
+```
+
+어쨌거나 이것저것 고민해 보면서 나름대로 즐거운 시간이었습니다. 결국 다른 사람들도 내가 생각한 것과 비슷한 걸 만들어서 사용하고 있다니, 제가 생각한 함수형 코딩의 사용방향이 크게 잘못되어 있지는 않다는 확신도 얻었습니다.
+
+그리고 얼마나 유용한지도 물론 중요하지만, 저만 즐거웠다면 그걸로 충분한 것 같습니다.
+
+
+
+
+

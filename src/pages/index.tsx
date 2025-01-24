@@ -71,7 +71,7 @@ const Index = mount(() => {
                   >
                     <span
                       class={clsx(
-                        'pt-2 flex grow items-center text-2xl',
+                        'pt-2 flex grow items-center text-xl',
                         index !== 0 ? 'ml-14' : false
                       )}
                     >
@@ -80,11 +80,11 @@ const Index = mount(() => {
                           {year}
                         </span>
                       )}
-                      <span class="pl-4 grow text-title-light dark:text-title-dark">
+                      <span class="pl-1 grow text-title-light dark:text-title-dark">
                         {item.title}
                       </span>
                     </span>
-                    <span class="flex pt-1 pl-4 pb-1 ml-14 text-gray-500 dark:text-gray-500 text-xs">
+                    <span class="flex pt-1 pl-1 pb-1 ml-14 text-gray-500 dark:text-gray-500 text-xs">
                       <span class="flex-grow">
                         {item.date}{' '}
                         <span class="sm:inline hidden">
