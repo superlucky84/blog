@@ -29,6 +29,7 @@ React를 걱정 없이 사용할 정도로 이해하기 위해서 직접 리액�
 
 다 만들고 보니 기쁜 마음이 들었다. 공부한 내용을 공유하여 기쁨을 나눠 보고자 한다.
 
+---
 
 ## 템플릿 문법을 위한 트랜스파일러 구현
 
@@ -67,22 +68,20 @@ jsx를 공부하기 위한 목적으로 시작했기 때문에 자연스럽게 j
 
 #### 원본 문자열
 
-```jsx
-'<div class='root'>
+```
+`<div class="root">
   <button onClick={handle}>one{two}three</button>
   <button onClick={handle2}>onetwothree</button>
   <button onClick={handle3}>cc</button>
-</div>'
+</div>`
 ```
 
-
-```jsx
 
 #### 결과 객체
 
 ```javascript
 {
-  s: "div class="root",
+  s: 'div class="root"',
   hasChildren: true,
   children: [
     {s: 'button onClick={handle}', hasChildren: true, children: Array(1) }
@@ -91,4 +90,265 @@ jsx를 공부하기 위한 목적으로 시작했기 때문에 자연스럽게 j
   ]
 }
 ```
+
+### 2단계 — 태그 노드에서 태그네임과 속성을 파악
+
+다음 단계는 트리의 노드 하나를 분석하여 태그 네임과 애트리뷰트 문자열을 분리하는 것이다.
+
+단순히 1단계의 `s` 속성에서 `tagName`과 `props`를 분리한다.
+
+```javascript
+{
+  tagName: "div"
+  props: "{ lass: \"root\" }"
+  hasChildren: true
+  children: Array(3)
+    0: {tagName: "button", props: "{ onClick: handle }", hasChildren: true, children: Array(1) }
+    1: {tagName: "button", props: "{ onClick: handle2 }",  hasChildren: true, children: Array(1),  }
+    2: {tagName: "button", props: "{ onClick: handle3 }", hasChildren: true, children: Array(1),  }
+}
+```
+
+### 3단계 — 텍스트 노드에서 단순 문자열과 표현식을 분리
+
+애초부터 jsx를 흉내 낸 템플릿 문법을 생각했기 때문에 중괄호 내에 있는 문자열은 javascript의 표현식이다.
+
+예시 코드의 text 속성을 보면 알 수 있듯이 텍스트 문자는 표현식과 일반 텍스트를 콤마로 분리하였다. 일반 문자열은 홑 따움표로 표기하였고 표현식은 홑 따움표가 없다.
+
+#### 원본 문자열
+
+```
+`<div class="root">
+  <button onClick={handle}>one{two}three</button>
+  ...
+</div>`
+```
+
+#### 결과 객체
+```javascript
+children: [
+  {
+    tagName: 'button',
+    props: '{ onClick: handle }',
+    hasChildren: true,
+    children: [{ texts: "'one', two, 'three'", children: Array(0) }],
+  },
+  ...
+]
+```
+
+### 4단계 — 완성된 태그 트리를 바탕으로 함수 호출 문자열 생성
+
+4단계는 3단계까지 변환된 객체를 바탕으로 트리를 순회하면서 함수 호출 형태의 문자열을 만들어 주는 것이다.
+
+최종 완성된 모습은 아래와 같다.
+
+```javascript
+h('div', { class: "root" }, 
+   h('button', { onClick: handle }, 'one', two, 'three'),
+   h('button', { onClick: handle2 }, 'onetwothree'),
+   h('button', { onClick: handle3 }, 'cc')
+);
+```
+
+실제 구현한 코드는 [저장소](https://github.com/superlucky84/lithent/tree/4754708bb930a929c7c4ef1956e0d5927cd36072/packages/compiler)에서 확인할 수 있다.
+
+
+### Vitejs에 연결하기
+
+필자는 평소 웹팩이나 바벨 외에 다른 도구를 사용해 본 적이 없어서 아쉬움이 있었는데, 이번에는 공부하는 김에 vitejs를 사용해 보았다.
+
+따라서 완성된 트랜스파일러는 vitejs 플러그인을 통해 연결했다. vitejs 의 기본 예제만 보고 변경시키는 함수 하나만 딸랑 넣어서 만들었다. 많이 부족하지만 일단 생각한 대로 동작은 한다 (실제 서비스에 사용할 정도로 만들기 위해서는 더 많은 부분이 고려되어야 한다.)
+
+아래는 결과 코드인데, 보면 알 수 있듯이 `<template>` 태그 내에 문자열을 추출해 목적 문자열로 변경시킨 후 replace 시켰다.
+
+```javascript
+import { parse } from "@wwact/compiler";
+const fileRegex = /\.(wwx)$/
+
+export default function myPlugin() {
+  return {
+    name: 'vite:wwx',
+
+    transform(src, id) {
+      if (fileRegex.test(id)) {
+
+        const code = src.replace(/<template>((.|[\/S\/s])*)<\/template>/ms, (_m, template) => {
+          return parse(template);
+        });
+
+        return {
+          code,
+          map: null // provide source map if available
+        }
+      }
+    }
+  }
+}
+```
+
+템플릿 문법을 대표하는 확장자명을 .wwx로 정했는데, 구현하고 보니 .wwx 확장자를 위한 문법 하이라이팅이나 필자가 좋아하는 도구인 prettier를 통한 autofix가 새로운 확장자에 대해 정상적으로 동작하지 않는 문제가 있다.
+
+아쉬운대로 필자가 사용하는 에디터에서는 .wwx확장자를 .js처럼 취급하도록 설정하였고 prettier의 autofix는 eslint의 autofix로 대체하여 사용하면 된다.
+
+---
+
+## 가상돔 만들기
+
+가상돔은 트리구조의 자바스크립트 객체다. jsx가 트랜스파일러에 의해 함수 호출의 형태로 변경된다. 사용자가 정의한 jsx 태그의 계층 구조에 따라 `h` 라는 함수를 실행해 준다. 따라서 프레임웍 구현자가 `h`함수를 적절히 구현하면 사용자가 정의한 태그에 계층 구조를 그대로 갖는 가상돔을 만들 수 있다.
+
+아래의 예제 코드를 보면 알 수 있듯이 `h` 함수의 첫 번째 인자는 태그명, 두 번째 인자는 태그의 속성이며, 3번째 인자부터는 자식 노드에 해당하는 `h`함수가 순서대로 정의된다. 예를 어떤 태그가 3개의 하위 태그를 가지고 있다면 그 태그를 표현하는 함수의 인자는 5개가 될 것이다.
+
+실제로 `h`함수를 구현하여 원하는 가상돔을 만들기 위해서는 `h`함수의 실행 순서를 파악할 필요가 있다. 아래의 예에서 `h`함수의 실행 순서는 `item1을 가진 li태그`, `item2를 가진 li`, `ul`, `div`, `section` 의 순서대로 함수가 실행될 것이다.
+
+
+```javascript
+h('section', null, 
+  h('div', { class: 'wrap' }, 
+    h('ul', null, 
+      h('li', null, 'item1'),
+      h('li', null, 'item2'),
+    )
+  )
+);
+```
+
+```jsx
+<section>
+  <div class="wrap">
+    <ul>
+      <li>item1</li>
+      <li>item2</li>
+    </ul>
+  </div>
+</section>
+```
+
+
+### 첫번째 인자
+
+`h`함수의 첫 번째 인자에는 세 가지 타입이 올 수 있다. 위의 예제 코드처럼 html 형태의 표현일 경우는 문자열 형태로 정의되며, `Fragment` 또는 `Component`일 경우에는 함수의 형태로 정의된다.
+
+`h`함수와 `Fragment`함수의 구현은 프레임웍 제작자의 몫이며, 컴포넌트 함수의 구현은 프레임웍 사용자의 몫이다.
+
+아래의 코드는 필자가 구현한 `Fragment`함수이다. 리턴되는 객체의 `type` 속성은 `fragment`, 자식 태그의 노드들을 갖는 `children` 속성을 반환한다.
+
+```javascript
+function Fragment(_props: Props, ...children: WDom[]) {
+  return { type: 'fragment', children };
+}
+```
+
+아래 예제는 첫 번째 인자의 타입별 `h`함수로 변경된 예시이다. `Fragment`와 `Component`에 해당하는 `h`함수의 첫 번째 인자는 함수 자체임을 알 수 있다.
+
+```jsx
+<Fragment>
+  <Custom />
+  <div>ss</div>
+</Fragment>
+```
+
+```javascript
+h(Fragment, null,
+  h(CustomElement, null),
+  h("div", null, "ss")
+);
+```
+
+아래의 예에서 `Custom`이라는 컴포넌트가 실행되면 만들어지는 객체의 형태를 확인해보자.
+
+```jsx
+export default function Custom() {
+  const data = useState({ k: 1 });
+
+  return (
+    <Fragment>
+      <button>{data.k}</button>
+      <div>ss</div>
+    </Fragment>
+  );
+}
+```
+
+```javascript
+{
+  "type":"fragment",
+  "children":[
+    {
+      "type":"element",
+      "tag":"button",
+      "props":{},
+      "children":[ { "type":"text", "text":1 } ],
+    },
+    {
+      "type":"element",
+      "tag":"div",
+      "props":{ },
+      "children":[ { "type":"text", "text":"ss" } ],
+    }
+  ],
+}
+```
+
+## 가상돔으로 부터 실제 dom 만들기
+
+`h`와 `Fragment`를 구현하여 원하는 형태의 가상돔을 완성했다. 하지만 가상돔만으로는 아무 쓸모가 없다. 가상돔을 실제 돔으로 변경할 수 있어야 한다.
+
+아래 코드는 가상돔을 실제 돔으로 만드는 예제이다. `toDom`을 재귀 호출하여 가상돔 트리를 순회하면서 실제돔을 만든다.
+
+코드는 단순하다 가상돔의 타입에 따라 `fragment`나 `element` 또는 `text`노드를 만든다. 자식 노드들도 전부 같은 방식으로 만들어 준다. 자식 노드들은 부모 노드에 `appendChild` 시킨다.
+
+
+```javascript
+function toDom(vDom) {
+  let element;
+  const { type, tag, text, props, children = [] } = vDom;
+  const isFragment = type === 'fragment';
+
+  if (isFragment) {
+    element = new DocumentFragment();
+  } else if (type === 'element' && tag) {
+    element = document.createElement(tag);
+  } else if (type === 'text' && isExisty(text)) {
+    element = document.createTextNode(text);
+  }
+
+  const elementChildren = children.reduce(
+    (acc, childItem) => {
+      acc.appendChild(toDom(childItem));
+
+      return acc;
+    },
+    new DocumentFragment()
+  );
+
+  element.appendChild(elementChildren);
+
+  return element;
+}
+```
+
+## 가상돔 업데이트하기
+
+### 상태 변경 지점으로부터 새로운 가상돔 만들기
+
+컴포넌트의 상태가 변경되면 변경된 컴포넌트를 루트로 하는 가상돔을 새로 만든다.
+
+아래의 이미지를 살펴보자, 빨간 노드에서 변경이 시작되면 파란 부분에 해당하는 하위 노드들도 전부 데이터에 의존성을 갖으므로 다시 만들어 준다.
+
+가상돔을 다시 만들어 주는 이유는 기존 가상돔과 비교하여 변경된 부분을 리얼돔에 어떻게 반영할지(엘리먼트 자체를 새로 만들어 교체할지 또는 속성만 변경할지 등등…)을 결정하기 위함이다.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
