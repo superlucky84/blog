@@ -38,6 +38,7 @@ function fixMdxExports() {
 export default defineConfig(async ({ mode }) => {
   const mdx = await import('@mdx-js/rollup');
   return {
+    assetsInclude: ['**/*.woff', '**/*.woff2'],
     plugins: [
       checker({
         typescript: true,
@@ -58,6 +59,7 @@ export default defineConfig(async ({ mode }) => {
     resolve: {
       alias: {
         '@': resolve(__dirname, './src'),
+        '@assets': resolve(__dirname, './assets'),
       },
     },
     build: {

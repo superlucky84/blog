@@ -91,7 +91,7 @@ const Layout = mount<{
         />
         <main class="p-6 pt-3 md:pt-6 min-h-[calc(100vh-64px)]">
           <Header mode={mode} />
-          {['index.tsx'].includes(id) ? (
+          {['index.tsx', 'ko.tsx'].includes(id) ? (
             <Page />
           ) : (
             <PageWrap preload={preload} id={id}>

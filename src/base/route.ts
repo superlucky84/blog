@@ -155,6 +155,11 @@ export function makeRoute(): StateRefStore<RouteState> {
 }
 
 export function navigate(pagePath: string) {
+  // const language = navigator.language || 'en-US';
+  const language = 'en-US';
+
+  console.log('PAGEPATH', pagePath);
+  console.log('LANGUAGE', language);
   const { pathname, search, origin } = window.location;
 
   const urlA = new URL(`${pathname}${search}`, origin);

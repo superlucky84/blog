@@ -20,14 +20,14 @@ export default {
   },
   h1({ properties }: any, children: unknown) {
     return (
-      <h1 class="border-b py-2" {...properties}>
+      <h1 class="py-2 border-b dark:border-[#313131]" {...properties}>
         {children}
       </h1>
     );
   },
   h2({ properties }: any, children: unknown) {
     return (
-      <h2 class="border-b" {...properties}>
+      <h2 class="py-1 border-b dark:border-[#313131]" {...properties}>
         {children}
       </h2>
     );
