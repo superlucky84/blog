@@ -71,7 +71,7 @@ const Index = mount(() => {
                   >
                     <span
                       class={clsx(
-                        'pt-2 flex grow items-center text-xl',
+                        'pt-2 flex grow items-center text-2xl',
                         index !== 0 ? 'ml-14' : false
                       )}
                     >

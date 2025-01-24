@@ -1,5 +1,10 @@
 {
   "posts": [
+		{
+      "id": "2023.12.25.virtual-dom-library-lithent-full-feature-documentation.mdx",
+      "date": "December 25, 2023",
+      "title": "가상돔 라이브러리 Lithent 전체 기능 설명서"
+		},
     {
       "id": "2022.9.4.my-custom-react-creation.mdx",
       "date": "September 4, 2022",
