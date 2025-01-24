@@ -5,7 +5,9 @@ import { computed, state } from 'lithent/helper';
 import PageWrap from '@/components/PageWrap';
 import Header from '@/components/Header';
 import Meta from '@/components/Meta';
+import mdxComponents from '@/mdxComponents';
 import { getPreloadData } from '@/base/data';
+import 'highlight.js/styles/hybrid.css';
 // import clsx from '@/helper/clsx';
 // import { routeWatch } from '@/base/route';
 import '@/main.css';
@@ -89,11 +91,11 @@ const Layout = mount<{
         />
         <main class="p-6 pt-3 md:pt-6 min-h-[calc(100vh-64px)]">
           <Header mode={mode} />
-          {['index.tsx', 'about.tsx'].includes(id) ? (
+          {['index.tsx'].includes(id) ? (
             <Page />
           ) : (
             <PageWrap preload={preload} id={id}>
-              <Page />
+              <Page components={mdxComponents} />
             </PageWrap>
           )}
         </main>
