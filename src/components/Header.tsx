@@ -1,20 +1,28 @@
 import { mount } from 'lithent';
-import { state } from 'lithent/helper';
+import { state, computed } from 'lithent/helper';
 import clsx from '@/helper/clsx';
 import { navigate } from '@/base/route';
+import { transformFilename } from '@/helper/calculator';
 
-const Header = mount<{ mode: { v: string } }>((r, props) => {
+const Header = mount<{ mode: { v: string }; id: string }>((r, props) => {
   const showMode = state(false, r);
   let timeout: number | null = null;
+  const isKo = computed(() => /^ko\./.test(props.id));
 
   const goHome = (event: Event) => {
     event.preventDefault();
-    navigate('/');
+    navigate(isKo.v ? '/ko' : '/');
   };
 
   const goAbout = (event: Event) => {
     event.preventDefault();
-    navigate('/about');
+    navigate(isKo.v ? '/ko/about' : '/about');
+  };
+
+  const changeLanguage = () => {
+    const path = transformFilename(props.id);
+    const newPath = isKo.v ? path.replace(/^\/ko/, '') : `/ko${path}`;
+    navigate(newPath.replace('/index', ''));
   };
 
   const toggleMode = () => {
@@ -52,7 +60,7 @@ const Header = mount<{ mode: { v: string } }>((r, props) => {
           href="/"
           onClick={goHome}
         >
-          Superlucky84
+          Quiet Blooom
         </a>
       </span>
       <nav class="text-xs grow justify-end items-center flex gap-1 md:gap-3">
@@ -115,6 +123,7 @@ const Header = mount<{ mode: { v: string } }>((r, props) => {
             </svg>
           </span>
         </button>
+        <button onClick={changeLanguage}>{isKo.v ? 'KR' : 'US'}</button>
         <a
           class="inline-flex hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424] rounded-sm p-2 transition-[background-color]"
           href="/about"

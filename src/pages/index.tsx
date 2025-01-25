@@ -18,7 +18,13 @@ export const preload = async ({ origin }: { origin: string }) => {
 
 const Index = mount(() => {
   const preload = getPreloadData<{
-    list: { id: string; date: string; title: string; view: number }[];
+    list: {
+      id: string;
+      date: string;
+      title: string;
+      title_ko: string;
+      view: number;
+    }[];
   }>();
   const list = groupByYear(preload.list);
 

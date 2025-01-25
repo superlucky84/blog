@@ -1,0 +1,58 @@
+export const preload = async ({
+  id,
+  origin
+}) => {
+  const { views, date } = await fetch(`${origin}/api/views/${id}`).then(response =>
+    response.json()
+  );
+  return {
+    layout: {
+      views,
+      date,
+      title: '이 블로그와 저에 대하여',
+      description:
+        'How to improve DX by making errors shareable and collaborative.',
+      openGraph: {
+        title: 'Addressable Errors',
+        description:
+          'How to improve DX by making errors shareable and collaborative.',
+        images: [{ url: '/assets/test11.webp' }],
+      },
+    },
+  };
+};
+
+### About Blog
+
+<a href="https://bsky.app/profile/superlucky84.bsky.social" class="not-prose" target="_blank"><img alt="Guillermo Rauch" width="160" height="160" decoding="async" data-nimg="1" class="rounded-full bg-gray-100 block mt-0 mb-5 mx-auto sm:float-right sm:ml-5 sm:mb-5 grayscale hover:grayscale-0" src="/assets/kim.jpg" style="color: transparent;" /></a>
+
+이 블로그는 제가 만든 가상돔 라이브러리 [Lithent](https://github.com/superlucky84/lithent)의 [SSR 보일러플레이트](https://github.com/superlucky84/lithent/tree/master/createLithent/express#welcome-to-lithent-ssr-boilerplate)의 [MDX](https://mdxjs.com/)기능이 잘 동작하는지 테스트 해보기 위한 취미로 만들어 졌습니다. 메인의 리스트 페이지를 제외한 모든 글은 MDX를 이용하여 작성되었습니다.
+
+
+[존경하는 Vercel의 CEO Guillermo Rauch의 블로그](https://rauchg.com/)를 따라서 만들다 보니, 헤더 레이아웃 구성에 중요한 부분을 차지하는 About 페이지를 꼭 추가해야 해서 이렇게 제 소개글을 쓰게 되었습니다.
+
+메인 페이지의 아티클 제목 색상은, 또 역시 [존경하는 러시아의 천재 개발자 Dan Abramov의 블로그](https://overreacted.io/)의 제목 색상을 참고하여 만들었습니다.
+
+그리고 잠깐 같이 일했지만 별로 많은 친분이 없었던 예전 동료 개발자 [CHOI HO CHEOL](https://chchoing88.github.io/ho_blog/) 님의 블로그도 약간 참고하였음을 밝힙니다.
+
+
+### About Me
+
+저는 소프트웨어 엔지니어이자한 아이의 아빠입니다. 저는 한국 출신입니다. 웹개발자로 경력의 대부분을 쌓았으며 경력에 많은 부분을 프론트엔드 개발과 오픈소스에 빚지고 있습니다.
+
+저를 대표하는 직업은 프론트엔드 개발 이지만, 경력 초반에는 서버 개발자로 경력을 시작했습니다. 
+
+초반에는 이것저것 다양한 언어에 관심이 많아서 PHP + CodeIgniter, Python + Django, Java + Play Framework, Java + Spring Framework 등을 얕게 경험해 봤으며, 이후 JavaScript의 매력에 빠져 프론트엔드 개발자로 전향했습니다.
+
+그후 [TOAST UI](https://ui.toast.com/)라는 오픈소스를 만드는 팀에서 활동하습니다. 퇴사 후에도  오픈소스 개발에 재미를 붙여 [Lithent](https://github.com/superlucky84/lithent), [State-ref](https://github.com/superlucky84/state-ref) 를 만들고 있으며, 특히 State-ref는 [Webpack](https://webpack.js.org/)의 초창기 핵심 개발자인 [Juho Vepsäläinen](https://survivejs.com/about-me/)가 직접 [인터뷰](https://survivejs.com/blog/state-ref-interview/)내용을 자신에 블로그에 포스팅 해주었습니다.
+
+현재는 [중앙일보](https://www.joongang.co.kr/) 프론트엔드 개발팀에 속해 있습니다. 더 자세한 경력은 [LinkedIn](https://www.linkedin.com/in/superlucky84/) 에서 확인할수 있습니다.
+
+이 블로그의 코드는 [Github](https://github.com/superlucky84/blog)에 공개하였습니다.
+
+
+
+
+
+
+

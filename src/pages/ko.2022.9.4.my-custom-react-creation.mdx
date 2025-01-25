@@ -6,13 +6,13 @@ export const preload = async ({ id, origin }) => {
     layout: {
       views,
       date,
-      title: 'Building My Own Custom React',
+      title: '나만의 커스텀 React 제작기',
       description:
-        'I had the desire to implement code that behaves like React in order to understand it well enough to use it without worries. While studying and working on it in my spare time, I ended up creating my own fake React.',
+        'React를 걱정 없이 사용할 정도로 이해하기 위해서 직접 리액트처럼 동작하는 코드를 구현해 보고 싶은 욕망이 들었고, 틈틈이 공부하며 만들다 보니 나만의 짝퉁 React를 만들게 되었다.',
       openGraph: {
-        title: 'Building My Own Custom React',
+        title: '나만의 커스텀 React 제작기',
         description:
-          'I had the desire to implement code that behaves like React in order to understand it well enough to use it without worries. While studying and working on it in my spare time, I ended up creating my own fake React.',
+          'React를 걱정 없이 사용할 정도로 이해하기 위해서 직접 리액트처럼 동작하는 코드를 구현해 보고 싶은 욕망이 들었고, 틈틈이 공부하며 만들다 보니 나만의 짝퉁 React를 만들게 되었다.',
         images: [{ url: '/assets/test11.webp' }],
       },
     },
@@ -28,7 +28,6 @@ export const preload = async ({ id, origin }) => {
 React를 걱정 없이 사용할 정도로 이해하기 위해서 직접 리액트처럼 동작하는 코드를 구현해 보고 싶은 욕망이 들었고, 틈틈이 공부하며 만들다 보니 나만의 짝퉁 React를 만들게 되었다.
 
 다 만들고 보니 기쁜 마음이 들었다. 공부한 내용을 공유하여 기쁨을 나눠 보고자 한다.
-
 
 ## 템플릿 문법을 위한 트랜스파일러 구현
 
@@ -64,7 +63,6 @@ jsx를 공부하기 위한 목적으로 시작했기 때문에 자연스럽게 j
 
 변환된 객체를 살펴보면 `s` 속성은 태그의 이름을 포함한 모든 애트리뷰트 문자열을 가지고 있고 `hasChildren`은 자식 태그를 갖고 있는지의 `boolean`값 `children`은 실제 하위 태그들의 정보이다
 
-
 #### 원본 문자열
 
 ```
@@ -74,7 +72,6 @@ jsx를 공부하기 위한 목적으로 시작했기 때문에 자연스럽게 j
   <button onClick={handle3}>cc</button>
 </div>`
 ```
-
 
 #### 결과 객체
 
@@ -124,6 +121,7 @@ jsx를 공부하기 위한 목적으로 시작했기 때문에 자연스럽게 j
 ```
 
 #### 결과 객체
+
 ```javascript
 children: [
   {
@@ -143,15 +141,16 @@ children: [
 최종 완성된 모습은 아래와 같다.
 
 ```javascript
-h('div', { class: "root" }, 
-   h('button', { onClick: handle }, 'one', two, 'three'),
-   h('button', { onClick: handle2 }, 'onetwothree'),
-   h('button', { onClick: handle3 }, 'cc')
+h(
+  'div',
+  { class: 'root' },
+  h('button', { onClick: handle }, 'one', two, 'three'),
+  h('button', { onClick: handle2 }, 'onetwothree'),
+  h('button', { onClick: handle3 }, 'cc')
 );
 ```
 
 실제 구현한 코드는 [저장소](https://github.com/superlucky84/lithent/tree/4754708bb930a929c7c4ef1956e0d5927cd36072/packages/compiler)에서 확인할 수 있다.
-
 
 ### Vitejs에 연결하기
 
@@ -162,8 +161,8 @@ h('div', { class: "root" },
 아래는 결과 코드인데, 보면 알 수 있듯이 `<template>` 태그 내에 문자열을 추출해 목적 문자열로 변경시킨 후 replace 시켰다.
 
 ```javascript
-import { parse } from "@wwact/compiler";
-const fileRegex = /\.(wwx)$/
+import { parse } from '@wwact/compiler';
+const fileRegex = /\.(wwx)$/;
 
 export default function myPlugin() {
   return {
@@ -171,25 +170,26 @@ export default function myPlugin() {
 
     transform(src, id) {
       if (fileRegex.test(id)) {
-
-        const code = src.replace(/<template>((.|[\/S\/s])*)<\/template>/ms, (_m, template) => {
-          return parse(template);
-        });
+        const code = src.replace(
+          /<template>((.|[\/S\/s])*)<\/template>/ms,
+          (_m, template) => {
+            return parse(template);
+          }
+        );
 
         return {
           code,
-          map: null // provide source map if available
-        }
+          map: null, // provide source map if available
+        };
       }
-    }
-  }
+    },
+  };
 }
 ```
 
 템플릿 문법을 대표하는 확장자명을 .wwx로 정했는데, 구현하고 보니 .wwx 확장자를 위한 문법 하이라이팅이나 필자가 좋아하는 도구인 prettier를 통한 autofix가 새로운 확장자에 대해 정상적으로 동작하지 않는 문제가 있다.
 
 아쉬운대로 필자가 사용하는 에디터에서는 .wwx확장자를 .js처럼 취급하도록 설정하였고 prettier의 autofix는 eslint의 autofix로 대체하여 사용하면 된다.
-
 
 ## 가상돔 만들기
 
@@ -199,14 +199,14 @@ export default function myPlugin() {
 
 실제로 `h`함수를 구현하여 원하는 가상돔을 만들기 위해서는 `h`함수의 실행 순서를 파악할 필요가 있다. 아래의 예에서 `h`함수의 실행 순서는 `item1을 가진 li태그`, `item2를 가진 li`, `ul`, `div`, `section` 의 순서대로 함수가 실행될 것이다.
 
-
 ```javascript
-h('section', null, 
-  h('div', { class: 'wrap' }, 
-    h('ul', null, 
-      h('li', null, 'item1'),
-      h('li', null, 'item2'),
-    )
+h(
+  'section',
+  null,
+  h(
+    'div',
+    { class: 'wrap' },
+    h('ul', null, h('li', null, 'item1'), h('li', null, 'item2'))
   )
 );
 ```
@@ -221,7 +221,6 @@ h('section', null,
   </div>
 </section>
 ```
-
 
 ### 첫번째 인자
 
@@ -247,10 +246,7 @@ function Fragment(_props: Props, ...children: WDom[]) {
 ```
 
 ```javascript
-h(Fragment, null,
-  h(CustomElement, null),
-  h("div", null, "ss")
-);
+h(Fragment, null, h(CustomElement, null), h('div', null, 'ss'));
 ```
 
 아래의 예에서 `Custom`이라는 컴포넌트가 실행되면 만들어지는 객체의 형태를 확인해보자.
@@ -296,7 +292,6 @@ export default function Custom() {
 
 코드는 단순하다 가상돔의 타입에 따라 `fragment`나 `element` 또는 `text`노드를 만든다. 자식 노드들도 전부 같은 방식으로 만들어 준다. 자식 노드들은 부모 노드에 `appendChild` 시킨다.
 
-
 ```javascript
 function toDom(vDom) {
   let element;
@@ -311,14 +306,11 @@ function toDom(vDom) {
     element = document.createTextNode(text);
   }
 
-  const elementChildren = children.reduce(
-    (acc, childItem) => {
-      acc.appendChild(toDom(childItem));
+  const elementChildren = children.reduce((acc, childItem) => {
+    acc.appendChild(toDom(childItem));
 
-      return acc;
-    },
-    new DocumentFragment()
-  );
+    return acc;
+  }, new DocumentFragment());
 
   element.appendChild(elementChildren);
 
@@ -363,7 +355,6 @@ fucntion CustomRoot() {
 
 오리지널과 같은 노드라고 판단될 경우에만 값을 상속하여 업데이트해주고 틀린 노드라고 판단되는 경우, 데이터 상속 없이 새로운 가상돔을 만들어 준다.
 
-
 ## Diff 알고리즘
 
 필자는 diff 알고리즘을 [react문서](https://ko.legacy.reactjs.org/docs/reconciliation.html)를 참고하여 구현하였다.
@@ -393,16 +384,13 @@ fucntion Custom() {
 
 아래는 필자가 생각해본 **가상돔 비교 케이스**이다.
 
-
-
 1. 하위 노드 통째로 교체해 버려야 되는 경우
-	1. 태그 이름 또는 컴포넌트 함수가 다를 때
-	2. Fragment일 경우 자식 노드의 개수가 틀릴 때
+   1. 태그 이름 또는 컴포넌트 함수가 다를 때
+   2. Fragment일 경우 자식 노드의 개수가 틀릴 때
 2. 1번에 해당하지 않을 경우 노드의 오리지널에서 state 상속, props 교체 후 childrene도 같은 방법으로 비교
-	1. props와 state가 오리지널 가상돔과 얕은 비교를 통해 완전히 같다면 children을 교체하지 않고 끝냄
-	2. props와 state가 오리지널 가상동과 얕은 비교를 통해 틀리다면 children을 루프톨면서 배교해줌
+   1. props와 state가 오리지널 가상돔과 얕은 비교를 통해 완전히 같다면 children을 교체하지 않고 끝냄
+   2. props와 state가 오리지널 가상동과 얕은 비교를 통해 틀리다면 children을 루프톨면서 배교해줌
 3. loop 타입의 자식 노드들은 key값을 비교하여 동일 여부를 판단한다.
-
 
 ### 생성 지연시키기
 
@@ -439,13 +427,11 @@ function Custom1(props){
 
 ### 구 컴포넌트의 값 상속하기
 
-
 오리지널 가상돔 노드와 새로운 노드 사이의 상태 전달은 어떻게 구현할까?
 
 구현 방법에는 여러 가지가 있을 수 있다. 필자는 특정 컴포넌트 노드와 state값을 Symbol값을 통해 연결해주는 방식을 사용하였다.
 
 설명을 돕기위해 state값이 재활용되는 시나리오를 작성해 보았다
-
 
 1. 컴포넌트 함수가 실행되기 전에 고유한 `Symbol` 값을 정의한다.
 2. 컴포넌트 함수가 실행되면, 컴포넌트 함수 내에 `useState` 함수도 실행된다.
@@ -472,7 +458,6 @@ const useState = (initValue, vdomKey = Symbol()) => {
 
 ### 상속 없이 클로저 활용하기
 
-
 필자는 위에 설명한 `Symbol`값을 사용한 `state` 상속 외에 다른 방법도 생각해보았다.
 
 가상 돔을 업데이트할 때 기존 컴포넌트 함수 내에서 사용되는 `state`나 변수, 메서드들을 클로저로 유지하는 방법이다.
@@ -480,8 +465,8 @@ const useState = (initValue, vdomKey = Symbol()) => {
 리랜더링을 위해 컴포넌트 함수를 직접 실행하는 대신, 아래의 코드처럼 태그 정의 부분을 함수로 만든 후 가상돔 리랜더링이 필요한 경우 컴포넌트 함수 대신 사용하면 오리지날 노드에서 사용하던 `state`나 변수들을 별 다른 추가 코드 없이 클로저를 이용해 재사용 가능하다.
 
 ```javascript
-function Custom(props){
-  const [ valueA, setValueA ] = useState(7);
+function Custom(props) {
+  const [valueA, setValueA] = useState(7);
 
   return () => (
     <Fragment>
@@ -491,7 +476,6 @@ function Custom(props){
   );
 }
 ```
-
 
 ### useState 구현
 
@@ -518,7 +502,6 @@ export default function CustomElement(props, children) {
 }
 ```
 
-
 위 코드의 요점은 아래와 같다.
 
 1. 마운트를 위해 컴포넌트 함수와 컴포넌트 함수 내에 `useState`가 실행되며 초기값 `initValue`가 `value`에 세팅된다
@@ -529,8 +512,6 @@ export default function CustomElement(props, children) {
 첫 번째는 하나의 컴포넌트에서 여러 개의 `useState`가 실행될 때 value가 하나이므로 하나의 값뿐이 처리할 수 없다.
 
 두 번째는 하나의 컴포넌트 함수가 여러 개의 컴포넌트를 만들 때 위 코드는 모듈 내에 value가 하나이므로 여러 컴포넌트에 대해 처리할 수 없다.
-
-
 
 ### 첫번째 문제의 해결방법
 
@@ -571,7 +552,7 @@ export default function CustomElement(props, children) {
 이어서 아래의 코드는 두 번째 문제를 해결한 코드이다. `state`를 관리하는 `value`가 여러 개의 컴포넌트에 대한 값을 감당할 수 있도록 객체로 변경하고 키값을 컴포넌트 키값에 의해 확장되도록 하였다.
 
 ```javascript
-const value =  {}
+const value = {};
 const useState = (initValue, componentKey) => {
   if (!value[componentKey] || !value[componentKey][currentSubSeq]) {
     value[vdomKey] ??= [];
@@ -590,8 +571,6 @@ const useState = (initValue, componentKey) => {
 
 이 밖에도 React의 `useState`와 같은 인터페이스로 동작하도록 하기 위해서는 여러 가지 추가 처리를 해줘야 한다. 필자가 프로토타이핑해본 코드는 [저장소]에서 확인할 수 있다.
 
-
-
 ## 리얼 돔 업데이트하기
 
 다음 단계는 업데이트된 가상돔을 바탕으로 리얼 돔에 반영하는 단계이다.
@@ -600,14 +579,11 @@ const useState = (initValue, componentKey) => {
 
 ### 1. (REPLACE). 비교할 오리지널 노드가 있었지만 새로운 노드와 같은 타입이 아닌 경우 해당 위치의 엘리먼트 자체를 교체해준다.
 
-
 가상돔 diff시 비교 대상인 원본 노드가 있지만 생성되는 태그 네임이 오리지널과 틀려 다른 노드라고 판단될 경우 오리지널 노드에 해당하는 원본 엘리먼트의 자리에 새로운 엘리먼트를 만들어서 교체해준다.
-
 
 ### 2. (ADD). 비교할 오리지널 노드가 없으면 새로 추가되는 dom으로 판단한다.
 
 위 1번 (REPLACE) 케이스의 하위 노드들은 전부 새로 추가해줘야 하는 노드로 판단하고 새로운 html 엘리먼트를 만들어서 추가한다.
-
 
 ### 3. (UPDATE). 오리지널이 있고 같은 타입이면 dom의 속성만 변경해 주며, 텍스트 노드일 경우는 텍스트를 교체해준다.
 
@@ -621,18 +597,15 @@ const useState = (initValue, componentKey) => {
 
 앞서 설명한 REPLACE의 경우라도 오리지널 노드와 새로운 노드가 트리의 같은 순서에 있다고 보장할 수 없다. 따라서 루프타입의 자식 노드들은 같은 자리에 바로 교체하지 않고 실제 리얼돔 트리에서 한번 제거 후, 새로 dom을 만들어 다시 정확한 순서의 위치를 찾아서 넣어주는 방식으로 삽입 정렬을 해준다.
 
-
 ### 6. (SORTED-UPDATE). loop의 경우 UPDATE라도 키값에 의해 순서가 변경될 수 있으므로 재 삽입하여 정렬한다.
 
 앞서 5번 케이스(SORTED-REPLACE)에서 설명한 바와 같은 상황이지만 REPLACE 해줘야 하는 상황이 아닌 UPDATE 해줘야 하는 상황이다.
 
 원래 있던 자리의 dom을 그대로 사용하지만 순서만 다시 정렬해주기 위해 한번 실제 리얼 dom 트리에서 제거 후 삽입한다.
 
-
 ### 7. (NONE). text타입의 경우 text가 같다면 변경이 필요 없으므로 방치한다.
 
 텍스트 타입의 경우 오리지널 노드의 텍스트와 새로운 노드의 텍스트가 일치한다면 그냥 놔둔다. 앞서 설명한 diff 알고리즘의 2–1번의 해당할 경우에도 NONE타입으로 처리하면 된다.
-
 
 ## 결말
 
@@ -643,21 +616,3 @@ const useState = (initValue, componentKey) => {
 필자에게 React는 더 이상 마법이 아니다. 그냥 재미있는 자바스크립트다.
 
 완성된 코드는 [깃헙 저장소](https://github.com/superlucky84/lithent)에서 확인할 수 있다.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

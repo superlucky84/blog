@@ -1,4 +1,10 @@
-type PostItem = { id: string; date: string; title: string; view: number };
+type PostItem = {
+  id: string;
+  date: string;
+  title: string;
+  title_ko: string;
+  view: number;
+};
 
 export function groupByYear(
   posts: PostItem[]

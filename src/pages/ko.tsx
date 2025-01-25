@@ -18,13 +18,19 @@ export const preload = async ({ origin }: { origin: string }) => {
 
 const Index = mount(() => {
   const preload = getPreloadData<{
-    list: { id: string; date: string; title: string; view: number }[];
+    list: {
+      id: string;
+      date: string;
+      title: string;
+      title_ko: string;
+      view: number;
+    }[];
   }>();
   const list = groupByYear(preload.list);
 
   const moveLink = (event: Event, path: string) => {
     event.preventDefault();
-    navigate(path);
+    navigate(`/ko${path}`);
   };
 
   return () => (
@@ -81,7 +87,7 @@ const Index = mount(() => {
                         </span>
                       )}
                       <span class="pl-1 grow text-title-light dark:text-title-dark">
-                        {item.title}
+                        {item.title_ko}
                       </span>
                     </span>
                     <span class="flex pt-1 pl-1 pb-1 ml-14 text-gray-500 dark:text-gray-500 text-xs">

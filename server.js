@@ -53,7 +53,7 @@ async function createServer() {
   const sortedRouteList = sortFiles(Object.keys(entries));
 
   app.get(`/api/views/:id`, async (req, res, next) => {
-    const id = req.params.id;
+    const id = req.params.id.replace(/^ko\./, '');
     const views = (await redis.hincrby('views', id, 1)) ?? 0;
     const item = postsData.find(item => item.id === id);
     const result = { ...item, views };
