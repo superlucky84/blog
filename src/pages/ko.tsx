@@ -2,6 +2,7 @@ import { mount, Fragment } from 'lithent';
 import { navigate } from '@/base/route';
 import { getPreloadData } from '@/base/data';
 import { groupByYear, transformFilename } from '@/helper/calculator';
+import { getLabColor } from '@/helper/labColor';
 import clsx from '@/helper/clsx';
 //@ts-ignore
 import timeago from 'time-ago';
@@ -16,7 +17,7 @@ export const preload = async ({ origin }: { origin: string }) => {
   return { layout: { title: "Superlucky84's blog" }, list };
 };
 
-const Index = mount(() => {
+const Index = mount<{ isDark: { v: boolean } }>(() => {
   const preload = getPreloadData<{
     list: {
       id: string;
@@ -24,16 +25,18 @@ const Index = mount(() => {
       title: string;
       title_ko: string;
       view: number;
+      order: number;
     }[];
   }>();
   const list = groupByYear(preload.list);
+  const totalLengh = list.reduce((acc, item) => acc + item.list.length, 0);
 
   const moveLink = (event: Event, path: string) => {
     event.preventDefault();
     navigate(`/ko${path}`);
   };
 
-  return () => (
+  return ({ isDark }) => (
     <Fragment>
       <main class="max-w-2xl m-auto mb-10 text-base">
         <div class="pb-1 flex text-sm text-center dark:text-gray-400 text-gray-500 mb-negative-4">
@@ -86,7 +89,12 @@ const Index = mount(() => {
                           {year}
                         </span>
                       )}
-                      <span class="pl-1 grow text-title-light dark:text-title-dark">
+                      <span
+                        class="pl-1 grow"
+                        style={{
+                          color: getLabColor(isDark.v, item.order, totalLengh),
+                        }}
+                      >
                         {item.title_ko}
                       </span>
                     </span>

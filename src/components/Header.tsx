@@ -52,7 +52,6 @@ const Header = mount<{ mode: { v: string }; id: string }>((_r, props) => {
         </a>
       </span>
       <nav class="text-xs grow justify-end items-center flex gap-1 md:gap-3">
-        <span class={`text-[9px] text-gray-400 mr-[-5px]`}>{mode.v}</span>
         <button
           onClick={toggleMode}
           aria-label="Toggle theme"
@@ -64,6 +63,7 @@ const Header = mount<{ mode: { v: string }; id: string }>((_r, props) => {
             'dark:[&_.moon-icon]:inline',
           ])}
         >
+          <span class={`text-[9px] text-gray-400 mr-1`}>{mode.v}</span>
           <span class="sun-icon">
             <svg
               xmlns="http://www.w3.org/2000/svg"

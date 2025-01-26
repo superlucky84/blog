@@ -4,6 +4,7 @@ type PostItem = {
   title: string;
   title_ko: string;
   view: number;
+  order: number;
 };
 
 export function groupByYear(
@@ -13,12 +14,12 @@ export function groupByYear(
     [year: string]: PostItem[];
   } = {};
 
-  posts.forEach(post => {
+  posts.forEach((post, index) => {
     const year = new Date(post.date).getFullYear();
     if (!groupedByYear[year]) {
       groupedByYear[year] = [];
     }
-    groupedByYear[year].push(post);
+    groupedByYear[year].push({ ...post, order: index });
   });
 
   const orderedResult: {

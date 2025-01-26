@@ -92,7 +92,7 @@ const Layout = mount<{
         <main class="p-6 pt-3 md:pt-6 min-h-[calc(100vh-64px)]">
           <Header mode={mode} id={id} />
           {['index.tsx', 'ko.tsx'].includes(id) ? (
-            <Page />
+            <Page isDark={isDark} />
           ) : (
             <PageWrap preload={preload} id={id}>
               <Page components={mdxComponents} />
