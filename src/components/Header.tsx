@@ -1,12 +1,10 @@
 import { mount } from 'lithent';
-import { state, computed } from 'lithent/helper';
+import { computed } from 'lithent/helper';
 import clsx from '@/helper/clsx';
 import { navigate } from '@/base/route';
 import { transformFilename } from '@/helper/calculator';
 
-const Header = mount<{ mode: { v: string }; id: string }>((r, props) => {
-  const showMode = state(false, r);
-  let timeout: number | null = null;
+const Header = mount<{ mode: { v: string }; id: string }>((_r, props) => {
   const isKo = computed(() => /^ko\./.test(props.id));
 
   const goHome = (event: Event) => {
@@ -40,16 +38,6 @@ const Header = mount<{ mode: { v: string }; id: string }>((r, props) => {
     } else {
       localStorage.setItem('theme', mode.v);
     }
-
-    if (timeout) {
-      clearTimeout(timeout);
-      timeout = null;
-    }
-
-    showMode.v = true;
-    timeout = setTimeout(() => {
-      showMode.v = false;
-    }, 1000);
   };
 
   return ({ mode }) => (
@@ -64,22 +52,16 @@ const Header = mount<{ mode: { v: string }; id: string }>((r, props) => {
         </a>
       </span>
       <nav class="text-xs grow justify-end items-center flex gap-1 md:gap-3">
-        <span
-          class={`text-[9px] text-gray-400 mr-[-5px] ${showMode.v ? '' : 'hidden'}`}
-        >
-          {mode.v}
-        </span>
+        <span class={`text-[9px] text-gray-400 mr-[-10px]`}>{mode.v}</span>
         <button
           onClick={toggleMode}
           aria-label="Toggle theme"
           class={clsx([
-            'inline-flex  active:bg-gray-300 transition-[background-color] dark:active:bg-[#242424] rounded-sm p-2',
-            mode.v !== 'system' ? 'bg-gray-200' : false,
-            mode.v !== 'system' ? 'dark:bg-[#313131]' : false,
+            'inline-flex  active:bg-gray-300 transition-[background-color] dark:active:bg-[#242424] rounded-sm p-2 pr-0',
             'theme-system:!bg-inherit',
-            '[&_.sun-icon]:hidden',
-            'dark:[&_.moon-icon]:hidden',
-            'dark:[&_.sun-icon]:inline',
+            '[&_.moon-icon]:hidden',
+            'dark:[&_.sun-icon]:hidden',
+            'dark:[&_.moon-icon]:inline',
           ])}
         >
           <span class="sun-icon">
@@ -125,7 +107,7 @@ const Header = mount<{ mode: { v: string }; id: string }>((r, props) => {
         </button>
         <button onClick={changeLanguage}>{isKo.v ? 'KR' : 'US'}</button>
         <a
-          class="inline-flex hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424] rounded-sm p-2 transition-[background-color]"
+          class="inline-flex hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424] rounded-sm p-1 transition-[background-color]"
           href="/about"
           onClick={goAbout}
         >
@@ -134,7 +116,7 @@ const Header = mount<{ mode: { v: string }; id: string }>((r, props) => {
         <a
           href="https://bsky.app/profile/superlucky84.bsky.social"
           target="_blank"
-          class="inline-flex hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424] items-center p-2 rounded-sm transition-[background-color] whitespace-nowrap -mr-2"
+          class="inline-flex hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424] items-center p-2 pl-0 rounded-sm transition-[background-color] whitespace-nowrap -mr-2"
         >
           <svg
             class="mr-1"
