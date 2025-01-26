@@ -52,12 +52,12 @@ const Header = mount<{ mode: { v: string }; id: string }>((_r, props) => {
         </a>
       </span>
       <nav class="text-xs grow justify-end items-center flex gap-1 md:gap-3">
-        <span class={`text-[9px] text-gray-400 mr-[-10px]`}>{mode.v}</span>
+        <span class={`text-[9px] text-gray-400 mr-[-5px]`}>{mode.v}</span>
         <button
           onClick={toggleMode}
           aria-label="Toggle theme"
           class={clsx([
-            'inline-flex  active:bg-gray-300 transition-[background-color] dark:active:bg-[#242424] rounded-sm p-2 pr-0',
+            'inline-flex  active:bg-gray-300 transition-[background-color] dark:active:bg-[#242424] rounded-sm p-1',
             'theme-system:!bg-inherit',
             '[&_.moon-icon]:hidden',
             'dark:[&_.sun-icon]:hidden',
