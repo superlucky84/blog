@@ -1,36 +1,35 @@
 {
   "posts": [
-
-		{
+    {
       "id": "2024.12.10.building-my-own-ssr-framework.mdx",
       "date": "December 10, 2024",
       "title": "Building My Own SSR Framework",
       "title_ko": "나만의 SSR 프레임웍 만들기"
-		},
-		{
+    },
+    {
       "id": "2024.10.29.state-ref-library-interview.mdx",
       "date": "October 29, 2024",
       "title": "state-ref Library Interview",
       "title_ko": "state-ref 라이브러리 인터뷰"
-		},
-		{
+    },
+    {
       "id": "2024.8.7.functional-elseif-utility-function-creation.mdx",
       "date": "August 7, 2024",
       "title": "Creating a Functional elseIf Utility Function",
       "title_ko": "함수형 elseIf 유틸리티 함수 제작기"
-		},
-		{
+    },
+    {
       "id": "2024.1.29.creating-virtual-dom-without-jsx-or-h-createelement.mdx",
       "date": "January 29, 2024",
       "title": "How to Create a Virtual DOM Without Using JSX or the h(createElement) Function",
       "title_ko": "JSX나 h(createElement) 함수를 사용하지 않고 가상돔을 만드는 방법"
-		},
-		{
+    },
+    {
       "id": "2023.12.25.virtual-dom-library-lithent-full-feature-documentation.mdx",
       "date": "December 25, 2023",
       "title": "Complete Guide to Lithent Virtual DOM Library Features",
       "title_ko": "가상돔 라이브러리 Lithent 전체 기능 설명서"
-		},
+    },
     {
       "id": "2022.9.4.my-custom-react-creation.mdx",
       "date": "September 4, 2022",
