@@ -63,6 +63,19 @@ export default defineConfig(async ({ mode }) => {
         jsxImportSource: 'lithent', // Preact의 JSX pragma 사용
         outputFormat: 'esm',
       }),
+      {
+        name: 'custom-hmr-handler',
+        handleHotUpdate({ file, server }) {
+          if (file.includes('/pages/')) {
+            console.log(`[HMR] Hot updating: ${file}`);
+            return; // HMR 동작 유지
+          }
+
+          console.log(`[Full Reload] Reloading due to changes in: ${file}`);
+          server.ws.send({ type: 'full-reload' }); // 전체 새로고침
+          return [];
+        },
+      },
       fixMdxExports(),
     ],
     resolve: {
