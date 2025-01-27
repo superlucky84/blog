@@ -2,7 +2,8 @@ import { h, componentUpdate } from 'lithent';
 import type { WDom, Props, TagFunction } from 'lithent';
 import { hydration } from 'lithent/ssr';
 const pageModules = import.meta.glob('../pages/*.(tsx|mdx)');
-import { makeRoute, routeRef, loadPage } from '@/base/route';
+import { makeRoute, loadPage } from '@/base/route';
+import { routeRef } from '@/base/routeStore';
 import Layout from '@/layout';
 
 export default async function load(
@@ -39,21 +40,26 @@ export default async function load(
   const renewRoot =
     (LayoutWDom.compKey && componentUpdate(LayoutWDom.compKey)) || (() => {});
 
-  routeRef.page.value = `${pathname}${search}`;
-  routeRef.renew.value = renewRoot;
-  routeRef.rVDom.value = LayoutWDom;
+  routeRef.info.page.value = `${pathname}${search}`;
+  routeRef.info.renew.value = renewRoot;
+  routeRef.info.rVDom.value = LayoutWDom;
 
   hydration(LayoutWDom, document.documentElement);
-
-  if (import.meta.hot) {
-    import.meta.hot.data.routeRef = routeRef;
-  }
 }
 
 if (import.meta.hot) {
+  // const pageModules = import.meta.glob('/pages/*.(tsx|mdx)');
+
   import.meta.hot.accept(() => {
-    const orgRouteRef = import.meta.hot!.data!.routeRef;
-    routeRef.value = orgRouteRef.value;
-    loadPage(routeRef.page.value);
+    console.log('Accept up resources...');
+    loadPage(routeRef.info.page.value);
+  });
+
+  import.meta.hot.dispose(() => {
+    console.log('Cleaning up resources...');
+    routeRef.abortList.forEach(item => {
+      item.abort();
+    });
+    routeRef.abortList = [];
   });
 }

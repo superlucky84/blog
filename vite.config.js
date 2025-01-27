@@ -9,6 +9,15 @@ const cachedEntries = getEntries();
 function fixMdxExports() {
   return {
     name: 'fix-mdx-exports',
+    handleHotUpdate({ file, server }) {
+      if (file.includes('/pages/')) {
+        return;
+      }
+
+      console.log(`[Full Reload] Reloading due to changes in: ${file}`);
+      server.ws.send({ type: 'full-reload' });
+      return [];
+    },
     transform(code, id) {
       if (id.endsWith('.mdx')) {
         // 중복 export 방지 및 중복 선언 방지

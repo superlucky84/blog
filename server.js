@@ -30,7 +30,10 @@ if (isDev) {
         plugins: [tailwindcss, autoprefixer], // 미리 import한 플러그인 사용
       },
     },
-    server: { middlewareMode: 'ssr', hmr: true },
+    server: {
+      middlewareMode: 'ssr',
+      hmr: true,
+    },
     root: process.cwd(),
     resolve: {
       alias: {
