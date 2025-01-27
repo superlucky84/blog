@@ -48,8 +48,6 @@ export default async function load(
 }
 
 if (import.meta.hot) {
-  // const pageModules = import.meta.glob('/pages/*.(tsx|mdx)');
-
   import.meta.hot.accept(() => {
     console.log('Accept up resources...');
     loadPage(routeRef.info.page.value);

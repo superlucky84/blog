@@ -3,6 +3,7 @@ import { defineConfig, build } from 'vite';
 import checker from 'vite-plugin-checker';
 import dts from 'vite-plugin-dts';
 import fs from 'fs';
+import mdx from '@mdx-js/rollup';
 
 const cachedEntries = getEntries();
 
@@ -20,9 +21,7 @@ function fixMdxExports() {
     },
     transform(code, id) {
       if (id.endsWith('.mdx')) {
-        // 중복 export 방지 및 중복 선언 방지
         const fixedCode = code
-          // 이미 export가 포함된 함수 선언은 건너뜀
           .replace(
             /^(?!export )function\s+_createMdxContent/gm,
             'export function _createMdxContent'
@@ -31,8 +30,6 @@ function fixMdxExports() {
             /^(?!export )function\s+MDXContent/gm,
             'export default function MDXContent'
           );
-
-        // 변환된 코드 출력 (디버깅용)
 
         return {
           code: fixedCode,
@@ -45,7 +42,6 @@ function fixMdxExports() {
 }
 
 export default defineConfig(async ({ mode }) => {
-  const mdx = await import('@mdx-js/rollup');
   return {
     assetsInclude: ['**/*.woff', '**/*.woff2'],
     plugins: [
@@ -59,7 +55,7 @@ export default defineConfig(async ({ mode }) => {
       dts({
         outputDir: ['dist'],
       }),
-      mdx.default({
+      mdx({
         jsxImportSource: 'lithent', // Preact의 JSX pragma 사용
         outputFormat: 'esm',
       }),
