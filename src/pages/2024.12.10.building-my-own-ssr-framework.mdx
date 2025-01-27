@@ -19,6 +19,123 @@ export const preload = async ({ id, origin }) => {
   };
 };
 
-# 22. asldgkj
+* Table of Contents
+  * Overview
+  * Creating renderToString
+  * Creating Hydration
+    * First: Matching Virtual DOM Nodes with Real DOM Nodes
+    * Second: Connecting Virtual DOM Event Binding Information to the Real DOM
+  * Hydrating the Real DOM Created in the Express Router
+  * Determining Routing Rules Based on File Names
+  * Implementing Simple Routing
+  * Preparing Initial Data for SSR
+  * Conclusion
 
-1. 111
+## Overview
+
+I am working on a UI library as a hobby. It started from the idea that it would be fun to study by implementing the workings of a virtual DOM myself. Initially, the plan was to share what I learned while building it through writing.
+
+* [https://github.com/superlucky84/lithent](https://github.com/superlucky84/lithent)
+
+The ultimate goal was to create something that functions like an SSR framework, similar to Next.js. Yesterday, I finally achieved the initial goal I had set. While it may fall short of being called a full-fledged framework, I believe the result is more than satisfactory for personal use as a hobby project.
+
+Having achieved my initial goal, I decided to write this article as a mid-point summary.
+
+As a reference, I am also sharing related articles that I wrote during the course of this project below.
+
+* [Creating My Custom React](https://medium.com/p/d14ba89373d3)
+* [How to Build a Virtual DOM Without Using JSX or the h(createElement) Function](https://medium.com/p/e99ee25b4bf1)
+* [Comprehensive Guide to the Features of the Virtual DOM Library, Lithent"](https://medium.com/p/3cfab04c0722)
+
+This article will likely be the last in this series. As it reflects on my small challenges and experiments, I'm not sure how helpful it will be to others, but I hope this content can inspire or assist someone, even if just a little.
+
+
+## Creating renderToString
+
+The goal of `renderToString` is to convert a 'virtual DOM object' into an 'HTML string'."
+
+> Virtual DOM object
+
+```js
+{
+    type: 'element',
+    tag: 'div',
+    children: [
+        { type: 'text' text: '테스트' },
+        { type: 'text' text: '1' },
+    ]
+}
+```
+
+> HTML string
+
+```js
+'<div>test1</div>'
+```
+
+Traverse the tree-like virtual DOM object and convert it into a text string.
+
+Since I had already implemented the process of converting a virtual DOM to a real DOM in [Creating My Custom React](https://medium.com/p/d14ba89373d3), I was able to complete `renderToString` relatively easily.
+
+First, I copied the code of the existing API `render`, which outputs the virtual DOM to the real DOM, and pasted it into a new file. Then, I replaced the parts that called browser-related APIs like `document.createElement` with code to handle text conversion."
+
+I renamed the existing `vDomToDom` function to `vDomToString`, and the function that handled the child nodes of the DOM, `vDomChildrenToDom`, was renamed to `vDomChildrenToString`.
+
+Since the DOM tree has a tree structure, the `vDomChildrenToString` function, which converts child nodes into a string, inevitably includes recursive calls."
+
+
+
+Ultimately, `renderToString` was completed with the following three functions. [Code Link](https://github.com/superlucky84/lithent/blob/master/ssr/src/renderToString.ts)
+
+
+1. `vDomToString`: The core function that converts the virtual DOM into a string.
+2. `vDomChildrenToString`: A function that recursively traverses the child nodes of the virtual DOM and applies `vDomToString`.
+3. `makeProp`: A function that handles the DOM attributes.
+
+During the implementation, there was an unexpected issue: handling self-closing tags. For example, tags like `<img />` or `<input />` cannot have child nodes. I looked into whether there was a browser API to handle this, but couldn't find a suitable one. Instead, I found that libraries like Preact use a predefined list of self-closing tags to handle this. I followed this approach and wrote the code accordingly.
+
+Below is the code for the `vDomToString` function.
+
+```js
+function vDomToString(vDom: VDom) {
+    let element = "";
+    const { type, tag, text, props, children = [] } = vDom;
+    const isVirtualType = checkVirtualType(type);
+
+    if (isVirtualType) {
+        element = vDomChildrenToDom(children, element);
+    } else if (type === "element" && tag) {
+        const innerHTML = props?.innerHTML;
+
+        if (innerHTML) {
+            element = `<${tag}${makeProp(props)}>${innerHTML}</${tag}>`;
+        } else if (isAllowSelfClose(tag) && !children.length) {
+            element = `<${tag}${makeProp(props)} />`;
+        } else {
+            element = `<${tag}${makeProp(props)}>`;
+            element = vDomChildrenToDom(children, element);
+            element = `${element}</${tag}>`;
+        }
+    } else if (type === "text" && checkExisty(text)) {
+        element = String(text);
+        element = vDomChildrenToDom(children, element);
+    } else {
+        throw new Error(
+            "An attempt was made to render an abnormal virtual DOM object."
+        );
+    }
+
+    return element;
+}
+```
+
+Here, when the `isAllowSelfClose(tag)` condition is true, the tag is handled as a self-closing tag.
+
+
+I thought the code was relatively simple, but to ensure I hadn't missed anything, I took a look at the code for React and Preact. Both have much more exception handling, features, and are more complex. The biggest difference is that React strongly supports streaming SSR through the latest API, `renderToPipeableStream`. In Preact, a similar API was implemented under a different name.
+
+`renderToPipeableStream` is designed to stream HTML strings to the client through integration with `Suspense`. This allows for faster page loading speeds and an improved user experience.
+
+However, since Lithent that I created doesn't have asynchronous rendering features like `Suspense`, I decided to postpone this functionality as it exceeds the scope of the implementation I originally aimed for.
+
+## Creating Hydration
