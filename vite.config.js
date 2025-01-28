@@ -10,15 +10,6 @@ const cachedEntries = getEntries();
 function fixMdxExports() {
   return {
     name: 'fix-mdx-exports',
-    handleHotUpdate({ file, server }) {
-      if (file.includes('/pages/')) {
-        return;
-      }
-
-      console.log(`[Full Reload] Reloading due to changes in: ${file}`);
-      server.ws.send({ type: 'full-reload' });
-      return [];
-    },
     transform(code, id) {
       if (id.endsWith('.mdx')) {
         const fixedCode = code
@@ -62,13 +53,14 @@ export default defineConfig(async ({ mode }) => {
       {
         name: 'custom-hmr-handler',
         handleHotUpdate({ file, server }) {
-          if (file.includes('/pages/')) {
-            console.log(`[HMR] Hot updating: ${file}`);
-            return; // HMR 동작 유지
+          const excludedDirs = ['/pages/', '/components/'];
+
+          if (excludedDirs.some(dir => file.includes(dir))) {
+            return;
           }
 
           console.log(`[Full Reload] Reloading due to changes in: ${file}`);
-          server.ws.send({ type: 'full-reload' }); // 전체 새로고침
+          server.ws.send({ type: 'full-reload' });
           return [];
         },
       },

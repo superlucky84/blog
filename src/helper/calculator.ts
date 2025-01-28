@@ -6,7 +6,6 @@ type PostItem = {
   view: number;
   order: number;
 };
-
 export function groupByYear(
   posts: PostItem[]
 ): { year: string; list: PostItem[] }[] {
