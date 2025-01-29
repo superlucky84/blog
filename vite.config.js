@@ -50,6 +50,20 @@ export default defineConfig(async ({ mode }) => {
         jsxImportSource: 'lithent', // Preact의 JSX pragma 사용
         outputFormat: 'esm',
       }),
+      {
+        name: 'custom-hmr-handler',
+        handleHotUpdate({ file, server }) {
+          const excludedDirs = ['/pages/', '/components/'];
+
+          if (excludedDirs.some(dir => file.includes(dir))) {
+            return;
+          }
+
+          console.log(`[Full Reload] Reloading due to changes in: ${file}`);
+          server.ws.send({ type: 'full-reload' });
+          return [];
+        },
+      },
       fixMdxExports(),
     ],
     resolve: {
