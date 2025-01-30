@@ -46,6 +46,17 @@ export default async function load(
   hydration(LayoutWDom, document.documentElement);
 }
 
+/**
+ * When comments are removed,
+ * HMR can be selectively applied to directories under /pages/.
+ *
+ * The following three APIs are required.
+ * Please uncomment them at the top as well.
+ *
+ * - componentMap
+ * - replaceWDom
+ * - makePathToKey
+ */
 if (import.meta.hot) {
   pageModules.v = import.meta.glob('../pages/*.(tsx|mdx)');
   import.meta.hot.accept(async () => {
