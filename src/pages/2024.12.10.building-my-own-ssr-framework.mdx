@@ -139,3 +139,334 @@ I thought the code was relatively simple, but to ensure I hadn't missed anything
 However, since Lithent that I created doesn't have asynchronous rendering features like `Suspense`, I decided to postpone this functionality as it exceeds the scope of the implementation I originally aimed for.
 
 ## Creating Hydration
+
+After completing `renderToString`, I was eager to connect it to the server and test rendering through actual HTTP requests. However, I felt that proceeding without hydration would result in a half-baked implementation, so I decided to hold off a little longer and implement hydration first.
+
+
+Hydration is the process of 'reusing' the HTML generated on the server while restoring the state and event bindings between the actual DOM (real DOM) and the virtual DOM on the client side. In other words, it brings a static page to life by enabling state changes and event handling within the virtual DOM.
+
+I approached hydration with the understanding that it serves two key roles.
+
+1. Matching the real DOM with the virtual DOM
+  * Traversing the real DOM tree and linking nodes that match in structure and position with the virtual DOM.
+2. Restoring event bindings
+  * Reattaching event binding information defined in the virtual DOM to the real DOM. These two tasks must be performed sequentially—first, the real DOM nodes must be accurately matched with the virtual DOM nodes; only then can event listeners be correctly registered.
+
+### First: Matching the real DOM with the virtual DOM
+
+The first task must be completed before the second one can proceed. Properly matching the real DOM nodes with the virtual DOM nodes is essential for registering event listeners.
+
+
+The virtual DOM holds references to the corresponding real DOM nodes as properties. In Preact, this reference is accessible through the `._dom` property, while in my custom vDom implementation, it is stored in the `.el` property. The first step in this process is linking real DOM references to virtual DOM nodes that do not yet have them.
+
+From the initial conceptual standpoint, this task isn't particularly difficult. It's simply a matter of traversing the real DOM tree and matching virtual DOM nodes at the same positions.
+
+To express the core idea simply in code, it can be represented as follows. This is actually the code I started with when I first began implementing hydration.
+
+```js
+function hydration(realDom, virtualDom) {
+    Array.from(realDom.childNodes).forEach((realChildNode, index) => {
+        const virtualChildNode = virtualDom[index];
+
+        virtualChildNode.el = realChildNode;
+        // ...
+    });
+}
+```
+
+By considering the five types of virtual DOM nodes I implemented in the base code—`null` type nodes, `Fragment` type nodes, actual `element` nodes like `div` tags, text type nodes, and `loop` type nodes used for iteration—additional code can be added to complete the implementation.
+
+However, there are always unexpected challenges. In hydration, handling text nodes was particularly tricky."
+
+#### Handling text nodes
+
+For example, let's assume there is a real DOM like `<div>Text1</div>`.
+
+In the virtual DOM, the text could be handled as a single chunk, represented as `[{ type: 'text', text: 'Text1' }]`. However, if part of the string (e.g., '1') is bound to a specific state, it might be split into two chunks, like `[{ type: 'text', text: 'Text' }, { type: 'text', text: '1' }]`.
+
+One thing is certain: in the real DOM, consecutive text is treated as a single text node. For example, in a real DOM like `<div>Text<br>1</div>`, there are two independent text nodes: 'Text' and '1'.
+
+Based on this pattern, I thought about the simplest way to solve this problem.
+
+#### The simplest solution
+
+The solution is to traverse the real DOM, and when encountering a text node, use `document.createTextNode` based on the text node information from the virtual DOM to create a new text node and replace the real DOM node.
+
+This approach directly regenerates the real DOM based on the virtual DOM information, ensuring precise node matching.
+
+An additional task is to merge consecutive text nodes in the virtual DOM into one and replace the real DOM accordingly. To do this, Fragment is used to handle the consecutive text nodes, ensuring they are properly replaced in the real DOM.
+
+Below is the code implementing this.
+
+```js
+if (vDomItem.type === 'text' && nodeType === 3) {
+  const { tFragment, nIndex } = processConsecutiveTextNodes(vDomList);
+  index = nIndex;
+  realDomItem.parentElement.replaceChild(tFragment, realDomItem);
+}
+```
+
+In the code above, the `processConsecutiveTextNodes` function searches for consecutive text nodes, creates an element, and returns it as `tFragment`. Then, it replaces the text in the real DOM.
+
+This approach allows easy matching without having to compare text one by one, but the downside is the cost incurred from replacing text nodes.
+
+The role of the `nIndex` value is to align the index information between the real DOM tree and the virtual DOM tree during the processing of consecutive text nodes.
+
+### Second: Restoring event bindings
+
+Thanks to the successful completion of the first task, the second task was already about 90% done. In fact, except for the part where the real DOM is created in the `render` method, the rest of the code was directly related to event binding.
+
+I added the `isHydration` flag as the third argument in the `render` method (`render(<Component />, document.getElementById('root'), isHydration)`) and implemented the solution by handling exceptions for the part where the real DOM is created using `document.createElement` when the `isHydration` flag is present.
+
+
+The completed hydration code can be found [here](https://github.com/superlucky84/lithent/blob/master/ssr/src/hydration.ts).
+
+
+## Using `renderToString` in an Express router
+
+Finally, I was able to connect my `renderToString` and hydration functions to the Express server.
+
+The code below is an example of how to attach `renderToString` to an Express router.
+
+```js
+import { h } from 'lithent';
+import { renderToString } from 'lithent/ssr';
+
+
+app.get(`/${expressPath.replace(/_/g, ':')}`, async (req, res, next) => {
+  const { default: Layout } = await vite.ssrLoadModule(`@/layout`);
+  const { default: Page, preload } = await vite.ssrLoadModule(
+    `@/pages/${pageKey}`
+  );
+
+  let pageString = renderToString(
+    h(Layout, { page: Page })
+  );
+  pageString = await vite.transformIndexHtml(req.originalUrl, pageString);
+
+  res.status(200).set({ 'Content-Type': 'text/html' }).end(`<!doctype html>${pageString}`);
+}
+```
+
+
+`Page` and `Layout` are modules that implement virtual DOM components. Since using JSX in Node.js code requires additional transpilers, adding unnecessary complexity, I implemented it by directly using the `h` function.
+
+In the example above, the `vite.ssrLoadModule` API is used to import modules through Vite. This API offers several advantages, with the biggest one being the ability to dynamically load modules in a server environment. Since the page module needs to be dynamically imported by the Express router, I chose this method.
+
+Additionally, `vite.transformIndexHtml` integrates the generated HTML with Vite's plugin chain. It automatically inserts code for Hot Module Replacement (HMR) in development mode, and when used with TailwindCSS, dynamic CSS styles are added through Vite plugins.
+
+
+As you might have noticed from my explanation, the code above is an example that runs in development mode.
+
+In production mode, the code below would be executed. (This is a simplified version to make the explanation easier to understand.)
+
+```js
+import { h } from 'lithent';
+import { renderToString } from 'lithent/ssr';
+
+app.get(`/${expressPath.replace(/_/g, ':')}`, async (req, res, next) => {
+  const modulePath = path.resolve(__dirname, `dist/pages/${pageKey}-Cp61x3Tn.js`));
+  const layoutPath = path.resolve(__dirname, 'dist/layout.ts-CKNQwccs.js'));
+
+  const module = await import(modulePath);
+  const layoutModule = await import(layoutPath);
+
+  const Page = module.default;
+  const preload = module.preload;
+
+  const Layout = layoutModule.default;
+
+  let pageString = renderToString(
+    h(Layout, { page: Page })
+  );
+
+  const cssResourcePath = '/dist/style-DM0Cv7eB.css';
+  return pageString.replace(
+    '</head>',
+    `<link rel="stylesheet" href="/${cssResourcePath}"></head>`
+  );
+
+  res.status(200).set({ 'Content-Type': 'text/html' }).end(`<!doctype html>${pageString}`);
+}
+```
+
+In development mode, `vite.ssrLoadModule` is used to dynamically load modules, but in production mode, the already built files are imported. The CSS is also the built, minified version, which is inserted into the head section.
+
+
+## Hydrating the Real DOM Created in an Express Router
+
+
+As mentioned earlier, without hydration, it's just a half-baked implementation.
+
+So, I implemented `load.ts` with the hydration code and added the script execution part to the HTML string returned by the Express server, as shown below.
+
+```js
+//...
+pageString = appHtmlOrig.replace(
+  '</body>',
+  `<script type="module">
+    import load from '/src/base/load';
+    load('${pageKey}');
+   </script></body>`
+);
+//...
+
+res.status(200).set({ 'Content-Type': 'text/html' }).end(`<!doctype html>${pageString}`);
+```
+
+By adding the following just below the `<body>` tag in the HTML string, the `load` function will be executed immediately on the client.
+
+The code below is the implementation of the `load` function, which is responsible for performing the hydration.
+
+```js
+import { hydration } from 'lithent/ssr';
+
+const pageModules = import.meta.glob('../pages/*.tsx');
+
+export default async function load(key) {
+  const res = await pageModules[`../pages/${key}`]();
+
+  // const Page = h(res!.default as TagFunction, props) as VDom;
+  const LayoutVDom = h(
+    Layout,
+    { page: res.default },
+  );
+  hydration(LayoutVDom, document.documentElement)
+}
+```
+
+The `import.meta.glob('../pages/*.tsx')` above informs the transpiler to prepare the components that need to be dynamically imported. This method is a feature provided by Vite, which allows dynamically importing files that match a specific pattern.
+
+
+## Determining Routing Rules by Filename
+
+Routing is determined based on the filenames in the `/src/pages/` directory.
+
+* `src/pages/index.tsx` is mapped to the root URL `http://localhost:3000`.
+* `src/pages/one.tsx` is mapped to `http://localhost:3000/one`.
+
+Dynamic segments are defined using an underscore (_) in the filename.
+
+* `src/pages/index._type.tsx` is mapped to a dynamic path like `http://localhost:3000/:type`.
+* `src/pages/one._type._name.tsx` is mapped to `http://localhost:3000/one/:type/:name`.
+
+The implementation involves reading all the files in the `/src/pages/` folder and storing them in the `filePaths` variable. Then, it loops through them and matches them to the Express router. In Express routing rules, dynamic segments are defined using a colon (:), so the underscores (_) used in the filenames are replaced with colons (:).
+
+```js
+filePaths.forEach(path => {
+  app.get(`/${path.replace(/_/g, ':')}`, async (req, res, next) => {
+    // ...
+    res.status(200).set({ 'Content-Type': 'text/html' }).end(`<!doctype html>${pageString}`);
+  });
+});
+```
+
+## Simple Routing Implementation
+
+Since the virtual DOM library I created doesn't include a dedicated router, a simple routing implementation was necessary to complete the topic of this article.
+
+
+When the user first enters a page, it is rendered using SSR (Server-Side Rendering). However, when the user navigates to another page using the `navigate('/path')` API, it behaves in CSR (Client-Side Rendering) mode.
+
+When the page information is changed via `navigate`, `pushState` is executed, and the updated page path is reflected in the reactive data. After that, the `loadPage` function is triggered to re-render the page from the virtual DOM.
+
+Below is a simplified version of the `loadPage` function.
+
+```js
+async function loadPage(dynamicPath: string) {
+  const orgPage = `../pages${dynamicPath === '/' ? '/index' : dynamicPath}.tsx`;
+  const { key, params } = findPageModlueKey( Object.keys(pageModules), orgPage);
+  const vDom = routeRef.rVDom;
+
+  if (key && pageModules[key]) {
+    routeRef.loading = true;
+    const res = await pageModules[key]();
+    consrt Page = res.default;
+
+    vDom.compProps.page = Page;
+    vDom.compProps.query = query;
+    vDom.compProps.params = params;
+    routeRef.renew();
+    routeRef.loading = false;
+  }
+}
+```
+
+The currently displayed page information is stored in reactive state, and `routeRef` is the object that can change and reference that state. `routeRef.rVDom` is the root object of the virtual DOM that renders the current page.
+
+After manually updating the page information in this root object, calling `routeRef.renew()` will update the root component, causing the page to change.
+
+By dynamically loading the page component corresponding to the page path with `const res = await pageModules[key]()`, a loading state occurs. Therefore, the `routeRef.loading` value is used to handle the loading state.
+
+`routeRef` is a state management object that works reactively with the UI. When its values change, the UI is dynamically updated.
+
+
+## Creating Initial Data for SSR
+
+The process of fetching initial data for SSR is implemented in a way that mimics the user interface of Remixjs's loader API. In each page routing component, a `preload` function is defined and exported. Before executing `renderToString`, the Node server first calls the `preload` function to prepare the data.
+
+In the Express routing code below, the value prepared by `preload` is assigned to `globalThis.pagedata`, so it can be used as data for SSR later.
+
+```js
+import { h } from 'lithent';
+import { renderToString } from 'lithent/ssr';
+
+app.get(`/${expressPath.replace(/_/g, ':')}`, async (req, res, next) => {
+  // ... 코드생략 ...
+  const { default: Page, preload } = await this.vite.ssrLoadModule(
+    `@/pages/${key}`
+  );
+  const  preloadData = await preload(this.props);
+
+  globalThis.pagedata = preloadData;
+  // ... 코드생략 ...
+  res.status(200).set({ 'Content-Type': 'text/html' }).end(`<!doctype html>${pageString}`);
+}
+```
+
+Then, as shown below, in the page component, the `getPreloadData` function is used to fetch the `preload` data from `globalThis`, making it available for use in rendering.
+
+```js
+export const preload = async () => {
+  const data = await fetchTypeList();
+
+  return { layout: { title: 'EXPRESS-LITHENT' }, data };
+};
+
+const Index = mount(() => {
+  const preload = getPreloadData<{ data: { name: string; url: string }[] }>();
+
+  return () => (
+    <div class="container px-8 mx-auto xl:px-5 max-w-screen-lg py-5 lg:py-8">
+      <div class="mt-10 grid gap-10 grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:gap-10 xl:grid-cols-3 ">
+        {/* 내용 */}
+      </div>
+    </div>
+  );
+});
+
+export default Index;
+```
+
+I’m not particularly fond of using `globalThis`, but I plan to improve this part gradually as I continue using it. The main goal of this project is to quickly prototype.
+
+Even when page navigation works with CSR after rendering, the `preload` function can still be imported and used in the same way, so the `preload` function should be implemented to work on both the server and the client.
+
+While implementing this, I gained a clearer understanding of the difference between server components and regular components introduced in React 18. Server components are only fetched and executed on the server, so there’s no need to worry about how they behave on the client. Also, since there’s no need to re-import the components on the client for hydration, the amount of JavaScript resources required on the client naturally decreases.
+
+
+## Conclusion
+
+This covers the core implementation process.
+
+Of course, there are more details, but I think the article would become too long and lose focus, so I'll wrap it up here.
+
+If you're curious to explore further, I recommend installing and checking the code via the project generator below. Since this article covers the key aspects, I believe anyone can easily understand the code.
+
+```bash
+npx create-lithent-ssr@latest
+```
+
+A brief installation guide can be found in the [README](https://github.com/superlucky84/lithent/tree/master/createLithent/express#readme).
+
+While writing this article, I wondered if it would be meaningful to others and even considered giving up. However, I held on to the belief that it could help someone and decided to finish it. I hope this article will be helpful to at least one person.
