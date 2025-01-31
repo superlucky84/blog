@@ -67,7 +67,7 @@ pipe(
 )({ count: 1 })
 ```
 
-이 코드에 다른 ifElse 동작을 추가로 체이닝 하려면 아래처럼 해야 됩니다.
+If you want to chain another `ifElse` operation to this code, you need to do it as shown below.
 
 ```javascript
 const incCount = R.ifElse(
@@ -82,33 +82,35 @@ const incCount = R.ifElse(
 ```
 
 
-## 마구잡이 구현
+## Reckless Implementation
 
+It would be nice if everything could be expressed cleanly in a single depth, but as I add more `if else` conditions, the depth keeps increasing, which I don’t like.  
 
-깨끗하게 1depth로 표현되면 좋을 텐데, 더 많은 `if else` 조건을 붙이려면 depth 가 점점 깊어져서 마음에 들지 않네요. 결론부터 말하자면 결국 제가 원하는 인터페이스와 완벽하게 일치하는 다른 유틸함수를 찾아내긴 했습니다. 하지만 너무 늦게 찾아내는 바람에 그 사이 중간에 혼자 이상한 걸 만들어 버렸습니다.
+To get straight to the point—I did eventually find another utility function that perfectly matched the interface I wanted. However, I found it too late, and in the meantime, I ended up creating something weird on my own.  
 
-제가 만든 이상한 유틸함수의 사용 인터페이스는 아래와 같은 모습입니다. `elseIf`의 첫 번째 인자는 판별식을 두 번째 인자는 판별식이 참일 경우에 그에 맞는 리턴값을 반환합니다.
+The interface of the strange utility function I made looks like this:  
+The first argument of `elseIf` is a predicate, and the second argument is the return value when the predicate evaluates to `true`.
 
 
 ```javascript
 const getGrade = pipe(
-  elseIf((value) => value === 1, () => "골드회원"),
-  elseIf((value) => value === 2, () => "실버회원"),
-  elseIf((value) => value === 3, () => "일반회원"),
-  elseEnd(() => "나머지")
+  elseIf((value) => value === 1, () => "Gold Member"),
+  elseIf((value) => value === 2, () => "Silver Member"),
+  elseIf((value) => value === 3, () => "Regular Member"),
+  elseEnd(() => "Others")
 );
-chkGrade(2) //실버회원
+chkGrade(2) // Silver Member
 ```
 
-이걸 구현하기 위한 핵심 사실은 순서상 앞에 있는 `elseIf`문의 판별식이 참일 경우 뒤의 `elseIf`문은 더 이상 필요 없어집니다. 앞에서 이미 값을 결정해 버리면 뒤의 `elseIf`함수에서는 값을 처리할 필요 없이 흘려버려야 하죠.
+The key concept behind implementing this is that if the predicate of an `elseIf` condition earlier in the chain evaluates to `true`, the subsequent `elseIf` conditions are no longer needed. Once a value is determined, the later `elseIf` functions should simply pass the value through without processing it further.
 
-제가 찾은 해결책은 값이 결정되면 Decision이란 객체로 값을 감싸버린 후, 뒤에 체이닝 된 다른 elseIf문에서 Decision으로 감싸인 값을 만나면 통과시켜 버렸습니다. 아래코드처럼요.
+The solution I found was to wrap the determined value in an object called `Decision`. Then, when the other `elseIf` conditions later in the chain encounter a value wrapped in `Decision`, they just pass it through. Below is the code illustrating this approach.
 
 ```javascript
 const elseIf = curry((is, run, value) =>
-  value instanceof Decision ? value :   // Decision 객체일경우 그대로 리턴
-  is(value) ? Decision.of(run(value)) : // Desision 객체가 아니면서 판별식이 참일경우, 값을 처리하여 Desision객체로 감싸서 리턴
-  value                                 // 판별식이 거짓일경우 원본값을 그대로 리턴
+  value instanceof Decision ? value :   // If the value is already a Decision object, return it as is
+  is(value) ? Decision.of(run(value)) : // If the predicate is true and the value is not a Decision, wrap the result in a Decision object
+  value                                 // If the predicate is false, return the original value
 );
 ```
 
