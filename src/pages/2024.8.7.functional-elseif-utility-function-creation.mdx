@@ -6,35 +6,36 @@ export const preload = async ({ id, origin }) => {
     layout: {
       views,
       date,
-      title: '함수형 elseIf 유틸리티 함수 제작기',
+      title: 'Creating a Functional elseIf Utility Function',
       description:
-        '종종 함수형 코딩에 관한 책이나 자료를 접할 때마다, 현실의 내 회사 업무에서 pipe를 실제 코드에 자유자재로 적용할 정도의 수준이 되려면 뭐가 더 필요한지 무의식 중에 고민했던 것 같습니다.',
+        'Whenever I came across books or materials on functional programming, I often found myself unconsciously wondering what more I needed to reach a level where I could freely apply pipe to real-world code in my company\'s work.',
       openGraph: {
-        title: '함수형 elseIf 유틸리티 함수 제작기',
+        title: 'Creating a Functional elseIf Utility Function',
         description:
-          '종종 함수형 코딩에 관한 책이나 자료를 접할 때마다, 현실의 내 회사 업무에서 pipe를 실제 코드에 자유자재로 적용할 정도의 수준이 되려면 뭐가 더 필요한지 무의식 중에 고민했던 것 같습니다.',
+          'Whenever I came across books or materials on functional programming, I often found myself unconsciously wondering what more I needed to reach a level where I could freely apply pipe to real-world code in my company\'s work.',
         images: [{ url: '/assets/test11.webp' }],
       },
     },
   };
 };
 
-* 목차
-	* 사건의 계기
-	* 마구잡이 구현
-	* 조금 더 나아간 구현
-	* 그래서 뭐가 좋은거지?
+
+* Table of Contents
+  * Triggering Event
+  * Reckless Implementation
+  * A More Refined Implementation
+  * So, What's the Benefit?
 
 
-## 사건의 계기
+## Triggering Event  
 
-원래 함수형 코딩에 대해 전혀 몰랐던 건 아니지만 “쏙쏙 들어오는 함수형 코딩” 이란 책을 우연히 접한 후 함수형 프로그래밍을 제 코드에 더 적극적으로 적용해보고 싶다는 생각을 하게 되었습니다.
+I wasn't entirely unfamiliar with functional programming, but after randomly coming across the book *Functional Programming Made Clear*, I felt inspired to apply functional programming more actively to my code.
 
-함수형 코딩을 도와주는 코드 유틸 중에 [pipe](https://ahnanne.tistory.com/93)라는 도구가 있는데 여러 함수들의 입출력을 콤마로 엮어 합성하여 새로운 함수를 만들어 줍니다. 여러 함수의 입력과 출력의 흐름을 파악하기가 한결 수월해지죠.
+There is a utility called [pipe](https://ahnanne.tistory.com/93) that aids functional programming by composing multiple functions together using commas, creating a new function. This makes it much easier to track the flow of inputs and outputs across multiple functions.  
 
-종종 함수형 코딩에 관한 책이나 자료를 접할 때마다, 현실의 내 회사 업무에서 pipe를 실제 코드에 자유자재로 적용할 정도의 수준이 되려면 뭐가 더 필요한지 무의식 중에 고민했던 것 같습니다.
+Whenever I came across books or materials on functional programming, I often found myself unconsciously wondering what more I needed to reach a level where I could freely apply `pipe` to real-world code in my company's work.
 
-> pipe 사용 예
+> Example of Using `pipe`
 
 ```javascript
 const f = R.pipe(
@@ -45,9 +46,12 @@ const f = R.pipe(
 f(3, 4); // -(3^4) + 1
 ```
 
-어느 한가한 쉬는 날, 이른 아침부터 게임을 하려고 컴퓨터를 켰는데.. 느닷없이 무의식중에 있던 함수형 프로그래밍에 대한 호기심이 갑자기 나에게 말을 겁니다 “`if else` 와 같은 처리는 `pipe`에 어떻게 연결할까?”.. 궁금증을 잠깐 해결하고 게임을 해야 마음이 편할 것 같습니다.
+One leisurely day off, I turned on my computer early in the morning to play a game. But out of nowhere, my curiosity about functional programming, which had been lingering in my subconscious, suddenly spoke to me:  
+*"How do you connect `if else` logic within `pipe`?"*  
 
-잘 알려진 함수형 라이브러리들을 뒤져서 제가 찾던 모습과 비슷한 기능을 하는 유틸[ramdaJs(ifElse)](https://ramdajs.com/docs/#ifElse), [fxJs(ifElse)](https://github.com/marpple/FxJS/blob/master/Strict/ifElse.js)을 손쉽게 찾았습니다. 아래는 RamdaJs에서 사용되는 예입니다.
+I figured I should resolve this curiosity first before I could fully enjoy my game.  
+
+After browsing through well-known functional programming libraries, I quickly found utilities that provided functionality similar to what I was looking for: [ramdaJs(ifElse)](https://ramdajs.com/docs/#ifElse) and [fxJs(ifElse)](https://github.com/marpple/FxJS/blob/master/Strict/ifElse.js). Below is an example of how `ifElse` is used in RamdaJs.
 
 ```javascript
 const incCount = R.ifElse(
@@ -57,7 +61,7 @@ const incCount = R.ifElse(
 );
 
 pipe(
-    incCount(), //=> 결과 { count: 2 }
+    incCount(), //=> Result { count: 2 }
     ...
     ...
 )({ count: 1 })

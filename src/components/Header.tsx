@@ -48,7 +48,7 @@ const Header = mount<{ mode: { v: string }; id: string }>((_r, props) => {
           href="/"
           onClick={goHome}
         >
-          Subtle flo
+          Subtleflo
         </a>
       </span>
       <nav class="text-xs grow justify-end items-center flex gap-1 md:gap-3">
