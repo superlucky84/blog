@@ -6,13 +6,13 @@ export const preload = async ({ id, origin }) => {
     layout: {
       views,
       date,
-      title: '가상돔 라이브러리 Lithent 전체 기능 설명서',
+      title: 'Complete Guide to Lithent Virtual DOM Library Features',
       description:
-        'Lithent는 JSX를 기반으로 만들어진 경량(zip 3kb) 가상돔 UI 라이브러리입니다.',
+        'Lithent is a lightweight (3KB zip) virtual DOM UI library built on JSX.',
       openGraph: {
-        title: '나만의 커스텀 React 제작기',
+        title: 'Complete Guide to Lithent Virtual DOM Library Features',
         description:
-          'Lithent는 JSX를 기반으로 만들어진 경량(zip 3kb) 가상돔 UI 라이브러리입니다.',
+          'Lithent is a lightweight (3KB zip) virtual DOM UI library built on JSX.',
         images: [{ url: '/assets/test11.webp' }],
       },
     },
@@ -20,65 +20,73 @@ export const preload = async ({ id, origin }) => {
 };
 
 
-## 소개
+## Introduction
 
 [Github](https://github.com/superlucky84/lithent), 
 [Homepage](https://superlucky84.github.io/lithent/)
 
 
-Lithent는 JSX를 기반으로 만들어진 경량(zip 3kb) 가상돔 UI 라이브러리입니다.
+Lithent is a lightweight (3KB zip) virtual DOM UI library built on JSX.
 
-별도의 빌드 툴 없이 스크립트 로드만으로 가볍게 사용할 수 있으며, 이미 그려진 html문서에 동적으로 빈번한 변경이 많은 DOM 영역을 가상돔과 연결하여 쉽게 업데이트하거나 제거할 수 있도록 고안되었습니다. 물론 빌드툴과 함께 사용해도 좋으며 SPA 페이지를 만드는 데 사용해도 좋습니다.
+It can be easily used by simply loading the script, without the need for a separate build tool. It is designed to dynamically update or remove frequently changing DOM areas by connecting them with a virtual DOM, even in already rendered HTML documents. Of course, it can also be used with a build tool, making it suitable for building SPA (Single Page Application) pages.
 
-빌드툴과 함께 사용할 경우 JSX를 직접 사용할 수 있으며, 빌드 툴 없이 사용할 경우 라이브러리가 제공하는 [Tagged templates](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates)를 사용하여 JSX와 매우 유사한 방식으로 사용할 수 있습니다.
+When used with a build tool, you can directly use JSX, while without a build tool, the library offers [Tagged Templates](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates), allowing you to work in a way that's very similar to JSX.
 
-또한 JSX와 Tagged templates 외에도 라이브러리가 제공하는 `fTags`를 사용하면 함수를 호출하는 방식으로 가상돔을 정의할 수 있습니다.
+In addition to JSX and Tagged Templates, the library provides `fTags`, which allows you to define the virtual DOM by calling functions.
 
-컴포넌트를의 상태나 기능을 정의할 때, 고차함수 및 클로저의 특성을 이용하여 정의하고 재활용하는 방식을 기본 아이디어로 채택하여 개발했습니다.
-
-
-## 목차
-
-1. 기본기능
-  * 마운터
-  * 업데이터
-  * 리뉴어
-  * 랜더
-  * 마운트 콜백
-  * 업데이트 콜백
-  * 포털
-2. 확장기능
-  * state 헬퍼
-  * store 헬퍼
-  * cacheUpdate 헬퍼
-  * effect 헬퍼
-  * computed 헬퍼
-  * nextTick 헬퍼
-3. lTag (Tagged templates 를 이용한 마크업 지원)
-4. fTags (함수 호출방식 마크업 지원)
+The basic idea behind the development is to define and reuse components' states and functionality using higher-order functions and closures.
 
 
-## 기본기능
+## Table of Contents
 
-Lithent는 가상돔을 사용하는데 최소로 꼭 필요한 기본기능과, 기본기능을 응용하여 조합한 확장기능으로 나누어 개발하였습니다.
-기본기능은 가상돔을 만들고 업데이트하고 실제 html문서에 연결하는 기능입니다.
+1. **Basic Features**
+   - Mounting
+   - Updating
+   - Renewing
+   - Rendering
+   - Mount Callback
+   - Update Callback
+   - Portals
+2. **Advanced Features**
+   - State Helper
+   - Store Helper
+   - Cache Update Helper
+   - Effect Helper
+   - Computed Helper
+   - Next Tick Helper
+3. **lTag** (Markup Support via Tagged Templates)
+4. **fTags** (Markup Support via Function Call Style)
 
-마운터, 업데이터, 리뉴어, 랜더, 마운트 콜백, 업데이트 콜백, 포털이 기본기능에 해당합니다.
+
+## Basic Features
+
+Lithent is divided into two categories: essential features and extended features that combine the essential functionalities for virtual DOM use. 
+
+The essential features are those that help create a virtual DOM, update it, and connect it to the actual HTML document. 
+
+The basic features include:
+- **Mounting**
+- **Updating**
+- **Renewing**
+- **Rendering**
+- **Mount Callback**
+- **Update Callback**
+- **Portals**
 
 
-## 마운터
+## Mounting
 
-사용자는 Lithent가 제공하는 `mount함수`를 실행하여 컴포넌트를 만듭니다. `마운터`는 컴포넌트의 상태와 기능을 정의하며. 컴포넌트가 처음으로 가상돔으로 만들어질 때 단 한 번 실행됩니다.
+The user creates a component by executing the `mount` function provided by Lithent. The **mount** is responsible for defining the component's state and functionality, and it is executed only once when the component is first created as a virtual DOM.
 
-조금 더 자세하게 설명하자면, 사용자는 컴포넌트의 상태와 기능을 정의하는 함수를 만듭니다. 그리고 그 함수를 인자로 갖는 `mount함수`가 실행되면 `mount함수`는 컴포넌트를 리턴해줍니다.
+To explain in more detail, the user defines a function that specifies the component's state and functionality. When the `mount` function, which takes this function as an argument, is executed, it returns the component.
 
-이 과정에서 사용자가 정의한 ‘컴포넌트의 상태와 기능을 정의하는 함수’ 를 곧 `마운터` 라고 합니다.
+In this process, the user-defined "function that defines the component's state and functionality" is referred to as the **mount** function.
 
-`마운터`는 자신의 스코핑 내에 변수와 함수를 정의합니다. 여기서 정의한 변수와 함수가 곧 컴포넌트의 상태와 기능이 됩니다. `마운터`는 `업데이터`를 리턴합니다. 업데이트는 JSX를 리턴하는 함수인데 다음 항목에서 자세히 설명하겠습니다.
+The **mount** function defines variables and functions within its own scope. The variables and functions defined here become the component's state and functionality. The **mount** function returns an **updater**. The updater is a function that returns JSX, which will be explained in more detail in the next section.
 
-`마운터`를 정의할 때 `마운터`의 첫 번째 인자로 `리뉴어(renew함수)` 가 제공됩니다. `리뉴어` 는 컴포넌트를 업데이트시킵니다. 그리고 두 번째 인자로 `props`를 제공합니다. `props`는 컴포넌트의 애트리뷰터로부터 넘어온 값입니다.
+When defining the **mount** function, the first argument passed to it is the **renew** function. The **renew** function is responsible for updating the component. The second argument is **props**, which contains the values passed from the component's attributes.
 
-아래는 `마운터`를 정의하고 컴포넌트를 만드는 실제 코드 예입니다. 컴포넌트는 `count`라는 상태와 `increase`라는 기능을 갖습니다. 그리고 JSX 템플릿을 만드는 함수를 리턴합니다. 타입스크립트를 사용할 경우 `mount함수`는 제네릭으로 `props`의 타입을 정의할 수 있습니다.
+Here is an example of defining the **mount** function and creating a component. The component has a state called `count` and a function called `increase`. It then returns a function that generates a JSX template. When using TypeScript, the **mount** function can define the type of **props** through generics.
 
 
 ```javascript
@@ -99,11 +107,11 @@ render(<Component increaseCount={1} />, document.getElementById('root'));
 ```
 
 
-## 업데이터
+## Updating
 
-`업데이터`는 `마운터` 내에 정의되는 `마운터`가 리턴하는 함수입니다. 그리고 `업데이터`는 JSX를 리턴합니다. `업데이터`가 실행되면 실제로 가상돔 객체가 만들어집니다. 왜 이름을 `업데이터`라고 지었냐면 실제로 이 함수는 컴포넌트가 업데이트될 때마다 실행되기 때문입니다.
+The **updating** function is the one returned by the **mount** function, which is defined within the **mount** itself. This function returns JSX, and when executed, it creates the virtual DOM object. It's named **updating** because this function is executed every time the component needs to be updated.
 
-`마운터`를 설명할 때 예로 보여드렸던 컴포넌트를 다시 보겠습니다.
+Let's take a look again at the component I showed as an example when explaining the **mount** function.
 
 
 ```javascript
@@ -120,11 +128,11 @@ const Component = mount((renew, props) => {
 render(<Component increaseCount={1} />, document.getElementById('root'));
 ```
 
-주의 깊게 봐야 할 부분은 `업데이터`가 함수라는 것입니다.
+The important thing to note is that the `updater` is a function.
 
-`업데이터`는 컴포넌트의 상태를 돔에 반영하려고 할 때마다 실행되는데, `마운터` 내에 정의된 함수이기 때문에 클로저를 이용해 `마운터의` 변수 및 함수에 접근하여 사용할 수 있습니다.
+The `updater` is executed whenever the component's state needs to be reflected in the DOM. Since it is defined within the `mount` function, it can access and use the variables and functions from the `mount` via closures.
 
-`업데이터`는 첫 번째 인자로 `props`를 제공받습니다. 물론 클로저를 이용하여 마운터에 있는 `props`를 참조할 수도 있습니다. 아래 예제코드를 보십시오.
+The `updater` receives `props` as its first argument. Of course, using closures, it can also reference the `props` within the `mount`. Please see the example code below.
 
 
 ```javascript
@@ -159,21 +167,21 @@ const Parent = mount(renew => {
 });
 ```
 
-Child 컴포넌트의 업데이터는 3가지 방식으로 `props`에 들어있는 값을 참조하는 걸 볼 수 있습니다. 여기서 `마운터 props`로부터 미리 꺼내두고 참조하는 값(countFromMounter)은 값이 이미 새로운 메모리 번지로 할당되었기 때문에, 업데이터가 새로 실행돼도 부모 `props`로부터 변경된 값을 반영하지 못합니다. 클로저가 어떻게 작동하는지 정확히 알고 있는 Javascript에 능숙한 개발자라면 그리 헷갈리는 상황은 아닙니다.
+The `updater` of the Child component can reference the value in `props` in three different ways. Here, the value `countFromMounter`, which is pre-extracted from the `mount` props, is already assigned to a new memory address. Therefore, even when the `updater` is executed again, it cannot reflect the updated value from the parent `props`. This situation is not confusing for developers who are proficient in JavaScript and have a clear understanding of how closures work.
 
 
-## 리뉴어
+## Renew
 
-`리뉴어`는 마운터 함수의 첫 번째 인자로 제공되는 `renew함수`입니다. `renew`가 실행되면 컴포넌트의 새로운 상태가 반영되어 그려집니다. 사용자는 `마운터` 내에 정의되는 이벤트 핸들러 함수에서 직접 사용할 수 있습니다. 어떻게 사용하는지는 앞선 예제에서 많이 보여드렸으니 여기서는 예제코드를 생략하겠습니다.
+The `renew` is the `renew function` provided as the first argument to the `mount` function. When `renew` is executed, the component's new state is reflected and rendered. The user can use it directly in event handler functions defined within the `mount`. Since we've already shown many examples of how to use it in previous examples, we will omit the example code here.
 
-리뉴어는 `state 헬퍼`나 `store 헬퍼`를 위해 사용될 수도 있는데, 자세한 내용은 뒤에서 자세히 설명하겠습니다.
+The `renew` can also be used for `state helper` or `store helper`, and more details will be explained later.
 
 
-## 랜더
+## Render
 
-Lithent는 `render 함수`를 제공합니다. `render 함수`는 가상돔과 가상돔이 그려질 실제 리얼돔 영역을 연결해 줍니다.
+Lithent provides the `render function`. The `render function` connects the virtual DOM with the actual real DOM area where the virtual DOM will be rendered.
 
-많이 설명할 필요 없이 아래 예제를 보면 바로 이해할 수 있습니다.
+You can easily understand it by looking at the example below, without needing much explanation.
 
 ```javascript
 /* index.html
@@ -193,21 +201,20 @@ const destroy = render(<Component value={4} />, element, element.querySelector('
 ```
 
 
-주석처리된 index.html과 같은 DOM이 그려져 있을 때, `render`를 이용해 비어있는 2와 4에 해당하는 가상돔을 있어야 할 순서의 위치에 그려주고 있습니다.
+When a DOM like the commented-out `index.html` is drawn, `render` is used to place the virtual DOM corresponding to positions 2 and 4 in the correct order.
 
-`render`의 두 번째 인자는 가상돔이 어떤 부모 밑에 그려져야 되는지 지정할 수 있으며, 세 번째 인자로 어떤 엘리먼트 앞에 그려져야 되는지 정할 수 있습니다. `insertBefore(DOM API)`처럼 생각하면 됩니다. 만약 세 번째 인자를 생략하면 `appendChild`가 됩니다.
+The second argument of `render` specifies where the virtual DOM should be rendered, meaning under which parent element. The third argument allows you to determine before which element it should be rendered, similar to `insertBefore(DOM API)`. If the third argument is omitted, it defaults to `appendChild`.
 
-`render 함수`는 실행된 후 `destroy 함수`를 리턴해줍니다. `destroy 함수`가 실행되면 `render`로 인해 그려졌던 영역을 언마운트 시킵니다.
-
-
-## 마운트 콜백
+After the `render` function is executed, it returns a `destroy` function. When the `destroy` function is executed, the area drawn by `render` is unmounted.
 
 
-컴포넌트로부터 DOM객체가 생성되어 브라우저에 나타나는걸 마운트라고 합니다. 반대되는 개념인 언마운트는 컴포넌트가 브라우저에서 제거되는 걸 의미합니다.
+## Mount Callback
 
-컴포넌트가 마운트 되거나 언마운트 될 때, 사용자가 지정해 놓은 특정 함수가 실행되도록 할 수 있습니다. Lithent가 제공하는 `mountCallback 함수`로 등록할 수 있습니다.
+When a DOM object is created from a component and appears in the browser, it is called "mounting." The opposite concept, "unmounting," refers to when a component is removed from the browser.
 
-아래 예제를 보면 알 수 있듯이 마운트 되고 나면 실행되는 함수를 등록할 수 있고, `mountCallback 함수`가 리턴하는 함수는 언마운트시 실행되는 콜백으로 등록됩니다. 언마운트 됐을 때 아무 후속 처리가 필요 없다면 리턴을 생략하면 됩니다.
+You can specify certain functions to be executed when a component is mounted or unmounted. This can be registered using the `mountCallback` function provided by Lithent.
+
+As shown in the example below, you can register a function to be executed once the component is mounted, and the function returned by `mountCallback` is registered as a callback to be executed during unmounting. If no follow-up actions are needed when unmounting, you can omit the return.
 
 
 ```javascript
@@ -228,11 +235,11 @@ const Children = mount(
 );
 ```
 
-## 업데이트 콜백
+## Update Callback
 
-컴포넌트의 상태가 변경되고 `리뉴어(renew)`가 실행되면 컴포넌트가 업데이트됩니다. 컴포넌트가 업데이트를 시작하기 전에 업데이트 콜백이 실행됩니다. 업데이트가 끝나 DOM객체에 반영된 후에는 업데이티드 콜백이 실행됩니다.
+When a component's state changes and the `renew` function is executed, the component is updated. Before the update process starts, the update callback is executed. After the update finishes and the changes are reflected in the DOM object, the updated callback is executed.
 
-업데이트콜백은 Lithent가 제공하는 `updateCallback`을 통해 등록할 수 있으며, `updateCallback`이 리턴하는 함수는 컴포넌트의 업데이티가 끝난 후 실행되는 콜백으로 등록됩니다. 업데이트가 완료된 후 아무 후속 처리가 필요 없다면 리턴을 생략하면 됩니다.
+The update callback can be registered using `updateCallback` provided by Lithent, and the function returned by `updateCallback` is registered as a callback that runs after the component's update is completed. If no follow-up actions are needed after the update, you can omit the return.
 
 
 ```javascript
@@ -250,17 +257,17 @@ const Children = mount<{ count: number }>((_r, props) => {
 ```
 
 
-위 예제 코드를 보면 `mountCallback`과는 다르게 `updateCallback`에는 두 번째 인자가 있습니다. 컴포넌트 내에 특정 상태가 변경될 때만 콜백을 실행하기 위함입니다. 배열을 리턴하는 함수로 정의하며, 변경을 감지하고 싶은 값을 배열에 넣어주면 됩니다.
+In the example code above, unlike `mountCallback`, the `updateCallback` has a second argument. This is for executing the callback only when a specific state within the component changes. It is defined as a function that returns an array, and you can place the values you want to detect changes for in that array.
 
-콜백이나 디팬던시에 `props`를 사용할 때는 `props.` 프리픽스를 전부 다 붙여서 사용해야 정확히 비교됩니다. 왜냐하면 `마운터`는 컴포넌트가 마운트 될 때 한 번만 실행되고 그 안에서 정의된 콜백함수들이나 디펜던시 체크 함수는 컴포넌트가 업데이트될 때마다 클로저를 이용해 `props`값에 접근하기 때문입니다. 앞서 업데이터에서 설명한 이슈와 같습니다.
+When using `props` in the callback or dependency array, you must include the `props.` prefix for each instance to ensure accurate comparison. This is because the `mount` function is executed only once when the component is mounted, and the callback functions or dependency check functions defined inside it access the `props` values using closures each time the component updates. This is similar to the issue explained in the updater section earlier.
 
 
 
-## 포털
+## Portal
 
-포탈(Portal)은 자식 요소를 DOM의 다른 부분에 렌더링할 수 있게 해줍니다.
+A portal allows you to render a child element to a different part of the DOM.
 
-사용법은 아래와 같습니다.
+Here’s how you use it.
 
 ```javascript
 import { h, mount, portal } from 'lithent'
@@ -282,20 +289,20 @@ const Component = mount(renew => {
 });
 ```
 
-## 확장기능
+## Advanced Features
 
-lithent는 기본 기능만으로도 충분히 좋지만 기본 기능을 활용하여 조합하면 더욱 편리하게 사용할 수 있습니다.
+Lithent is great with just its basic features, but when combined with additional functionality, it becomes even more convenient to use.
 
-사용자가 유용하게 사용할만한 기능들을 미리 코드로 작성해 놨습니다. 사용자는 이 코드를 직접 import 하여 사용해도 좋고, 참고하여 새로운 형태의 확장코드를 만들어도 됩니다.
+We’ve pre-written some useful features that users might find beneficial. You can directly import and use this code, or refer to it to create your own extensions.
 
-헬퍼 코드의 모든 구현은 [저장소](https://github.com/superlucky84/lithent/tree/master/helper/src/hook)에서 확인하세요.
+All implementations of the helper code can be found in the [repository](https://github.com/superlucky84/lithent/tree/master/helper/src/hook).
 
 
-## state 헬퍼
+## State Helper
 
-컴포넌트의 상태가 변경될 때마다 확인하여 `renew 함수`를 실행시키는 방식은 사용자가 직접 컴포넌트가 갱신되는 시기를 결정할 수 있으므로 그냥 그대로 사용해도 충분히 유용합니다. 하지만 너무 정밀하게 컴포넌트 갱신시점을 결정할 필요가 없고 그냥 값이 변경될 때마다 컴포넌트를 업데이트하게 하고 싶다면 `state 헬퍼`를 사용하면 됩니다.
+The approach where the user manually determines when the component should be updated by executing the `renew` function every time the state changes is useful and gives control over the update timing. However, if you don’t need to control the update timing so precisely and simply want the component to update whenever a value changes, you can use the `state helper`.
 
-아래 코드를 보면 쉽게 사용법을 알수 있습니다.
+The following code shows how to use it easily.
 
 ```javascript
 import { h, Fragment, render, mount } from 'lithent';
@@ -319,8 +326,9 @@ const Component = mount(renew => {
 ```
 
 
-`state 헬퍼`는 `renew` 함수를 특정 상태와 묶어주는 역할을 합니다.
-아래 코드는 `state 헬퍼` 구현 코드입니다. 구현 원리는 간단합니다. `state`는 초기값과 `renew 함수`를 받고 `getter`, `setter`를 가진 객체를 반환합니다. 이 객체는 값을 확인할 수 있고 값을 변경할 경우에는 `renew`를 실행시켜 줍니다.
+The `state helper` binds the `renew` function to a specific state. 
+
+The code below is the implementation of the `state helper`. The principle behind it is simple. The `state` takes an initial value and the `renew` function, and returns an object with `getter` and `setter`. This object allows checking the value and, when the value is changed, it triggers the execution of `renew`.
 
 ```javascript
 export const state = <T>(
@@ -344,17 +352,17 @@ export const state = <T>(
 };
 ```
 
-## store 헬퍼
+## store helper
 
-`store 헬퍼`는 모든 컴포넌트 전역에서 사용할 수 있는 객체를 공유합니다. 이 `store` 객체를 공유받은 컴포넌트는 값을 공유받는 동시에 자신의 `renew` 권한을 `store 헬퍼`에 공유할 수 있습니다.
+The `store helper` shares an object that can be used globally across all components. Components that receive this `store` object not only get the shared value, but also can share their `renew` permissions with the `store helper`.
 
-`store 헬퍼`는 객체의 형태로 사용자가 원하는 데이터 구조를 정의합니다. 아래 예제에서는 문자열 타입으로 text 속성을 넘버 타입의 `count` 속성을 정의하였습니다. `store 헬퍼`가 실행되면 공유할 데이터를 컴포넌트에 할당해 주는 `할당자`를 리턴합니다. 아래 예제 코드에서는 `assignShardStore`가 `할당자`입니다.
+The `store helper` allows users to define the data structure they want in the form of an object. In the example below, the `text` property is defined as a string type and the `count` property is defined as a number type. When the `store helper` is executed, it returns an `assigner` that assigns the shared data to the component. In the example below, `assignShardStore` is the `assigner`.
 
-`할당자`는 컴포넌트 마운터 내에서 사용되며 첫 번째 인자로 컴포넌트의 `리뉴어(renew)`를 할당받고 실행됩니다. `할당자`는 공유데이터를 프록시 객체를 통해 컴포넌트에게 제공합니다.
+The `assigner` is used within the component's mounter and is executed after receiving the component's `renew` as its first argument. The `assigner` provides shared data to the component through a proxy object.
 
-공유된 프록시 객체에 공유되고 있는 특정 속성이 변경되면, 그 값을 공유하고 있는 모든 컴포넌트가 업데이트됩니다.
+When a specific property within the shared proxy object is changed, all components sharing that value will be updated.
 
-`할당자` 함수의 두 번째 인자를 사용하면, `store`로부터 특정 속성에 대해서만 공유받아 사용할 수 있습니다. 두 번째 인자는 함수의 형태이며 아래 예제처럼 사용하고 싶은 값만 정의하여 배열로 나열하여 리턴해 주면 됩니다. 속성 전체를 전부 사용하고 싶다면 두 번째 인자를 생략하면 됩니다.
+By using the second argument of the `assigner` function, you can choose to only share specific properties from the `store`. The second argument is in the form of a function, and as shown in the example below, you can define the values you want to use and return them as an array. If you want to use all properties, you can simply omit the second argument.
 
 
 ```javascript
@@ -387,18 +395,18 @@ render(<Component />, element, element.querySelector('span:nth-of-type(3)'));
 ```
 
 
-`store 헬퍼`의 구현 방법은 `state 헬퍼`의 구현방법과 유사합니다. 다만 `store 헬퍼`는 `state 헬퍼`와는 다르게 여러 컴포넌트의 `renew`를 가지고 있을 수 있으므로, 언마운트 되어 사라진 컴포넌트의 `리뉴어`를 항상 확인하여 제거해줘야 합니다. 이미 제거된 `리뉴어`를 실행하면 리턴 값으로 false를 반환하는 특성을 이용하여 이를 구현합니다..
+The implementation method of the `store helper` is similar to that of the `state helper`. However, unlike the `state helper`, the `store helper` can hold multiple `renew` functions from different components. Therefore, it is important to continuously check and remove the `renew` function of any components that have been unmounted. This can be implemented by leveraging the fact that executing a `renew` function that has already been removed will return `false`.
 
-코드는 [저장소](https://github.com/superlucky84/lithent/blob/master/helper/src/hook/store.ts)에서 확인 가능합니다.
+You can check the code at the [repository](https://github.com/superlucky84/lithent/blob/master/helper/src/hook/store.ts).
 
 
-## cacheUpdate 헬퍼
+## cacheUpdate Helper
 
-업데이터에 `cacheUpdate 함수`를 사용하여 감싸주면, 불필요한 상태에서는 리렌더링이 발생하지 않도록 설정할 수 있습니다.
+By wrapping the updater with the `cacheUpdate` function, you can prevent unnecessary re-renders for unchanged states.
 
-컴포넌트의 `prop`이나 `state` 또는 다른 어떠한 형태의 상태라도 리렌더링을 시도하는 시점에 이전 상태와 변경된 상태의 값을 비교하여, 값이 같다면 더 이상 업데이트를 시도하지 않도록 합니다.
+Whether it's a component's `prop`, `state`, or any other form of state, when an attempt to re-render occurs, it compares the previous state with the updated state. If the values are the same, it prevents any further updates.
 
-예제를 보면 사용법을 쉽게 알 수 있습니다. 아래의 예는 `count1`의 값만 컴포넌트의 이전 상태와 확인하여 캐시 해주고 있습니다. 오직 `count1`의 값만 확인하며, `count2`는 값이 변경되어도 컴포넌트가 업데이트되지 않습니다.
+You can easily understand how to use it by looking at the example below. In this example, only the value of `count1` is checked against the previous state and cached. Only `count1` is checked, and even if `count2` changes, the component will not be updated.
 
 ```javascript
 import { h, Fragment, render, mount } from 'lithent';
@@ -430,13 +438,13 @@ const Component = mount(renew => {
 render(<Component />, document.getElementById('root'));
 ```
 
-## effect 헬퍼
+## effect Helper
 
-`effect 헬퍼`는 `mountCallback`과 `updateCallback`을 혼합하여 react의 `useEffect`와 같은 효과를 내도록 만든 코드입니다.
+The `effect Helper` combines the functionality of `mountCallback` and `updateCallback` to provide an effect similar to React's `useEffect`.
 
-첫 번째 인수는 마운트 또는 업데이트 후에 실행된다. 두 번째 인수는 컴포넌트가 언마운트되거나 업데이트하기 전에 실행됩니다. 세 번째 인수는 특정 값이 변경될 때만 업데이트를 감지하도록 종속성을 넣을 수 있으며 생략할 경우 모든 업데이트 시 항상 업데이트 콜백이 실행됩니다.
+The first argument runs after the mount or update. The second argument runs before the component is unmounted or updated. The third argument allows you to specify dependencies that will trigger the update only when certain values change; if omitted, the callback runs on every update.
 
-주의해야 할 점은 세 번째 인수는 배열을 반환하는 것 “함수”여야 합니다. 그리고 `effect 헬퍼`도 다른 기능들과 마찬가지로 마운터의 모든 값에 클로저를 이용해 접근하므로, 사용하려는 값의 `call by value`, `call by reference` 상태를 잘 확인하고 사용해야 합니다.
+An important note is that the third argument must be a function that returns an array. Also, since the `effect Helper` accesses all values of the mounter through closures, it is important to check the `call by value` and `call by reference` states of the values you intend to use.
 
 ```javascript
 import { h, Fragment, render, mount } from 'lithent';
@@ -465,11 +473,11 @@ const Children = mount((r, props) => {
 });
 ```
 
-## computed 헬퍼
+## computed Helper
 
-`computed 헬퍼`는 복잡한 계산식을 JSX 내에서 중복으로 사용할 경우 템플릿이 다소 복잡해 보일 수 있으므로, 미리 값을 계산하여 쉽게 사용할 수 있게 해주는 코드입니다.
+The `computed Helper` is a tool that simplifies templates when complex calculations are used repeatedly within JSX, making the template appear more manageable by pre-calculating values for easy use.
 
-아래는 `computed 헬퍼`를 사용하는 간단한 예입니다.
+Below is a simple example of how to use the `computed Helper`.
 
 ```jsx
 import { h, Fragment, render, mount } from 'lithent';
@@ -499,13 +507,13 @@ const Component = mount(renew => {
 render(<Component />, document.getElementById('root'));
 ```
 
-## nextTick 헬퍼
+## nextTick Helper
 
-`nextTick 헬퍼`는 다음 DOM 업데이트 플러시를 기다리는 유틸리티입니다. 사용자는 컴포넌트의 변경 요청 후, 가상돔이 실제 DOM에 완벽하게 적용된 시점을 보장받은 후 이후 작업을 진행하기 위해 넥스트틱 헬퍼를 사용할 수 있습니다. 예를 들면 특정 이벤트 후 변경되는 컴포넌트의 상태를 테스트하기 위해 사용할 수 있습니다.
+The `nextTick Helper` is a utility that waits for the next DOM update flush. After a component's change request, the user can use the `nextTick Helper` to ensure that the virtual DOM is fully applied to the actual DOM before proceeding with subsequent tasks. For example, it can be used to test the state of a component after a specific event has triggered changes.
 
-Lithent는 동시에 여러번 컴포넌트의 업데이트 요청이 일어나거나 동시에 복수의 컴포넌트의 업데이트가 필요할 경우 불필요한 내부 동작을 줄이기 위해 [queueMicrotask](https://developer.mozilla.org/en-US/docs/Web/API/Window/queueMicrotask)를 사용하여 리랜더링 요청들을 하나로 모아 적절한 시점에 한번에 실행시켜줍니다.
+When multiple component update requests happen simultaneously or several components need updates at the same time, Lithent uses [queueMicrotask](https://developer.mozilla.org/en-US/docs/Web/API/Window/queueMicrotask) to minimize unnecessary internal operations, gathering all re-rendering requests and executing them in a timely manner.
 
-`nextTick 헬퍼`는 브라우저의 마이크로테스크큐에 쌓인 리랜더 요청이 모두 끝난 후 실행 되어야 하는 콜백을 마이크로테스크큐의 맨 마지막에 추가로 넣어줍니다.
+The `nextTick Helper` adds a callback to the microtask queue at the very end, ensuring it runs after all rendering requests in the browser's microtask queue have been completed.
 
 ```javascript
 nextTick().then(() => {
@@ -516,13 +524,13 @@ nextTick().then(() => {
 ```
 
 
-## lTag (Tagged templates 마크업 지원)
+## lTag (Tagged Templates Markup Support)
 
-`lTag`를 사용하면 JSX와 유사한 사용법으로 별도의 트랜스파일러 없이 일반 Javascript 구문을 사용하여 개발할 수 있습니다.
+By using `lTag`, you can develop using regular JavaScript syntax similar to JSX, without the need for a separate transpiler.
 
-`lTag`는 [HTM](https://github.com/developit/htm)을 Lithent의 `h(createElement)`와 미리 바인딩해 놓은 [Tagged templates](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates)입니다
+`lTag` is a [Tagged template](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates) pre-bound to Lithent's `h(createElement)` and follows the [HTM](https://github.com/developit/htm) convention.
 
-아래의 예처럼 사용할 수 있습니다.
+It can be used as shown in the example below.
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/lithent@1.7.0/dist/lithent.umd.js"></script>
@@ -557,15 +565,15 @@ const destroy = render(lTag`<${Component} propValue=${1} />`, document.getElemen
 </script>
 ```
 
-## fTags (함수 호출방식 마크업 지원)
+## fTags (Function Call Style Markup Support)
 
-`fTag`를 사용하면 JSX나 `h (createElement)`를 직접 사용하지 않고도 함수 호출 방식으로 가상돔을 정의할 수 있습니다. 별도의 트랜스파일러도 필요하지 않습니다.
+By using `fTags`, you can define the virtual DOM using function calls, without directly using JSX or `h (createElement)`. No separate transpiler is required.
 
-컴포넌트를 생성하기 위한 기본기능의 `mount` 대신 `fMount`를 사용하며, 기본기능의 `Fragment 컴포넌트`대신 `fFragment 함수`를 사용합니다.
+Instead of using the default `mount` function to create components, `fMount` is used, and instead of the default `Fragment component`, the `fFragment function` is used.
 
-`div , section, p` 와 같은 일반 태그들은 `fTag` 객체에서 태그에 해당하는 함수를 가져다가 사용하면 됩니다.
+For standard tags like `div`, `section`, `p`, you can simply use the corresponding functions from the `fTag` object.
 
-아래의 예처럼 사용할 수 있습니다.
+It can be used as shown in the example below.
 
 ```javascript
 <script src="https://cdn.jsdelivr.net/npm/lithent@1.9.0/dist/lithent.umd.js"></script>

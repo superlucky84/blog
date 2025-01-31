@@ -6,22 +6,22 @@ export const preload = async ({ id, origin }) => {
     layout: {
       views,
       date,
-      title: 'JSX나 h(createElement) 함수를 사용하지 않고 가상돔을 만드는 방법',
+      title: 'How to Create a Virtual DOM Without Using JSX or the h(createElement) Function',
       description:
-        'html과 같은 마크업 문법에 익숙하지 않은 사람들은 VanJS를 만든 [Tao Xin]아저씨처럼 그냥 함수를 호출하는 방식이 더 자연스럽고 완전하게 느껴질지도 모릅니다.',
+        'People who aren\'t as familiar with markup languages like HTML might find calling functions directly, like the creator of VanJS, Tao Xin, did, to be a more natural and complete approach.',
       openGraph: {
-        title: 'JSX나 h(createElement) 함수를 사용하지 않고 가상돔을 만드는 방법',
+        title: 'How to Create a Virtual DOM Without Using JSX or the h(createElement) Function',
         description:
-          'html과 같은 마크업 문법에 익숙하지 않은 사람들은 VanJS를 만든 [Tao Xin]아저씨처럼 그냥 함수를 호출하는 방식이 더 자연스럽고 완전하게 느껴질지도 모릅니다.',
+          'People who aren\'t as familiar with markup languages like HTML might find calling functions directly, like the creator of VanJS, Tao Xin, did, to be a more natural and complete approach.',
         images: [{ url: '/assets/test11.webp' }],
       },
     },
   };
 };
 
-필자는 JSX를 좋아합니다. 심지어 취미로 JSX 기반의 가상돔 라이브러리 [Lithent](https://github.com/superlucky84/lithent)를 만들기도 했습니다.
+The author enjoys JSX and even created a JSX-based virtual DOM library called [Lithent](https://github.com/superlucky84/lithent) as a hobby.
 
-가상돔 라이브러리를 만들기 위해 정보를 모으려고 한참 웹서핑을 하다가, [VanJS](https://vanjs.org/) 라는 프로젝트를 알게 되었습니다. VanJS에서는 html이나 jsx와 같은 태그 정의 스타일로 문서를 표현하는 대신 함수를 호출하는 방식으로 정의합니다. 아래처럼요.
+While gathering information to create the virtual DOM library, the author came across the [VanJS](https://vanjs.org/) project. In VanJS, instead of using tag-definition styles like HTML or JSX to represent documents, the approach is to define them by calling functions, as shown below.
 
 ```javascript
 const Hello = () => div(
@@ -35,17 +35,17 @@ const Hello = () => div(
 van.add(document.body, Hello())
 ```
 
-이 예제를 보면 가독성이 크게 나쁘지 않아 보입니다.
+Looking at this example, the readability doesn't seem too bad.
 
-생각해 보면 사람들이 JSX를 좋아하고 인기 있는 이유는, 기존의 html문법과 비슷하여 익숙하기 때문이라는 생각을 해보았습니다. html과 같은 마크업 문법에 익숙하지 않은 사람들은 VanJS를 만든 [Tao Xin](https://vanjs.org/about)아저씨처럼 그냥 함수를 호출하는 방식이 더 자연스럽고 완전하게 느껴질지도 모릅니다.
+Upon reflection, I thought that one of the reasons people like JSX and why it’s popular might be because it's similar to traditional HTML syntax, which makes it familiar. However, for those who aren't as accustomed to markup languages like HTML, calling functions directly, like Tao Xin, the creator of [VanJS](https://vanjs.org/about), might feel more natural and complete.
 
-저걸 보고 저도 개인프로젝트를 한다면 비슷한 방식으로 만들어 보고 싶다는 생각이 들었습니다.
+After seeing that, I thought that if I were to work on a personal project, I'd like to try creating something similar.
 
-JSX도 사실은 실제 브라우저에서 실행되도록 하기 위해, 빌드 단계에서 h함수가 호출되는 방식으로 변환됩니다.
+The thing with JSX is that, in order for it to run in the browser, it's actually transformed during the build process into a format where `h` functions are called.
 
-## h 함수와의 가독성 비교
+## Comparing Readability with the `h` Function
 
-처음에 보여드렸던 VanJsS 예제를 `h(createElement)` 스타일로 한번 바꿔보겠습니다.
+Let's take the VanJS example I showed earlier and transform it into the `h(createElement)` style.
 
 ```javascript
 h('div', null,
@@ -59,16 +59,16 @@ h('div', null,
 )
 ```
 
-Tao Xin 아저씨가 생각해 낸 방식이 가독성이 더 좋아 보입니다. 하지만 둘 다 모양은 비슷해 보이네요. 제가 취미로 만든 가상돔 라이브러리에 크게 어렵지 않게 Tao 아저씨의 방식을 적용해 볼 수 있을 거라는 생각이 들었습니다. 구현이 어렵지 않다면 여러 가지 표현방식을 제공하는 것도 나쁘지 않다고 생각합니다 (어차피 사실상 이 라이브러리는 저 혼자만 쓰고 앞으로도 그럴 것 같습니다).
+Tao Xin's approach seems to offer better readability, but both styles look quite similar. I thought it wouldn't be too difficult to apply Tao Xin's method to the virtual DOM library I made as a hobby. If the implementation isn't too hard, I think providing multiple expression styles wouldn't be a bad idea (since, realistically, I'll probably be the only one using this library in the future).
 
-바로 코드를 작성해 봅시다.
+Let's go ahead and write the code.
 
 
-## h 함수 스타일을 함수호출 방식(Tao 아저씨 스타일)으로 바꾸기
+## Changing the `h` Function Style to the Function Call Style (Tao Xin's Style)
 
-아래 코드 예제처럼 Proxy를 이용하면 객체에서 어떤 값을 불러와도 h 함수를 실행하는 함수를 불러오게 됩니다.
+Using a `Proxy` as shown in the code example below, you can make it so that whenever a value is called from an object, it triggers the `h` function.
 
-예를 들어 `fTags.div(props, ‘children’)` 를 실행하면 `h(‘div’, props, ‘children’)` 이 실행되게 되는 것이죠.
+For example, when you run `fTags.div(props, 'children')`, it will call `h('div', props, 'children')` instead.
 
 ```javascript
 import { h } from 'lithent'; // 제가 만든 라이버리리의 h 함수
@@ -84,7 +84,7 @@ export const fTags = new Proxy(
 );
 ```
 
-실제로 사용할 때는 아래처럼 사용하게 됩니다.
+In practice, it would be used like this:
 
 ```javascript
 const { section, div} = fTags;
@@ -92,20 +92,20 @@ const { section, div} = fTags;
 section({ className: 'section'}, 
   div(null, 'div Block'),
 ),
-// 실제로 만들어지는 DOM은 아래처럼 되겠네요
+// The actual DOM created will look like this:
 // <section class="section">
 //   <div>div Block</div>
 // </section>
 ```
 
-위와 같은 방식으로 `div, p, section`태그와 같은 일반 태그들은 전부 해결이 됩니다. 하지만 Fragment 컴포넌트나 사용자가 정의한 컴포넌트의 경우에는 어떻게 함수호출 방식으로 바꿀 수 있을까요?
+With the method described above, common tags like `div`, `p`, and `section` are all handled. But how can we transform something like a Fragment component or a user-defined component into a function call style?
 
-에디터를 열고 머리와 손이 시키는 대로 무작정 코드를 작성해 보았습니다.
+I opened the editor and just started writing code, following the instructions of my head and hands.
 
 
-## Fragment 컴포넌트를 함수호출 방식으로 바꾸기
+## Converting Fragment Component to Function Call Style
 
-두려움이 컸지만, 너무 간단하게 끝났습니다. Fragment는 아래처럼 하면 됩니다(children을 받는 함수를 만들어서 h함수로 실제 Fragment 컴포넌트를 실행시켜 줍니다).
+It was a bit daunting, but it turned out to be really simple. To handle a Fragment, you just need to create a function that takes `children` as a parameter and then call the `h` function to actually execute the Fragment component, like this:
 
 
 ```javascript
@@ -114,7 +114,7 @@ export const fFragment = (...children) => {
 };
 ```
 
-사용할 때는 아래처럼 사용하게 되겠네요.
+It would be used like this:
 
 ```javascript
 fFragment(
@@ -129,15 +129,13 @@ fFragment(
 // <p>p Block</p>
 ```
 
-여기까지 잘 읽으셨다면 이런 생각이 들 겁니다. ‘사용자 컴포넌트도 비슷한 방식으로 하면 되겠네?’
+If you've followed along so far, you're probably thinking, "User components can be done in a similar way, right?"
 
-맞습니다. 똑같이 하면 됩니다. 사실 여기서 더 읽어봤자 여러분이 예상한 그 내용일 겁니다. 그래도 저는 이 글을 쓰고 마무리하기로 이미 결심을 했으니 끝까지 써보겠습니다.
+Exactly. You can just do it the same way. In fact, reading further will likely lead you to the conclusion you've already anticipated. But since I've already decided to finish writing this post, I'll go ahead and complete it.
 
+## Converting User Components to Function Call Style
 
-
-## 사용자 컴포넌트를 함수호출 방식으로 바꾸기
-
-사용자가 정의한 함수형 컴포넌트를 아래 제가 구현한 `fMount` 함수에 한번 통과시켜 주면 함수호출 방식의 컴포넌트로 변경시켜 줍니다.
+If you pass a user-defined functional component through the `fMount` function I implemented below, it will be transformed into a function call style component.
 
 ```javascript
 export const fMount = (component) => {
@@ -147,7 +145,7 @@ export const fMount = (component) => {
 };
 ```
 
-실제로 사용할 때는 아래처럼 되겠네요.
+In practice, it would look like this:
 
 ```javascript
 const fUserComponent = fMount(function UserComponent(props) {
@@ -168,46 +166,10 @@ render(fUserComponent(), document.getElementById('root'));
 // <p>p Block</p>
 ```
 
-## 맺으며
+## Conclusion
 
+I tried applying it to the virtual DOM I implemented ([Litnet v1.9.0](https://www.npmjs.com/package/lithent)), and after finishing, I thought it could be easily applied to other JSX-based projects as well. In my subjective judgment, the readability isn't as bad as I initially expected.
 
-제가 구현한 가상돔에 한번 적용해 봤는데요([Litnet v1.9.0](https://www.npmjs.com/package/lithent)으로 배포하였습니다), 다 만들고 보니 다른 JSX 기반 프로젝트에도 쉽게 적용하여 사용 가능할 것 같다는 생각이 드네요. 주관적인 판단이지만 가독성도 생각보다 나쁘지 않고요.
+By the way, the code I showed in this post is a simplified version for explanation purposes. You can find the original code [here](https://github.com/superlucky84/lithent/blob/master/ftags/src/index.ts).
 
-참고로 이 글에서 예제로 보여드린 코드는 설명하기 쉽게 간략화한 코드입니다. 원본 코드는 [여기](https://github.com/superlucky84/lithent/blob/master/ftags/src/index.ts)에서 볼 수 있어요
-
-끝까지 읽으신 김에, 제가 만든 [경량 가상돔 라이브러리 Github](https://github.com/superlucky84/lithent)에도 한번 들리셔서 별 클릭 한번 부탁드립니다.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Since you've read all the way to the end, feel free to check out my [lightweight virtual DOM library on GitHub](https://github.com/superlucky84/lithent) and give it a star if you like!

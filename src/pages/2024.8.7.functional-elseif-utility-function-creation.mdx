@@ -114,13 +114,13 @@ const elseIf = curry((is, run, value) =>
 );
 ```
 
-이러면 1depth로만 함수를 계속 연결해도 잘 처리되죠.
+This way, you can keep chaining functions in a single depth, and it will be handled properly.
 
-제가 왜 이렇게 짰냐면, 함수형 프로그래밍에 관련된 책을 보다가 ”모나드” 라는 개념을 알게 되었는데요. 값을 그대로 사용하지 않고 값을 보호하는 특수한 객체로 값을 감싸줍니다. 함수가 처리하는 값에 예상하지 못한 값이 있을 경우 값을 싸고 있는 객체가 값이 파이프라인의 끝까지 도달될 때까지 아무 문제 없이 매끄럽게 작동되도록 처리해줍니다.
+The reason I wrote it this way is that while reading books on functional programming, I came across the concept of "monads." Monads are special objects that wrap values, not using them directly, but protecting them. When unexpected values are encountered in the values that the function processes, the object wrapping the value ensures that the value flows smoothly through the pipeline without any issues until the very end.
 
-사람들이 모나드에 대해 설명할 때 가장 빈번히 예로 드는 예제가 [MayBe 모나드](https://nakta.dev/fp-in-js-4-functor-maybe) 입니다. 저도 MayBe 모나드를 보고 얻은 힌트로 `elseIf` 구현했는데요. 제가 구현한 건 정확한 모나드의 기술적 구현은 아닙니다만 코드의 볼륨이 커지는 것도 싫고 최소한의 코드로 빠르게 생각을 옮기고 싶다 보니 어찌어찌 이렇게 되어버렸네요. 값을 감싼 객체의 타입만 검사해서 흘리는 방식으로 구현해 봤습니다.
+One of the most common examples used to explain monads is the [Maybe Monad](https://nakta.dev/fp-in-js-4-functor-maybe). I also implemented `elseIf` using hints I got from studying the Maybe Monad. While what I implemented isn't an exact technical implementation of a monad, I wanted to avoid large amounts of code and quickly move my thoughts into a minimal code form, so this is how it ended up. I implemented it by just checking the type of the object wrapping the value and passing it along.
 
-마지막 elseIf 이후에는 elseEnd 를 연결하여 Decision 객체로 쌓인 값을 빼내어 리턴해줍니다.
+After the last `elseIf`, you connect `elseEnd` to extract the value wrapped in the `Decision` object and return it.
 
 ```js
 const elseEnd = curry((run, value) =>
@@ -128,15 +128,15 @@ const elseEnd = curry((run, value) =>
 );
 ```
 
-## 조금 더 나아간 구현
+## A More Refined Implementation
 
-구현(말이 구현이지 그냥 파일 하나 열어 넣고 내가 생각한 데로 되는지 뚝딱뚝딱 테스트해 본 겁니다)하고 나서 이게 과연 실용적으로 쓰일 수 있을지, 잠시 집에 밀린 설거지를 하며 생각해 봤습니다. 이것저것 찾아보고 고민하다 보니 오전이 훌쩍 지나가 버려서 속상했지만, 아무리 생각해도 뭔가 잘못되고 놓친 부분이 있는 거 같아서 다른 라이브러리들이 구현한 유틸함수들을 더 찾아보았습니다.
+After implementing it (which, honestly, was just opening a file and quickly testing to see if it worked as I had imagined), I started wondering whether this could be practically used. I was doing the dishes at home, thinking about it. After researching and pondering for a while, I realized the morning had flown by, which made me a bit frustrated. But no matter how much I thought about it, something felt wrong or missing, so I decided to look for utility functions implemented by other libraries.
 
-아니나 다를까 제가 찾던 모습의 유틸은`cond` 라는 이름으로 존재하고 있었습니다 [ramdaJs(cond)](https://ramdajs.com/docs/#cond), [remedaJs(cond)](https://remedajs.com/docs/#conditional), [fxJs(cond)](https://github.com/marpple/FxJS/blob/master/Strict/cond.js)사용법은 아래와 같습니다.
+And sure enough, I found the utility I was looking for under the name `cond`. It exists in libraries like [ramdaJs(cond)](https://ramdajs.com/docs/#cond), [remedaJs(cond)](https://remedajs.com/docs/#conditional), and [fxJs(cond)](https://github.com/marpple/FxJS/blob/master/Strict/cond.js). Below is how you can use it.
 
-중첩된 배열에 첫 번째 인자가 if문 안에 들어가는 판별식이고 두 번째 인자가 판별식이 참일 때 실제로 실행되는 if 스코프의 본체에 해당하는 구문입니다.
+In the nested array, the first element is the predicate inside the `if` statement, and the second element corresponds to the body of the `if` scope that is executed when the predicate is true.
 
-> RamdaJs에서 cond 사용 예
+> Example of using `cond` in RamdaJs
 
 ```js
 const fn = R.cond([
@@ -150,89 +150,89 @@ fn(100); //=> 'water boils at 100°C'
 ```
 
 
-애초에 처음부터 발견했다면 제가 이것 때문에 이것저것 고민하느라 반나절을 날리지 않고 게임에만 열중했을 텐데 안타까웠습니다. 그래도 깔끔하게 생각을 마무리하기 위해 제가 만든 `elseIf` `elseEnd` 함수를 이용해서 `cond`를 구현해 봤습니다.
+If I had discovered this from the beginning, I wouldn't have wasted half a day pondering over it and could have just focused on the game, which is a bit disappointing. Still, to wrap up my thoughts neatly, I decided to implement `cond` using the `elseIf` and `elseEnd` functions I made.
 
-`showcases([if: () => boolen, run: () => any][])`의 형태를 `IelseIf[]` 의 형태로 바꿔주면 됩니다. 아래처럼요.
+You just need to convert the shape of `showcases([if: () => boolean, run: () => any][])` into the shape of `IelseIf[]`, like the example below.
 
-> 구현
+> Implementation
 
 ```js
-const cond = curry((conditaion) => {
+const cond = curry((condition) => {
   const condPipe = pipe(
     map(([arg1, arg2]) => (arg2 ? elseIf(arg1, arg2) : elseEnd(arg1))),
     (arr) => [...arr, elseEnd((value) => value)]
-  )(conditaion);
+  )(condition);
 
   return pipe(...condPipe);
 
-  // 위의 코드가 만들어주는 것은 아래코드와 같습니다.
+  // The code above generates something like this:
   // pipe(
   //     ...[
   //       elseIf(arg1, arg2),
   //       elseIf(arg1, arg2),
   //       elseIf(arg1, arg2),
-  //       ... // conditions 개수만큼 반복
+  //       ... // repeat for the number of conditions
   //       elseEnd(value => value),
   //     ]
   // )
 });
 ```
 
-너무 간단해서 설명할 것도 없네요. 아래처럼 사용하면 됩니다. 어쨌거나 이것 때문에 어이없이 귀중한 휴일의 반나절을 날려버렸네요.
+It's so simple that there's not much to explain. You can use it like the example below. Anyway, it's a bit frustrating that I wasted half a precious holiday on this.
 
 
 ```js
 const chkGrade = cond([
-  [(value) => value === 1, () => "골드회원"],
-  [(value) => value === 2, () => "실버회원"],
-  [(value) => value === 3, () => "일반회원"],
-  [() => "나머지"],
+  [(value) => value === 1, () => "Gold Member"],
+  [(value) => value === 2, () => "Silver Member"],
+  [(value) => value === 3, () => "Regular Member"],
+  [() => "Others"],
 ]);
 
-chkGrade(2) //실버회원
+chkGrade(2) // Silver Member
 ```
 
-## 그래서 뭐가 좋은 거지?
 
-반나절을 불쑥 찾아온 엉뚱한 생각으로 삽질한 게 억울하기도 하고 이게 도대체 무슨 의미가 있는지, 휴일의 반나절을 날려버릴 만한 가치가 있는 유용한 고민이었는지 생각해 봤습니다.
+## So, What's the Benefit?
 
-제가 읽은 함수형 프로그래밍 책에서 공통적으로 설명하는 함수형의 장점 중에 하나는 산술연산자(+,-)나 지시어(if문 등)처럼 일급이 아닌(값처럼 취급하지 않는)것들을 함수로 만들면 일급(값처럼 취급할 수 있게)으로 바뀌게 되어 더 유연하게 코드를 만들 수 있다는 겁니다.
+I felt frustrated about wasting half a day on a random thought that came out of nowhere, and I started questioning whether it was worth spending half of my holiday on this. I wondered if it was a useful thought process that had any real value.
 
-예를 들어 앞서 보여드린 chkGrade 함수 예제에서 골드회원이 아닌 것들은 전부 나머지로 표시하고 싶은 기능을 추가하고 싶다면 아래처럼 손쉽게 예외처리하여 elseIf문을 조합해 주면 됩니다.
+One of the common advantages of functional programming, as explained in the books I read, is that when you turn things like arithmetic operators (+, -) or control structures (such as `if` statements) into functions—things that aren't first-class citizens (i.e., not treated as values)—they become first-class, making the code more flexible and allowing for more dynamic and adaptable solutions.
 
+For example, if you want to add functionality to display "Others" for any non-Gold members in the `chkGrade` function from the previous example, you can easily handle this by adding an `elseIf` clause like this:
 
-> elseIf 사용 예
+> Example of using `elseIf`
 
 ```js
 const chkGrade = (value, chkOnlyVip) => {
     return pipe(
       ...[
-        elseIf((value) => value === 1, () => "골드회원"),
-        !chkOnlyVip && elseIf((value) => value === 2, () => "실버회원"),
-        !chkOnlyVip && elseIf((value) => value === 3, () => "일반회원"),
-        elseEnd(() => "나머지")
+        elseIf((value) => value === 1, () => "Gold Member"),
+        !chkOnlyVip && elseIf((value) => value === 2, () => "Silver Member"),
+        !chkOnlyVip && elseIf((value) => value === 3, () => "Regular Member"),
+        elseEnd(() => "Others")
       ].filter(item => item)
     )(value);
 }
-chkGrade(2, true) //나머지
+chkGrade(2, true) // Others
 ```
 
-> cond 사용 예
+> Example of using `cond`
 
 ```js
 const chkGrade = (value, chkOnlyVip) => {
     return cond([
-      [(value) => value === 1, () => "골드회원"],
-      !chkOnlyVip && [(value) => value === 2, () => "실버회원"],
-      !chkOnlyVip && [(value) => value === 3, () => "일반회원"],
-      [() => "나머지"],
+      [(value) => value === 1, () => "Gold Member"],
+      !chkOnlyVip && [(value) => value === 2, () => "Silver Member"],
+      !chkOnlyVip && [(value) => value === 3, () => "Regular Member"],
+      [() => "Others"],
     ].filter(item => item))(value);
 }
 ```
 
-어쨌거나 이것저것 고민해 보면서 나름대로 즐거운 시간이었습니다. 결국 다른 사람들도 내가 생각한 것과 비슷한 걸 만들어서 사용하고 있다니, 제가 생각한 함수형 코딩의 사용방향이 크게 잘못되어 있지는 않다는 확신도 얻었습니다.
+Anyway, it was a fun time pondering and exploring different ideas. In the end, I realized that others are using something similar to what I had in mind, which reassured me that my approach to functional programming wasn't completely off-track.
 
-그리고 얼마나 유용한지도 물론 중요하지만, 저만 즐거웠다면 그걸로 충분한 것 같습니다.
+And while how useful it is certainly matters, I think if I enjoyed the process, that’s enough for me.
 
 
 
