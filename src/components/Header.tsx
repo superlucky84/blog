@@ -57,6 +57,7 @@ const Header = mount<{ mode: { v: string }; id: string }>((_r, props) => {
           aria-label="Toggle theme"
           class={clsx([
             'inline-flex  active:bg-gray-300 transition-[background-color] dark:active:bg-[#242424] rounded-sm p-1',
+            'hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424]',
             'theme-system:!bg-inherit',
             '[&_.moon-icon]:hidden',
             'dark:[&_.sun-icon]:hidden',
@@ -105,7 +106,12 @@ const Header = mount<{ mode: { v: string }; id: string }>((_r, props) => {
             </svg>
           </span>
         </button>
-        <button onClick={changeLanguage}>{isKo.v ? 'KR' : 'US'}</button>
+        <button
+          class="hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424] p-1"
+          onClick={changeLanguage}
+        >
+          {isKo.v ? 'KR' : 'US'}
+        </button>
         <a
           class="inline-flex hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424] rounded-sm p-1 transition-[background-color]"
           href="/about"
@@ -116,7 +122,7 @@ const Header = mount<{ mode: { v: string }; id: string }>((_r, props) => {
         <a
           href="https://bsky.app/profile/superlucky84.bsky.social"
           target="_blank"
-          class="inline-flex hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424] items-center p-2 pl-0 rounded-sm transition-[background-color] whitespace-nowrap -mr-2"
+          class="inline-flex hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424] items-center p-1 rounded-sm transition-[background-color] whitespace-nowrap -mr-2"
         >
           <svg
             class="mr-1"

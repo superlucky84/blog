@@ -53,6 +53,10 @@ async function createServer() {
 
   app.use('/assets', express.static(path.resolve(__dirname, 'assets')));
 
+  app.get('/favicon.ico', (req, res) => {
+    res.sendFile(path.join(__dirname, 'assets', 'favicon.ico'));
+  });
+
   const sortedRouteList = sortFiles(Object.keys(entries));
 
   app.get(`/api/views/:id`, async (req, res, next) => {
