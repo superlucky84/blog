@@ -8,14 +8,14 @@ const PageWrap = mount<{ id: string; preload: any }>(
     return () => (
       <article class="text-gray-800 dark:text-gray-300 mb-10">
         <h1 class="text-2xl mb-1 dark:text-gray-100">
-          {preload.value?.title || "superlucky84's blog"}
+          {preload.value?.title || 'Jinwoo Kim'}
         </h1>
         <p class="font-blog flex text-xs text-gray-500 dark:text-gray-500">
           <span class="flex-grow">
             <span class="hidden md:inline">
               <span>
                 <a
-                  href="https://twitter.com/superlucky84"
+                  href="https://bsky.app/profile/superlucky84.bsky.social"
                   class="hover:text-gray-800 dark:hover:text-gray-400"
                   target="_blank"
                 >

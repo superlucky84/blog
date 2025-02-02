@@ -20,8 +20,7 @@ const Meta = mount<{ origin: string; id: string; preload: { v: Preload } }>(
         <meta
           name="description"
           content={
-            preload.v?.description ||
-            'superlucky84 is a software programmer and creator of Lithent, State-Ref open source.'
+            preload.v?.description || 'Jinwoo Kim is a software programmer.'
           }
         />
         <meta
@@ -33,7 +32,7 @@ const Meta = mount<{ origin: string; id: string; preload: { v: Preload } }>(
         />
         <meta
           property="og:title"
-          content={preload.v?.openGraph?.title || "superlucky84's blog"}
+          content={preload.v?.openGraph?.title || 'The Blog of Jinwoo Kim'}
         />
         <meta
           property="og:description"
@@ -51,13 +50,13 @@ const Meta = mount<{ origin: string; id: string; preload: { v: Preload } }>(
         <meta name="twitter:creator" content="@superlucky84" />
         <meta
           name="twitter:title"
-          content={preload.v?.openGraph?.title || "superlucky84's blog"}
+          content={preload.v?.openGraph?.title || 'The Blog of Jinwoo Kim'}
         />
         <meta
           name="twitter:description"
           content={
             preload.v?.openGraph?.description ||
-            'superlucky84 is a software programmer and creator of Lithent, State-Ref open source.'
+            'Jinwoo Kim is a software programmer.'
           }
         />
         {'   '}

@@ -41,7 +41,7 @@ const Index = mount<{ isDark: { v: boolean } }>(() => {
     <Fragment>
       <main class="max-w-2xl m-auto mb-10 text-base">
         <div class="pb-1 flex text-sm text-center dark:text-gray-400 text-gray-500 mb-negative-4">
-          Kim Jinwoo's Blog
+          The Blog of Jinwoo Kim
         </div>
         <div class="pb-6 flex text-xs text-center dark:text-gray-400 text-gray-500">
           <div class="grow text-left">
@@ -91,7 +91,7 @@ const Index = mount<{ isDark: { v: boolean } }>(() => {
                         </span>
                       )}
                       <span
-                        class="pl-1 grow font-extrabold"
+                        class="pl-1 grow font-extrabold font-bloglist"
                         style={{
                           color: getLabColor(isDark.v, item.order, totalLengh),
                         }}

@@ -90,7 +90,7 @@ const Index = mount<{ isDark: { v: boolean } }>(() => {
                         </span>
                       )}
                       <span
-                        class="pl-1 grow font-extrabold"
+                        class="pl-1 grow font-extrabold font-bloglist"
                         style={{
                           color: getLabColor(isDark.v, item.order, totalLengh),
                         }}

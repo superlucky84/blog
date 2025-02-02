@@ -18,6 +18,7 @@ export default {
         montserrat: ['Montserrat', 'sans-serif'],
         pretendard: ['Pretendard', 'sans-serif'],
         blog: ['Montserrat', 'Pretendard', 'sans-serif'],
+        bloglist: ['Montserrat', 'GangwonEdu', 'Pretendard', 'sans-serif'],
       },
       animation: {
         dots: 'dots 1.5s infinite steps(1, end)',
