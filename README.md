@@ -1,35 +1,24 @@
-# Welcome to Lithent-Ssr-Boilerplate
+# Blog
 
-`Lithent-Ssr-Boilerplate` is a boilerplate designed for building server-side rendering (SSR) websites using the [Lithent](https://superlucky84.github.io/lithent/) UI library.
+This blog was created using the [SSR boilerplate for Lithent](https://github.com/superlucky84/lithent/tree/master/createLithent#welcome-to-lithent-ssr-boilerplate), a virtual DOM library I developed.
 
 
-## Warning
+## How to run
 
-This project is still experimental and is currently tightly coupled with [Express](https://expressjs.com/ko/)
-
-## Usage
-
-### Create a Project
-
-```bash
-npx create-lithent-ssr@latest
-cd project-name
-```
-
-### Install Dependencies
+### Install
 
 ```bash
 npm install
 ```
 
 
-### Run the Development Server
+### Development
 
 ```bash
 npm run dev
 ```
 
-### Build and Run
+### Production
 
 The build files will be generated in the `dist` directory.
 
