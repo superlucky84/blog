@@ -20,7 +20,8 @@ const Meta = mount<{ origin: string; id: string; preload: { v: Preload } }>(
         <meta
           name="description"
           content={
-            preload.v?.description || 'Jinwoo Kim is a software programmer.'
+            preload.v?.description ||
+            'Jinwoo Kim is a software engineer and a father of a child. He is from Korea. He has built most of his career as a web developer, owing much to frontend development and open-source contributions.'
           }
         />
         <meta
@@ -36,7 +37,10 @@ const Meta = mount<{ origin: string; id: string; preload: { v: Preload } }>(
         />
         <meta
           property="og:description"
-          content={preload.v?.openGraph?.description}
+          content={
+            preload.v?.openGraph?.description ||
+            'Jinwoo Kim is a software engineer and a father of a child. He is from Korea. He has built most of his career as a web developer, owing much to frontend development and open-source contributions.'
+          }
         />
         {(preload.v?.openGraph?.images || []).length > 0 ? (
           preload.v.openGraph.images.map(item => (
@@ -56,7 +60,7 @@ const Meta = mount<{ origin: string; id: string; preload: { v: Preload } }>(
           name="twitter:description"
           content={
             preload.v?.openGraph?.description ||
-            'Jinwoo Kim is a software programmer.'
+            'Jinwoo Kim is a software engineer and a father of a child. He is from Korea. He has built most of his career as a web developer, owing much to frontend development and open-source contributions.'
           }
         />
         {'   '}
