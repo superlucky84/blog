@@ -1,9 +1,6 @@
-export const preload = async ({
-  id,
-  origin
-}) => {
-  const { views, date } = await fetch(`${origin}/api/views/${id}`).then(response =>
-    response.json()
+export const preload = async ({ id, origin }) => {
+  const { views, date } = await fetch(`${origin}/api/views/${id}`).then(
+    response => response.json()
   );
   return {
     layout: {
@@ -24,10 +21,24 @@ export const preload = async ({
 
 ### About Blog
 
-<a href="https://bsky.app/profile/superlucky84.bsky.social" class="not-prose" target="_blank"><img alt="Guillermo Rauch" width="160" height="160" decoding="async" data-nimg="1" class="rounded-full bg-gray-100 block mt-0 mb-5 mx-auto sm:float-right sm:ml-5 sm:mb-5 grayscale hover:grayscale-0" src="/assets/kim.jpg" style="color: transparent;" /></a>
+<a
+  href="https://bsky.app/profile/superlucky84.bsky.social"
+  class="not-prose"
+  target="_blank"
+>
+  <img
+    alt="JinwooKim"
+    width="160"
+    height="160"
+    decoding="async"
+    data-nimg="1"
+    class="rounded-full bg-gray-100 block mt-0 mb-5 mx-auto sm:float-right sm:ml-5 sm:mb-5 grayscale hover:grayscale-0"
+    src="/assets/kim.jpg"
+    style="color: transparent;"
+  />
+</a>
 
 이 블로그는 제가 만든 가상 DOM 라이브러리 [Lithent](https://github.com/superlucky84/lithent)의 [SSR 보일러플레이트](https://github.com/superlucky84/lithent/tree/master/createLithent/express#welcome-to-lithent-ssr-boilerplate)에 [MDX](https://mdxjs.com/)기능을 추가하여 만들었습니다. 메인 리스트 페이지를 제외한 모든 글은 MDX를 이용하여 작성되었습니다.
-
 
 [존경하는 Vercel의 CEO Guillermo Rauch의 블로그](https://rauchg.com/)와 또 역시 [존경하는 프론트엔드 개발자 Dan Abramov의 블로그](https://overreacted.io/)에서 영감을 받아 디자인의 많은 부분을 모방했음을 미리 밝혀둡니다.
 
@@ -44,4 +55,3 @@ export const preload = async ({
 그후 [TOAST UI](https://ui.toast.com/)라는 오픈소스를 만드는 팀에서 활동했고, 이후에도 오픈소스 개발에 재미를 붙여 [Lithent](https://github.com/superlucky84/lithent)와 [State-ref](https://github.com/superlucky84/state-ref)를 만들었습니다. 특히 State-ref는 [Webpack](https://webpack.js.org/)의 초기 핵심 개발자인 [Juho Vepsäläinen](https://survivejs.com/about-me/)가 직접 [인터뷰](https://survivejs.com/blog/state-ref-interview/)내용을 자신에 블로그에 포스팅해 주셨습니다.
 
 현재는 [중앙일보](https://www.joongang.co.kr/) 프론트엔드 개발팀에 속해 있습니다. 더 자세한 경력은 [LinkedIn](https://www.linkedin.com/in/superlucky84/)에서 확인할 수 있습니다.
-
