@@ -16,10 +16,10 @@
     "highlight.js": "^11.11.1",
     "lithent": "^1.18.5",
     "state-ref": "^1.1.4",
-    "time-ago": "^0.2.1",
-    "vite": "^5.4.8"
+    "time-ago": "^0.2.1"
   },
   "devDependencies": {
+    "vite": "^5.4.8",
     "@mdx-js/rollup": "^3.1.0",
     "@tailwindcss/typography": "^0.5.16",
     "@testing-library/jest-dom": "^6.5.0",
