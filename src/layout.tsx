@@ -1,7 +1,7 @@
 import type { TagFunction } from 'lithent';
 import { mount, mountCallback } from 'lithent';
 import { computed, state } from 'lithent/helper';
-// import LoadingText from '@/components/Loading';
+import LoadingText from '@/components/Loading';
 import PageWrap from '@/components/PageWrap';
 import Header from '@/components/Header';
 import Meta from '@/components/Meta';
@@ -9,7 +9,7 @@ import mdxComponents from '@/mdxComponents';
 import { getPreloadData } from '@/base/data';
 import 'highlight.js/styles/hybrid.css';
 // import clsx from '@/helper/clsx';
-// import { routeWatch } from '@/base/route';
+import { routeWatch } from '@/base/routeStore';
 import '@/main.css';
 
 const Layout = mount<{
@@ -20,6 +20,7 @@ const Layout = mount<{
   query: Record<string, string>;
 }>((r, { origin }) => {
   let systemColor = 'dark';
+  const routeRef = routeWatch(r);
   const mode = state('init', r);
   const isDark = computed(() => {
     return mode.v === 'system' ? systemColor === 'dark' : mode.v === 'dark';
@@ -81,7 +82,9 @@ const Layout = mount<{
         />
         <main class="p-6 pt-3 md:pt-6 min-h-[calc(100vh-64px)]">
           <Header mode={mode} id={id} />
-          {['index.tsx', 'ko.tsx'].includes(id) ? (
+          {routeRef.loading.value ? (
+            <LoadingText />
+          ) : ['index.tsx', 'ko.tsx'].includes(id) ? (
             <Page isDark={isDark} />
           ) : (
             <PageWrap preload={preload} id={id}>
