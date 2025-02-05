@@ -153,8 +153,8 @@ async function createServer() {
     });
   }
 
-  app.listen(3000, () => {
-    console.log('Server is running at http://localhost:3000');
+  app.listen(7773, () => {
+    console.log('Server is running at http://localhost:7773');
   });
 }
 
