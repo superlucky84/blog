@@ -57,6 +57,7 @@ async function createServer() {
   app.use(
     '/assets',
     express.static(path.resolve(__dirname, 'assets'), {
+      etag: false,
       setHeaders: res => {
         res.set('Cache-Control', 'public, max-age=31536000');
       },
