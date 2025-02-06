@@ -57,10 +57,8 @@ async function createServer() {
   app.use(
     '/assets',
     express.static(path.resolve(__dirname, 'assets'), {
-      setHeaders: (res, filePath) => {
-        if (filePath.match(/\.(png|jpg|jpeg|gif)$/)) {
-          res.set('Access-Control-Allow-Origin', '*'); // CORS 허용
-        }
+      setHeaders: res => {
+        res.set('Cache-Control', 'public, max-age=31536000');
       },
     })
   );
