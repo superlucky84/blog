@@ -54,7 +54,16 @@ async function createServer() {
     app.use('/dist', express.static(path.resolve(__dirname, 'dist')));
   }
 
-  app.use('/assets', express.static(path.resolve(__dirname, 'assets')));
+  app.use(
+    '/assets',
+    express.static(path.resolve(__dirname, 'assets'), {
+      setHeaders: (res, filePath) => {
+        if (filePath.match(/\.(png|jpg|jpeg|gif)$/)) {
+          res.set('Access-Control-Allow-Origin', '*'); // CORS 허용
+        }
+      },
+    })
+  );
 
   app.get('/favicon.ico', (req, res) => {
     res.sendFile(path.join(__dirname, 'assets', 'favicon.ico'));
