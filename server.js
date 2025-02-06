@@ -57,14 +57,13 @@ async function createServer() {
   app.use(
     '/assets',
     express.static(path.resolve(__dirname, 'assets'), {
-      etag: false,
       setHeaders: res => {
         res.set('Cache-Control', 'public, max-age=31536000');
       },
     })
   );
 
-  app.get('/favicon.ico', (req, res) => {
+  app.get('/favicon.ico', (_req, res) => {
     res.sendFile(path.join(__dirname, 'assets', 'favicon.ico'));
   });
 
