@@ -36,6 +36,7 @@ const Meta = mount<{ origin: string; id: string; preload: { v: Preload } }>(
           property="og:title"
           content={preload.v?.openGraph?.title || 'The Blog of Jinwoo Kim'}
         />
+        <meta property="og:type" content="website" />
         <meta
           property="og:description"
           content={
