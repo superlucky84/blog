@@ -59,6 +59,7 @@ async function createServer() {
     express.static(path.resolve(__dirname, 'assets'), {
       setHeaders: res => {
         res.set('Cache-Control', 'public, max-age=31536000');
+        res.set('Access-Control-Allow-Origin', '*');
       },
     })
   );
