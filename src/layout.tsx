@@ -57,6 +57,7 @@ const Layout = mount<{
       <head>
         <title>{preload.value?.title || "superlucky84's blog"}</title>
         <Meta origin={origin} preload={preload} id={id} />
+        <link rel="stylesheet" href="/assets/font.css" />
         <script
           innerHTML={`
           (function (w, d, s, l, i) {
