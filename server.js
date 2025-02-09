@@ -68,6 +68,11 @@ async function createServer() {
     res.sendFile(path.join(__dirname, 'assets', 'favicon.ico'));
   });
 
+  app.get('/robots.txt', (req, res) => {
+    res.type('text/plain');
+    res.send('User-agent: *\nDisallow:');
+  });
+
   const sortedRouteList = sortFiles(Object.keys(entries));
 
   app.get(`/api/views/:id`, async (req, res, next) => {

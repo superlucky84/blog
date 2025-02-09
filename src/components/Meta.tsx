@@ -1,4 +1,5 @@
 import { mount } from 'lithent';
+import { computed } from 'lithent/helper';
 
 type Preload = {
   views: number;
@@ -12,7 +13,9 @@ type Preload = {
 };
 
 const Meta = mount<{ origin: string; id: string; preload: { v: Preload } }>(
-  () => {
+  (_r, props) => {
+    const isKo = computed(() => /^ko\./.test(props.id));
+
     return ({ origin, id, preload }) => (
       <>
         <meta charset="UTF-8" />
@@ -25,6 +28,7 @@ const Meta = mount<{ origin: string; id: string; preload: { v: Preload } }>(
             'Jinwoo Kim is a software engineer and a father of a child. He is from Korea. He has built most of his career as a web developer, owing much to frontend development and open-source contributions.'
           }
         />
+        <meta property="og:locale" content={isKo.v ? 'ko_KR' : 'en_US'} />
         <meta
           property="og:url"
           content={
