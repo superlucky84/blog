@@ -3,7 +3,6 @@ import { navigate } from '@/base/route';
 import { getPreloadData } from '@/base/data';
 import {
   formatNumberWithCommas,
-  isExity,
   groupByYear,
   transformFilename,
 } from '@/helper/calculator';
