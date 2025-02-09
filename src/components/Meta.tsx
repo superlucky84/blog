@@ -19,15 +19,7 @@ const Meta = mount<{ origin: string; id: string; preload: { v: Preload } }>(
     return ({ origin, id, preload }) => (
       <>
         <meta charset="UTF-8" />
-        <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta
-          name="description"
-          content={
-            preload.v?.description ||
-            'Jinwoo Kim is a software engineer and a father of a child. He is from Korea. He has built most of his career as a web developer, owing much to frontend development and open-source contributions.'
-          }
-        />
         <meta property="og:type" content="website" />
         <meta property="og:locale" content={isKo.v ? 'ko_KR' : 'en_US'} />
         <meta
@@ -54,6 +46,13 @@ const Meta = mount<{ origin: string; id: string; preload: { v: Preload } }>(
           property="og:description"
           content={
             preload.v?.openGraph?.description ||
+            'Jinwoo Kim is a software engineer and a father of a child. He is from Korea. He has built most of his career as a web developer, owing much to frontend development and open-source contributions.'
+          }
+        />
+        <meta
+          name="description"
+          content={
+            preload.v?.description ||
             'Jinwoo Kim is a software engineer and a father of a child. He is from Korea. He has built most of his career as a web developer, owing much to frontend development and open-source contributions.'
           }
         />
