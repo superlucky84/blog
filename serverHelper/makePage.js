@@ -48,6 +48,6 @@ export default class MakePage {
     let pageString = renderToString(
       h(Layout, Object.assign({ page: Page }, this.props))
     );
-    return `<!doctype html>${pageString}`;
+    return `<!DOCTYPE html>${pageString}`;
   }
 }
