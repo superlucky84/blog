@@ -41,7 +41,7 @@ const Meta = mount<{ origin: string; id: string; preload: { v: Preload } }>(
           <meta property="og:image" content={origin + '/assets/kim.jpg'} />
         )}
         <meta property="og:image:width" content="1080" />
-        <meta property="og:image:height" content="1080" />
+        <meta property="og:image:height" content="540" />
         <meta
           property="og:description"
           content={
