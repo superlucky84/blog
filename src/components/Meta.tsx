@@ -28,7 +28,7 @@ const Meta = mount<{ origin: string; id: string; preload: { v: Preload } }>(
         <meta
           property="og:url"
           content={
-            `${origin}/${id.replace(/\./g, '\/').replace(/(index\/tsx$|\/mdx$|\/tsx$)/, '')}` ||
+            `${origin}/${id?.replace(/\./g, '\/').replace(/(index\/tsx$|\/mdx$|\/tsx$)/, '')}` ||
             origin
           }
         />
