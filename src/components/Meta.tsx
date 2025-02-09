@@ -28,6 +28,7 @@ const Meta = mount<{ origin: string; id: string; preload: { v: Preload } }>(
             'Jinwoo Kim is a software engineer and a father of a child. He is from Korea. He has built most of his career as a web developer, owing much to frontend development and open-source contributions.'
           }
         />
+        <meta property="og:type" content="website" />
         <meta property="og:locale" content={isKo.v ? 'ko_KR' : 'en_US'} />
         <meta
           property="og:url"
@@ -40,14 +41,6 @@ const Meta = mount<{ origin: string; id: string; preload: { v: Preload } }>(
           property="og:title"
           content={preload.v?.openGraph?.title || 'The Blog of Jinwoo Kim'}
         />
-        <meta property="og:type" content="website" />
-        <meta
-          property="og:description"
-          content={
-            preload.v?.openGraph?.description ||
-            'Jinwoo Kim is a software engineer and a father of a child. He is from Korea. He has built most of his career as a web developer, owing much to frontend development and open-source contributions.'
-          }
-        />
         {(preload.v?.openGraph?.images || []).length > 0 ? (
           preload.v.openGraph.images.map(item => (
             <meta property="og:image" content={origin + item.url} />
@@ -55,6 +48,15 @@ const Meta = mount<{ origin: string; id: string; preload: { v: Preload } }>(
         ) : (
           <meta property="og:image" content={origin + '/assets/kim.jpg'} />
         )}
+        <meta property="og:image:width" content="1080" />
+        <meta property="og:image:height" content="1080" />
+        <meta
+          property="og:description"
+          content={
+            preload.v?.openGraph?.description ||
+            'Jinwoo Kim is a software engineer and a father of a child. He is from Korea. He has built most of his career as a web developer, owing much to frontend development and open-source contributions.'
+          }
+        />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:site" content="@superlucky84" />
         <meta name="twitter:creator" content="@superlucky84" />
