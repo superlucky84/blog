@@ -147,15 +147,7 @@ async function createServer() {
 
       res
         .status(200)
-        .set({
-          'Content-Type': 'text/html; charset=UTF-8',
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          Pragma: 'no-cache',
-          Expires: '0',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
-          'X-Robots-Tag': 'index, follow',
-        })
+        .set({ 'Content-Type': 'text/html; charset=UTF-8' })
         .end(finalHtml);
     });
   });

@@ -1,7 +1,11 @@
 import { mount, Fragment } from 'lithent';
 import { navigate } from '@/base/route';
 import { getPreloadData } from '@/base/data';
-import { groupByYear, transformFilename } from '@/helper/calculator';
+import {
+  formatNumberWithCommas,
+  groupByYear,
+  transformFilename,
+} from '@/helper/calculator';
 import { getLabColor } from '@/helper/labColor';
 import clsx from '@/helper/clsx';
 //@ts-ignore
@@ -105,7 +109,7 @@ const Index = mount<{ isDark: { v: boolean } }>(() => {
                           ({timeago.ago(item.date)})
                         </span>
                       </span>
-                      <span>{item.view} views</span>
+                      <span>{formatNumberWithCommas(item.view)} views</span>
                     </span>
                   </span>
                 </a>
