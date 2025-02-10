@@ -8,49 +8,53 @@ export const preload = async ({ id, origin }) => {
       date,
       title: 'Creating a Functional elseIf Utility Function',
       description:
-        'Whenever I came across books or materials on functional programming, I often found myself unconsciously wondering what more I needed to reach a level where I could freely apply pipe to real-world code in my company\'s work.',
+        "Whenever I came across books or materials on functional programming, I often found myself unconsciously wondering what more I needed to reach a level where I could freely apply pipe to real-world code in my company's work.",
       openGraph: {
         title: 'Creating a Functional elseIf Utility Function',
         description:
-          'Whenever I came across books or materials on functional programming, I often found myself unconsciously wondering what more I needed to reach a level where I could freely apply pipe to real-world code in my company\'s work.',
-        images: [{ url: '/assets/posts/functional-elseif-utility-function-creation.png' }],
+          "Whenever I came across books or materials on functional programming, I often found myself unconsciously wondering what more I needed to reach a level where I could freely apply pipe to real-world code in my company's work.",
+        images: [
+          {
+            url: '/assets/posts/functional-elseif-utility-function-creation.png',
+            width: 1080,
+            height: 1080,
+          },
+        ],
       },
     },
   };
 };
 
-<img src="/assets/posts/functional-elseif-utility-function-creation.png" style={{ height: '300px', width: '100%', objectFit: 'cover' }} />
+<img
+  src="/assets/posts/functional-elseif-utility-function-creation.png"
+  style={{ height: '300px', width: '100%', objectFit: 'cover' }}
+/>
 
-* Table of Contents
-  * Triggering Event
-  * Reckless Implementation
-  * A More Refined Implementation
-  * So, What's the Benefit?
+- Table of Contents
+  - Triggering Event
+  - Reckless Implementation
+  - A More Refined Implementation
+  - So, What's the Benefit?
 
+## Triggering Event
 
-## Triggering Event  
+I wasn't entirely unfamiliar with functional programming, but after randomly coming across the book _Functional Programming Made Clear_, I felt inspired to apply functional programming more actively to my code.
 
-I wasn't entirely unfamiliar with functional programming, but after randomly coming across the book *Functional Programming Made Clear*, I felt inspired to apply functional programming more actively to my code.
-
-There is a utility called [pipe](https://ahnanne.tistory.com/93) that aids functional programming by composing multiple functions together using commas, creating a new function. This makes it much easier to track the flow of inputs and outputs across multiple functions.  
+There is a utility called [pipe](https://ahnanne.tistory.com/93) that aids functional programming by composing multiple functions together using commas, creating a new function. This makes it much easier to track the flow of inputs and outputs across multiple functions.
 
 Whenever I came across books or materials on functional programming, I often found myself unconsciously wondering what more I needed to reach a level where I could freely apply `pipe` to real-world code in my company's work.
 
 > Example of Using `pipe`
 
 ```javascript
-const f = R.pipe(
-    Math.pow,
-    R.negate,
-    R.inc
-);
+const f = R.pipe(Math.pow, R.negate, R.inc);
 f(3, 4); // -(3^4) + 1
 ```
 
 One leisurely day off, I turned on my computer early in the morning to play a game. But out of nowhere, my curiosity about functional programming, which had been lingering in my subconscious, suddenly spoke to me:  
-*"How do you connect `if else` logic within `pipe`?"*  
+_"How do you connect `if else` logic within `pipe`?"_
 
-I figured I should resolve this curiosity first before I could fully enjoy my game.  
+I figured I should resolve this curiosity first before I could fully enjoy my game.
 
 After browsing through well-known functional programming libraries, I quickly found utilities that provided functionality similar to what I was looking for: [ramdaJs(ifElse)](https://ramdajs.com/docs/#ifElse) and [fxJs(ifElse)](https://github.com/marpple/FxJS/blob/master/Strict/ifElse.js). Below is an example of how `ifElse` is used in RamdaJs.
 
@@ -82,25 +86,32 @@ const incCount = R.ifElse(
 );
 ```
 
-
 ## Reckless Implementation
 
-It would be nice if everything could be expressed cleanly in a single depth, but as I add more `if else` conditions, the depth keeps increasing, which I don’t like.  
+It would be nice if everything could be expressed cleanly in a single depth, but as I add more `if else` conditions, the depth keeps increasing, which I don’t like.
 
-To get straight to the point—I did eventually find another utility function that perfectly matched the interface I wanted. However, I found it too late, and in the meantime, I ended up creating something weird on my own.  
+To get straight to the point—I did eventually find another utility function that perfectly matched the interface I wanted. However, I found it too late, and in the meantime, I ended up creating something weird on my own.
 
 The interface of the strange utility function I made looks like this:  
 The first argument of `elseIf` is a predicate, and the second argument is the return value when the predicate evaluates to `true`.
 
-
 ```javascript
 const getGrade = pipe(
-  elseIf((value) => value === 1, () => "Gold Member"),
-  elseIf((value) => value === 2, () => "Silver Member"),
-  elseIf((value) => value === 3, () => "Regular Member"),
-  elseEnd(() => "Others")
+  elseIf(
+    value => value === 1,
+    () => 'Gold Member'
+  ),
+  elseIf(
+    value => value === 2,
+    () => 'Silver Member'
+  ),
+  elseIf(
+    value => value === 3,
+    () => 'Regular Member'
+  ),
+  elseEnd(() => 'Others')
 );
-chkGrade(2) // Silver Member
+chkGrade(2); // Silver Member
 ```
 
 The key concept behind implementing this is that if the predicate of an `elseIf` condition earlier in the chain evaluates to `true`, the subsequent `elseIf` conditions are no longer needed. Once a value is determined, the later `elseIf` functions should simply pass the value through without processing it further.
@@ -108,10 +119,13 @@ The key concept behind implementing this is that if the predicate of an `elseIf`
 The solution I found was to wrap the determined value in an object called `Decision`. Then, when the other `elseIf` conditions later in the chain encounter a value wrapped in `Decision`, they just pass it through. Below is the code illustrating this approach.
 
 ```javascript
-const elseIf = curry((is, run, value) =>
-  value instanceof Decision ? value :   // If the value is already a Decision object, return it as is
-  is(value) ? Decision.of(run(value)) : // If the predicate is true and the value is not a Decision, wrap the result in a Decision object
-  value                                 // If the predicate is false, return the original value
+const elseIf = curry(
+  (is, run, value) =>
+    value instanceof Decision
+      ? value // If the value is already a Decision object, return it as is
+      : is(value)
+        ? Decision.of(run(value)) // If the predicate is true and the value is not a Decision, wrap the result in a Decision object
+        : value // If the predicate is false, return the original value
 );
 ```
 
@@ -141,15 +155,14 @@ In the nested array, the first element is the predicate inside the `if` statemen
 
 ```js
 const fn = R.cond([
-  [R.equals(0),   R.always('water freezes at 0°C')],
+  [R.equals(0), R.always('water freezes at 0°C')],
   [R.equals(100), R.always('water boils at 100°C')],
-  [R.T,           temp => 'nothing special happens at ' + temp + '°C']
+  [R.T, temp => 'nothing special happens at ' + temp + '°C'],
 ]);
 fn(0); //=> 'water freezes at 0°C'
 fn(50); //=> 'nothing special happens at 50°C'
 fn(100); //=> 'water boils at 100°C'
 ```
-
 
 If I had discovered this from the beginning, I wouldn't have wasted half a day pondering over it and could have just focused on the game, which is a bit disappointing. Still, to wrap up my thoughts neatly, I decided to implement `cond` using the `elseIf` and `elseEnd` functions I made.
 
@@ -158,10 +171,10 @@ You just need to convert the shape of `showcases([if: () => boolean, run: () => 
 > Implementation
 
 ```js
-const cond = curry((condition) => {
+const cond = curry(condition => {
   const condPipe = pipe(
     map(([arg1, arg2]) => (arg2 ? elseIf(arg1, arg2) : elseEnd(arg1))),
-    (arr) => [...arr, elseEnd((value) => value)]
+    arr => [...arr, elseEnd(value => value)]
   )(condition);
 
   return pipe(...condPipe);
@@ -181,18 +194,16 @@ const cond = curry((condition) => {
 
 It's so simple that there's not much to explain. You can use it like the example below. Anyway, it's a bit frustrating that I wasted half a precious holiday on this.
 
-
 ```js
 const chkGrade = cond([
-  [(value) => value === 1, () => "Gold Member"],
-  [(value) => value === 2, () => "Silver Member"],
-  [(value) => value === 3, () => "Regular Member"],
-  [() => "Others"],
+  [value => value === 1, () => 'Gold Member'],
+  [value => value === 2, () => 'Silver Member'],
+  [value => value === 3, () => 'Regular Member'],
+  [() => 'Others'],
 ]);
 
-chkGrade(2) // Silver Member
+chkGrade(2); // Silver Member
 ```
-
 
 ## So, What's the Benefit?
 
@@ -206,36 +217,44 @@ For example, if you want to add functionality to display "Others" for any non-Go
 
 ```js
 const chkGrade = (value, chkOnlyVip) => {
-    return pipe(
-      ...[
-        elseIf((value) => value === 1, () => "Gold Member"),
-        !chkOnlyVip && elseIf((value) => value === 2, () => "Silver Member"),
-        !chkOnlyVip && elseIf((value) => value === 3, () => "Regular Member"),
-        elseEnd(() => "Others")
-      ].filter(item => item)
-    )(value);
-}
-chkGrade(2, true) // Others
+  return pipe(
+    ...[
+      elseIf(
+        value => value === 1,
+        () => 'Gold Member'
+      ),
+      !chkOnlyVip &&
+        elseIf(
+          value => value === 2,
+          () => 'Silver Member'
+        ),
+      !chkOnlyVip &&
+        elseIf(
+          value => value === 3,
+          () => 'Regular Member'
+        ),
+      elseEnd(() => 'Others'),
+    ].filter(item => item)
+  )(value);
+};
+chkGrade(2, true); // Others
 ```
 
 > Example of using `cond`
 
 ```js
 const chkGrade = (value, chkOnlyVip) => {
-    return cond([
-      [(value) => value === 1, () => "Gold Member"],
-      !chkOnlyVip && [(value) => value === 2, () => "Silver Member"],
-      !chkOnlyVip && [(value) => value === 3, () => "Regular Member"],
-      [() => "Others"],
-    ].filter(item => item))(value);
-}
+  return cond(
+    [
+      [value => value === 1, () => 'Gold Member'],
+      !chkOnlyVip && [value => value === 2, () => 'Silver Member'],
+      !chkOnlyVip && [value => value === 3, () => 'Regular Member'],
+      [() => 'Others'],
+    ].filter(item => item)
+  )(value);
+};
 ```
 
 Anyway, it was a fun time pondering and exploring different ideas. In the end, I realized that others are using something similar to what I had in mind, which reassured me that my approach to functional programming wasn't completely off-track.
 
 And while how useful it is certainly matters, I think if I enjoyed the process, that’s enough for me.
-
-
-
-
-

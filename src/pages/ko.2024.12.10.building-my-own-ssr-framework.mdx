@@ -13,31 +13,40 @@ export const preload = async ({ id, origin }) => {
         title: '나만의 SSR 프레임웍 만들기',
         description:
           '최종 목표는, 예를 들어 Next.js와 같이 SSR 프레임워크처럼 동작하는 것을 만들어 보는 것이었는데, 마침내 어제 처음 설정했던 목표를 달성했습니다. 프레임워크라 부르기엔 부족하지만, 개인이 취미로 만들어 개인적으로 사용하기엔 충분히 만족스러운 결과물이라고 생각합니다.',
-        images: [{ url: '/assets/posts/building-my-own-ssr-framework.png' }],
+        images: [
+          {
+            url: '/assets/posts/building-my-own-ssr-framework.png',
+            width: 1080,
+            height: 1080,
+          },
+        ],
       },
     },
   };
 };
 
-<img src="/assets/posts/building-my-own-ssr-framework.png" style={{ height: '300px', width: '100%', objectFit: 'cover' }} />
+<img
+  src="/assets/posts/building-my-own-ssr-framework.png"
+  style={{ height: '300px', width: '100%', objectFit: 'cover' }}
+/>
 
-* 목차
-	* 개요
-	* renderToString 만들기
-	* hydration 만들기
-		* 첫 번째: 가상 돔 노드와 리얼 돔 노드 매칭하기
-		* 두 번째: 가상 돔의 이벤트 바인딩 정보를 리얼 돔에 연결하기
-	* Express 라우터에서 만든 리얼DOM에 Hydration 하기
-	* 파일명으로 라우팅 규칙 결정하기
-	* 간단한 라우팅 구현
-	* SSR을 위한 초기 데이터 만들기
-	* 맺음말
+- 목차
+  - 개요
+  - renderToString 만들기
+  - hydration 만들기
+    - 첫 번째: 가상 돔 노드와 리얼 돔 노드 매칭하기
+    - 두 번째: 가상 돔의 이벤트 바인딩 정보를 리얼 돔에 연결하기
+  - Express 라우터에서 만든 리얼DOM에 Hydration 하기
+  - 파일명으로 라우팅 규칙 결정하기
+  - 간단한 라우팅 구현
+  - SSR을 위한 초기 데이터 만들기
+  - 맺음말
 
 ## 개요
 
 취미로 만들고 있는 UI 라이브러리가 있습니다. 가상돔의 동작 원리를 직접 구현하며 공부해 보면 재미있겠다는 생각에서 시작했으며, 만들면서 배운 내용을 글로 공유하려는 것이 처음 계획이었습니다.
 
-* [https://github.com/superlucky84/lithent](https://github.com/superlucky84/lithent)
+- [https://github.com/superlucky84/lithent](https://github.com/superlucky84/lithent)
 
 최종 목표는, 예를 들어 Next.js와 같이 SSR 프레임워크처럼 동작하는 것을 만들어 보는 것이었는데, 마침내 어제 처음 설정했던 목표를 달성했습니다. 프레임워크라 부르기엔 부족하지만, 개인이 취미로 만들어 개인적으로 사용하기엔 충분히 만족스러운 결과물이라고 생각합니다.
 
@@ -45,9 +54,9 @@ export const preload = async ({ id, origin }) => {
 
 참고로, 프로젝트를 진행하며 작성했던 관련 글들도 아래에 함께 소개합니다.
 
-* [나만의 커스텀 React 제작기](https://medium.com/p/d14ba89373d3)
-* [JSX나 h(createElement) 함수를 사용하지 않고 가상돔을 만드는 방법](https://medium.com/p/e99ee25b4bf1)
-* [가상돔 라이브러리 Lithent 전체 기능 설명서](https://medium.com/p/3cfab04c0722)
+- [나만의 커스텀 React 제작기](https://medium.com/p/d14ba89373d3)
+- [JSX나 h(createElement) 함수를 사용하지 않고 가상돔을 만드는 방법](https://medium.com/p/e99ee25b4bf1)
+- [가상돔 라이브러리 Lithent 전체 기능 설명서](https://medium.com/p/3cfab04c0722)
 
 이 글은 아마도 이 시리즈의 마지막 글이 될 것 같습니다. 저의 작은 도전과 실험을 돌아보는 글이라 다른 분들께 얼마나 도움이 될지는 모르겠습니다만, 이 내용이 누군가에게 조금이라도 영감을 주거나 도움이 되길 바랍니다.
 
@@ -68,11 +77,10 @@ export const preload = async ({ id, origin }) => {
 }
 ```
 
-
 > html문자열
 
 ```js
-'<div>테스트1</div>'
+'<div>테스트1</div>';
 ```
 
 트리 형태의 가상 돔 객체를 순회하면서 텍스트 문자열로 변환하면 됩니다.
@@ -90,7 +98,6 @@ export const preload = async ({ id, origin }) => {
 1. `vDomToString`: 가상 돔을 문자열로 변환하는 핵심 함수
 2. `vDomChildrenToString`: 자식 노드의 가상 돔을 재귀적으로 탐색하며 `vDomToString`을 적용하는 함수
 3. `makeProp`: 돔의 속성(attribute)을 처리하는 함수
-
 
 구현 중 예상치 못한 문제가 하나 있었는데, 바로 셀프 클로징 태그 처리였습니다. 예를 들어, `<img />`나 `<input />` 같은 태그는 자식 노드를 가질 수 없습니다. 이 부분을 브라우저 API로 판별할 방법이 있는지 찾아봤지만, 마땅한 API는 없었습니다. 대신, Preact 같은 라이브러리에서는 미리 정의된 셀프 클로징 태그 목록을 사용해 처리하고 있었습니다. 저도 이 방식을 참고하여 코드를 작성했습니다.
 
@@ -131,8 +138,6 @@ function vDomToString(vDom: VDom) {
 
 여기서 `isAllowSelfClose(tag)` 판별식이 참인 경우, 해당 태그는 스스로 닫히는 방식으로 처리됩니다.
 
-
-
 코드가 간단히 끝난 것 같아 혹시 놓친 부분이 있을까 싶어 React와 Preact의 코드를 살펴보았습니다. 훨씬 많은 예외처리와 기능이 있고 더 복잡하네요. 가장큰 차이는, React에서는 최신 API인 `renderToPipeableStream`을 통해 스트리밍 SSR을 더욱 강력하게 지원하고 있었습니다. Preact에서도 이름은 다르지만 유사한 API를 구현한 코드가 확인되었습니다.
 
 `renderToPipeableStream`은 `Suspense`와의 통합을 통해 HTML 문자열을 스트리밍 방식으로 클라이언트에 전달할 수 있도록 설계되었습니다. 이를 통해 페이지 로딩 속도가 빨라지고, 사용자 경험이 개선됩니다.
@@ -145,13 +150,12 @@ function vDomToString(vDom: VDom) {
 
 hydration이란 서버에서 생성된 HTML을 “재활용”하면서, 클라이언트에서 해당 실제 돔(리얼 돔)과 가상 돔의 상태 및 이벤트 연결을 복원하는 작업입니다. 다시 말해, 정적인 페이지에 가상 돔의 상태 변화와 이벤트가 동작하도록 생명을 불어넣는 과정이죠.
 
-
 저는 hydration이 다음 두 가지 역할을 한다고 생각하며 접근했습니다.
 
 1. 리얼 돔과 가상 돔 매칭
-	* 리얼 돔의 트리를 순회하며, 가상 돔과 트리 구조에서 위치가 일치하는 노드들을 연결합니다.
+   - 리얼 돔의 트리를 순회하며, 가상 돔과 트리 구조에서 위치가 일치하는 노드들을 연결합니다.
 2. 이벤트 바인딩 복원
-	* 가상 돔에 정의된 이벤트 바인딩 정보를 리얼 돔에 다시 연결합니다. 이 두 가지 작업은 순차적으로 이루어져야 합니다. 먼저, 리얼 돔 노드와 가상 돔 노드가 정확히 매칭되어야만, 그 다음으로 이벤트 리스너를 제대로 등록할 수 있기 때문입니다.
+   - 가상 돔에 정의된 이벤트 바인딩 정보를 리얼 돔에 다시 연결합니다. 이 두 가지 작업은 순차적으로 이루어져야 합니다. 먼저, 리얼 돔 노드와 가상 돔 노드가 정확히 매칭되어야만, 그 다음으로 이벤트 리스너를 제대로 등록할 수 있기 때문입니다.
 
 ### 첫 번째: 리얼 돔과 가상 돔 매칭
 
@@ -165,12 +169,12 @@ hydration이란 서버에서 생성된 HTML을 “재활용”하면서, 클라�
 
 ```js
 function hydration(realDom, virtualDom) {
-    Array.from(realDom.childNodes).forEach((realChildNode, index) => {
-        const virtualChildNode = virtualDom[index];
+  Array.from(realDom.childNodes).forEach((realChildNode, index) => {
+    const virtualChildNode = virtualDom[index];
 
-        virtualChildNode.el = realChildNode;
-        // ...
-    });
+    virtualChildNode.el = realChildNode;
+    // ...
+  });
 }
 ```
 
@@ -187,7 +191,6 @@ function hydration(realDom, virtualDom) {
 확실한 점은 리얼 돔에서 연속된 텍스트는 하나의 텍스트 노드로 취급된다는 것입니다. 예를 들어 `<div>텍스<br>트1</div>`라는 리얼 돔에서는 독립된 텍스트 노드는 `텍스`와 `트1` 두 개입니다.
 
 이런 패턴을 기반으로, 이 문제를 가장 간단하게 해결할 방법을 고민했습니다.
-
 
 #### 가장 간단한 해결 방법
 
@@ -213,7 +216,6 @@ if (vDomItem.type === 'text' && nodeType === 3) {
 
 저 `nIndex` 값이 역할은 연속된 텍스트 노드 처리때문에 리얼돔트리와 가상돔 트리의 돔 트리의 인덱스 정보를 맞춰주기 위함입니다.
 
-
 ### 두 번째: 이벤트 바인딩 복원
 
 첫 번째 작업이 성공적으로 완료된 덕분에, 두 번째 작업은 이미 90% 정도 완성된 상태였습니다. 실제로, `render` 메서드에서 리얼 돔을 생성하는 부분을 제외하면 나머지가 바로 이벤트 바인딩 처리와 관련된 코드였기 때문입니다.
@@ -221,7 +223,6 @@ if (vDomItem.type === 'text' && nodeType === 3) {
 `render` 메서드의 세 번째 인자에 `isHydration` 플래그(`render(<Component />, document.getElementById(‘root’), isHydration)`)를 추가하고, `isHydartion` 플래그가 있을 경우 `document.createElement` 로 실제돔을 만드는 부분을 모두 예외 처리하는 방식으로 구현을 완성했습니다.
 
 완성된 hydration 코드는 ([여기](https://github.com/superlucky84/lithent/blob/master/ssr/src/hydration.ts))에서 확인 가능합니다.
-
 
 ## express 라우터에서 renderToString 사용하기
 
@@ -249,11 +250,9 @@ app.get(`/${expressPath.replace(/_/g, ':')}`, async (req, res, next) => {
 }
 ```
 
-
 `Page`와 `Layout`은 가상돔 컴포넌트를 구현한 모듈입니다. Node.js 코드에서 JSX를 사용하려면 추가적인 트랜스컴파일러를 사용하는 불필요한 복잡함이 있기 때문에, 저는 `h` 함수를 직접 사용하여 구현했습니다.
 
 위의 예시에서 모듈을 불러올 때 `vite.ssrLoadModule` api를 사용하여 Vite를 통해 불러옵니다. 이 API를 사용하면 여러 가지 이점이 있는데, 가장 큰 이유는 서버 환경에서 모듈을 동적으로 가져올 수 있기 때문입니다. 페이지 모듈이 Express 라우터에 의해 동적으로 불러와져야 하기 때문에 이 방법을 선택했습니다.
-
 
 또한, `vite.transformIndexHtml`은 생성된 HTML을 Vite의 플러그인 체인과 통합하는 역할을 합니다. 개발 모드의 HMR(Hot Module Replacement)을 위한 코드가 문서에 자동으로 삽입되고, TailwindCSS와 함께 사용할 때 Vite 플러그인을 통해 동적으로 CSS 스타일이 추가됩니다.
 
@@ -293,7 +292,6 @@ app.get(`/${expressPath.replace(/_/g, ':')}`, async (req, res, next) => {
 
 개발 모드에서는 `vite.ssrLoadModule`을 사용하여 모듈을 동적으로 불러왔지만, 프로덕션 모드에서는 이미 빌드된 파일을 불러옵니다. CSS도 빌드된 압축된 버전을 사용하여 head 영역에 삽입합니다.
 
-
 ## Express 라우터에서 만든 리얼DOM에 Hydration 하기
 
 하지만 앞서 말했듯이, hydration이 이루어지지 않으면 그저 반쪽짜리 구현에 불과합니다.
@@ -311,10 +309,13 @@ pageString = appHtmlOrig.replace(
 );
 //...
 
-res.status(200).set({ 'Content-Type': 'text/html' }).end(`<!doctype html>${pageString}`);
+res
+  .status(200)
+  .set({ 'Content-Type': 'text/html' })
+  .end(`<!doctype html>${pageString}`);
 ```
 
- HTML 문자열의 `<body>` 태그 바로 아래에 아래와 같이 추가하면, 클라이언트에서 load 함수가 바로 실행됩니다.
+HTML 문자열의 `<body>` 태그 바로 아래에 아래와 같이 추가하면, 클라이언트에서 load 함수가 바로 실행됩니다.
 
 그리고 아래 코드는 load 함수의 구현입니다. 이 함수는 hydration을 수행하는 역할을 합니다.
 
@@ -327,39 +328,35 @@ export default async function load(key) {
   const res = await pageModules[`../pages/${key}`]();
 
   // const Page = h(res!.default as TagFunction, props) as VDom;
-  const LayoutVDom = h(
-    Layout,
-    { page: res.default },
-  );
-  hydration(LayoutVDom, document.documentElement)
+  const LayoutVDom = h(Layout, { page: res.default });
+  hydration(LayoutVDom, document.documentElement);
 }
 ```
 
-
 위의 `import.meta.glob(‘../pages/*.tsx’)`는 동적으로 `import`해야 하는 컴포넌트들을 미리 준비할 수 있도록 트랜스파일러에게 알려주는 역할을 합니다. 이 방식은 Vite에서 제공하는 기능으로, 특정 패턴에 맞는 파일들을 동적으로 불러오게 해줍니다.
-
-
 
 ## 파일명으로 라우팅 규칙 결정하기
 
 라우팅은 `/src/pages/` 디렉토리 아래의 파일 이름에 따라 결정됩니다.
 
-* `src/pages/index.tsx`는 루트 URL인 `http://localhost:3000`에 매핑됩니다.
-* `src/pages/one.tsx`는 `http://localhost:3000/one`에 매핑됩니다.
+- `src/pages/index.tsx`는 루트 URL인 `http://localhost:3000`에 매핑됩니다.
+- `src/pages/one.tsx`는 `http://localhost:3000/one`에 매핑됩니다.
 
+동적 세그먼트는 파일 이름에 언더바(\_)를 사용하여 정의됩니다.
 
-동적 세그먼트는 파일 이름에 언더바(_)를 사용하여 정의됩니다.
+- `src/pages/index._type.tsx`는 `http://localhost:3000/:type`과 같은 동적 경로에 매핑됩니다.
+- `src/pages/one._type._name.tsx`는 `http://localhost:3000/one/:type/:name`에 매핑됩니다.
 
-* `src/pages/index._type.tsx`는 `http://localhost:3000/:type`과 같은 동적 경로에 매핑됩니다.
-* `src/pages/one._type._name.tsx`는 `http://localhost:3000/one/:type/:name`에 매핑됩니다.
-
-구현은 `/src/pages/` 폴더 내의 모든 파일을 읽어 `filePaths` 변수에 담은 뒤, 이를 루프를 돌면서 express 라우터에 매칭시킵니다. express의 라우팅 규칙에서는 동적 세그먼트를 세미콜론(:)을 사용해 정의하므로, 파일명에 사용된 밑줄(_)을 세미콜론(:)으로 치환해줍니다.
+구현은 `/src/pages/` 폴더 내의 모든 파일을 읽어 `filePaths` 변수에 담은 뒤, 이를 루프를 돌면서 express 라우터에 매칭시킵니다. express의 라우팅 규칙에서는 동적 세그먼트를 세미콜론(:)을 사용해 정의하므로, 파일명에 사용된 밑줄(\_)을 세미콜론(:)으로 치환해줍니다.
 
 ```js
 filePaths.forEach(path => {
   app.get(`/${path.replace(/_/g, ':')}`, async (req, res, next) => {
     // ...
-    res.status(200).set({ 'Content-Type': 'text/html' }).end(`<!doctype html>${pageString}`);
+    res
+      .status(200)
+      .set({ 'Content-Type': 'text/html' })
+      .end(`<!doctype html>${pageString}`);
   });
 });
 ```
@@ -373,7 +370,6 @@ filePaths.forEach(path => {
 `navigate`로 페이지 정보가 변경되면 `pushState`가 실행되고, 변경된 페이지 경로가 반응형 데이터에 업데이트됩니다. 그 후, `loadPage` 함수가 트리거되어 가상돔으로부터 페이지를 다시 렌더링합니다.
 
 아래는 간략화한 `loadPage` 함수입니다.
-
 
 ```js
 async function loadPage(dynamicPath: string) {
@@ -395,7 +391,6 @@ async function loadPage(dynamicPath: string) {
 }
 ```
 
-
 현재 보여지고 있는 페이지 정보는 반응형 상태에 저장되어 있으며, `routeRef`는 해당 상태를 변경하고 참조할 수 있는 객체입니다. `routeRef.rVDom`은 현재 페이지를 렌더링한 가상돔의 루트 객체입니다.
 
 이 루트 객체에 변경된 페이지 정보를 수동으로 업데이트한 후, `routeRef.renew()`를 호출하여 루트 컴포넌트를 업데이트하면 페이지가 변경됩니다.
@@ -403,7 +398,6 @@ async function loadPage(dynamicPath: string) {
 `const res = await pageModules[key]()`로 페이지 경로에 해당하는 페이지 컴포넌트를 동적으로 불러오기 때문에 로딩이 발생합니다. 따라서 `routeRef.loading` 값을 사용해 로딩 상태를 처리합니다.
 
 `routeRef`는 UI와 반응형으로 동작하는 상태 관리 객체로, 값이 변경되면 UI에 동적으로 반영됩니다.
-
 
 ## SSR을 위한 초기 데이터 만들기
 
@@ -427,7 +421,6 @@ app.get(`/${expressPath.replace(/_/g, ':')}`, async (req, res, next) => {
   res.status(200).set({ 'Content-Type': 'text/html' }).end(`<!doctype html>${pageString}`);
 }
 ```
-
 
 그리고 아래와 같이 페이지 컴포넌트에서 `globalThis`에서 `preload` 데이터를 참조할 수 있는 `getPreloadData` 함수를 통해 데이터를 가져와 렌더링에 사용할 수 있도록 했습니다.
 
@@ -453,16 +446,11 @@ const Index = mount(() => {
 export default Index;
 ```
 
-
 `globalThis`를 사용하는 방식이 마음에 들지 않지만, 이 부분은 실제로 사용하면서 점차 개선해 나갈 계획입니다. 이 프로젝트의 주요 목적은 빠르게 프로토타이핑을 해보는 것이기 때문입니다.
 
 렌더링 후 페이지 이동이 CSR로 동작할 때도 동일하게 `preload` 함수를 `import`하여 사용할 수 있기 때문에, `preload` 함수는 서버와 클라이언트 모두에서 사용할 수 있도록 구현해야 합니다.
 
-
 이 구현을 진행하면서, React 18부터 도입된 서버 컴포넌트와 일반 컴포넌트의 차이점을 좀 더 명확하게 이해하게 되었습니다. 서버 컴포넌트는 서버에서만 불러들인 후 실행되므로 클라이언트에서는 어떻게 동작할지 신경 쓸 필요가 없습니다. 또한, hydration을 위해 클라이언트에서 컴포넌트를 다시 `import`하여 처리할 필요가 없기 때문에, 자연스럽게 클라이언트에 필요한 자바스크립트 리소스의 양도 줄어듭니다.
-
-
-
 
 ## 맺으며
 
@@ -479,25 +467,3 @@ npx create-lithent-ssr@latest
 설치를 위한 간략한 설명은 [README](https://github.com/superlucky84/lithent/tree/master/createLithent/express#readme)에서 확인하실 수 있습니다.
 
 글을 쓰면서 이 글이 저만의 회고가 아닌 다른 사람들에게 유의미한 도움이 될까 하는 의문이 들어 포기할까도 했지만, 누군가에게 도움이 될 것이라는 믿음을 포기하지 않고 끝까지 써봤습니다. 이 글이 누군가에게 조금이라도 도움이 되기를 바랍니다.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

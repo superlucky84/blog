@@ -13,7 +13,13 @@ export const preload = async ({ id, origin }) => {
         title: 'state-ref 라이브러리 인터뷰',
         description:
           'state-ref는 옵저버 패턴에 기반한 상태 관리 시스템입니다. 다른 UI라이브러리들과 쉽게 함께 쓰일수 있는 컨셉을 잡고 만들어졌습니다.',
-        images: [{ url: '/assets/posts/state-ref-library-interview.png' }],
+        images: [
+          {
+            url: '/assets/posts/state-ref-library-interview.png',
+            width: 1080,
+            height: 1080,
+          },
+        ],
       },
     },
   };
@@ -21,7 +27,10 @@ export const preload = async ({ id, origin }) => {
 
 > 원문: [https://survivejs.com/blog/state-ref-interview/](https://survivejs.com/blog/state-ref-interview/)
 
-<img src="/assets/posts/state-ref-library-interview.png" style={{ height: '300px', width: '100%', objectFit: 'cover' }} />
+<img
+  src="/assets/posts/state-ref-library-interview.png"
+  style={{ height: '300px', width: '100%', objectFit: 'cover' }}
+/>
 
 ## 1. 본인에 대해 간단히 소개해 주시겠습니까?
 
@@ -35,13 +44,11 @@ export const preload = async ({ id, origin }) => {
 
 ## 2. state-ref를 전혀 들어본 적이 없는 사람에게 state-ref를 어떻게 설명하시겠습니까?
 
-
 `state-ref`는 [옵저버 패턴](https://en.wikipedia.org/wiki/Observer_pattern)에 기반한 상태 관리 시스템입니다. 다른 UI라이브러리들과 쉽게 함께 쓰일수 있는 컨셉을 잡고 만들어졌습니다.
 
 `state-ref`는 옵저버 패턴을 잘 구현한 구현체입니다. 개발자라면 다들 이 패턴을 저보다 잘 아시겠지만 이 패턴을 이해하면 프로그램이 어떻게 상태를 관리하고 상태변화에 의존성이 있는 코드가 어떻게 자동으로 새로운 상태를 반영하는지 명확하게 알 수 있습니다. `state-ref`는 이 패턴을 다양한 상황에서 쉽게 접근하여 사용하도록 간편화하여 api로 만든 것입니다.
 
 `state-ref`는 여러가지 많은 종류의 UI라이브러리들(예를들면 React, Preact, Vue, Svelte, Solidjs )과 쉽게 같이 사용할 것을 염두에 두고 만들어지긴 했지만, 어떤 라이브러리들에게도 의존성을 갖지 않고 독립적으로도 사용할수 있습니다.
-
 
 ## 3. state-ref는 어떻게 작동하나요?
 
@@ -71,13 +78,11 @@ export const preload = async ({ id, origin }) => {
 
 사실 처음 아이디어는 평범한 상태관리 라이브러리를 손쉽게 그리고 최대한 결합도가 낮게 UI라이브러리와 연결하는 커넥터를 만들고 싶었습니다만, 만드는 김에 상태관리 라이브러리도 함께 만들면 재미있겠다고 생각을 하여 “state-ref” 프로젝트를 시작하게 되었습니다.
 
-
 ## 6. 그 다음은 무엇일까?
 
 사실 `state-ref`가 그렇게 복잡한 사용성을 갖은 라이브러리라고 생각하지 않고, 사실 개인 취미로 시작한 프로젝트라서 사용자가 많이 생길거라고 예상하지도 않습니다. 하지만 만약 운이 좋게 조금이라도 이 라이브러리에 관심을 갖고 사용하는 유저가 생긴다면 그 분들을 위해 상세한 문서화나 듀토리얼을 만들 의도가 있습니다.
 
 그리고 `state-ref`는 현재 connect-vue, connect-preact, connect-react, connect-svelte, connect-solid를 지원하고 있는데요 그 밖에도 많은 UI라이브러리와의 connector를 구현해볼 예정입니다.
-
 
 ## 7. state-ref와 웹 개발 전반의 미래는 어떻게 보입니까? 특정 트렌드를 볼 수 있나요?
 
@@ -86,7 +91,6 @@ export const preload = async ({ id, origin }) => {
 이러한 맥락에서 `state-ref`가 모범적인 사례로 자리 잡아 많은 이들에게 영감을 주기를 기대합니다.
 
 ## 8. 웹 개발에 입문하는 프로그래머에게 어떤 조언을 해주시겠어요?
-
 
 저 역시 그랬지만, 많은 사람들이 코딩을 처음 접할 때는 어린아이의 순수한 호기심과 재미를 안고 시작합니다. 그러나 코딩을 직업으로 삼게 되면 그 즐거움이 사라지고 호기심 또한 줄어드는 경우가 많습니다.
 
@@ -102,4 +106,3 @@ export const preload = async ({ id, origin }) => {
 ## 10. 마지막으로 하고 싶은 말씀이 있나요?
 
 `stateRef`는 단순히 취미로 만든 프로젝트입니다. 하지만 제 열정을 많이 쏟았기 때문에 매우 자랑스럽게 생각합니다. 제 프로젝트에 관심을 가지고 인터뷰를 제안해 주신 Juho에게 다시 한 번 깊은 감사의 말을 전합니다.
-

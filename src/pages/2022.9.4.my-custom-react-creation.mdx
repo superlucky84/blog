@@ -13,13 +13,22 @@ export const preload = async ({ id, origin }) => {
         title: 'Building My Own Custom React',
         description:
           'I had the desire to implement code that behaves like React in order to understand it well enough to use it without worries. While studying and working on it in my spare time, I ended up creating my own fake React.',
-        images: [{ url: '/assets/posts/my-custom-react-creation.png' }],
+        images: [
+          {
+            url: '/assets/posts/my-custom-react-creation.png',
+            width: 1080,
+            height: 1080,
+          },
+        ],
       },
     },
   };
 };
 
-<img src="/assets/posts/my-custom-react-creation.png" style={{ height: '300px', width: '100%', objectFit: 'cover' }} />
+<img
+  src="/assets/posts/my-custom-react-creation.png"
+  style={{ height: '300px', width: '100%', objectFit: 'cover' }}
+/>
 
 I frequently use React, a JavaScript framework, at work. With React, I can simplify code that would otherwise require a lot of effort to implement with pure JavaScript. It feels almost like magic.
 
@@ -30,7 +39,6 @@ I’ve tried to learn through technical blogs and various documents to address f
 To understand React well enough to use it without worry, I had a desire to implement code that behaves like React. As I studied and built it in my spare time, I ended up creating my own version of a 'fake' React.
 
 After finishing it, I felt a sense of joy. I wanted to share what I learned and spread the happiness.
-
 
 ## Implementing a Transpiler for Template Syntax
 
@@ -66,7 +74,6 @@ The goal of Stage 1 is to convert an original HTML-like string, as shown in the 
 
 Looking at the converted object, the `s` property contains the full attribute string, including the tag name, while `hasChildren` is a boolean value indicating whether the tag has any child tags. The `children` property holds the actual information about the child tags.
 
-
 #### Original String
 
 ```
@@ -76,7 +83,6 @@ Looking at the converted object, the `s` property contains the full attribute st
   <button onClick={handle3}>cc</button>
 </div>`
 ```
-
 
 #### Resulting Object
 
@@ -144,15 +150,16 @@ Stage 4 involves traversing the tree created by the transformations up to Stage 
 The final completed result is shown below.
 
 ```javascript
-h('div', { class: "root" }, 
-   h('button', { onClick: handle }, 'one', two, 'three'),
-   h('button', { onClick: handle2 }, 'onetwothree'),
-   h('button', { onClick: handle3 }, 'cc')
+h(
+  'div',
+  { class: 'root' },
+  h('button', { onClick: handle }, 'one', two, 'three'),
+  h('button', { onClick: handle2 }, 'onetwothree'),
+  h('button', { onClick: handle3 }, 'cc')
 );
 ```
 
 The actual implementation can be found in the [repository](https://github.com/superlucky84/lithent/tree/4754708bb930a929c7c4ef1956e0d5927cd36072/packages/compiler).
-
 
 ### Connecting to Vite.js
 
@@ -162,10 +169,9 @@ Therefore, I connected the completed transpiler via a Vite.js plugin. I created 
 
 Below is the resulting code. As you can see, I extracted the string inside the `<template>` tag and replaced it with the desired string using `replace`.
 
-
 ```javascript
-import { parse } from "@wwact/compiler";
-const fileRegex = /\.(wwx)$/
+import { parse } from '@wwact/compiler';
+const fileRegex = /\.(wwx)$/;
 
 export default function myPlugin() {
   return {
@@ -173,18 +179,20 @@ export default function myPlugin() {
 
     transform(src, id) {
       if (fileRegex.test(id)) {
-
-        const code = src.replace(/<template>((.|[\/S\/s])*)<\/template>/ms, (_m, template) => {
-          return parse(template);
-        });
+        const code = src.replace(
+          /<template>((.|[\/S\/s])*)<\/template>/ms,
+          (_m, template) => {
+            return parse(template);
+          }
+        );
 
         return {
           code,
-          map: null // provide source map if available
-        }
+          map: null, // provide source map if available
+        };
       }
-    }
-  }
+    },
+  };
 }
 ```
 
@@ -200,14 +208,14 @@ As shown in the example code below, the first argument of the `h` function is th
 
 In order to create the desired virtual DOM by implementing the `h` function, it's important to understand the execution order of the `h` function. In the example below, the execution order of the `h` functions will be as follows: the `li` tag with `item1`, the `li` with `item2`, `ul`, `div`, and finally, `section`.
 
-
 ```javascript
-h('section', null, 
-  h('div', { class: 'wrap' }, 
-    h('ul', null, 
-      h('li', null, 'item1'),
-      h('li', null, 'item2'),
-    )
+h(
+  'section',
+  null,
+  h(
+    'div',
+    { class: 'wrap' },
+    h('ul', null, h('li', null, 'item1'), h('li', null, 'item2'))
   )
 );
 ```
@@ -222,7 +230,6 @@ h('section', null,
   </div>
 </section>
 ```
-
 
 ### First Argument
 
@@ -248,10 +255,7 @@ The following example shows how the `h` function is transformed based on the typ
 ```
 
 ```javascript
-h(Fragment, null,
-  h(CustomElement, null),
-  h("div", null, "ss")
-);
+h(Fragment, null, h(CustomElement, null), h('div', null, 'ss'));
 ```
 
 Let's take a look at the structure of the object created when the `Custom` component is executed in the example below.
@@ -297,7 +301,6 @@ The code below is an example of how to turn a virtual DOM into a real DOM. By re
 
 The code is simple: based on the type of the virtual DOM, it creates `fragment`, `element`, or `text` nodes. The child nodes are also created in the same way, and they are appended to their parent node using `appendChild`.
 
-
 ```javascript
 function toDom(vDom) {
   let element;
@@ -312,14 +315,11 @@ function toDom(vDom) {
     element = document.createTextNode(text);
   }
 
-  const elementChildren = children.reduce(
-    (acc, childItem) => {
-      acc.appendChild(toDom(childItem));
+  const elementChildren = children.reduce((acc, childItem) => {
+    acc.appendChild(toDom(childItem));
 
-      return acc;
-    },
-    new DocumentFragment()
-  );
+    return acc;
+  }, new DocumentFragment());
 
   element.appendChild(elementChildren);
 
@@ -364,7 +364,6 @@ fucntion CustomRoot() {
 
 Only when the nodes are determined to be the same as the original node, the values will be inherited and the node will be updated. If the nodes are determined to be different, a new virtual DOM will be created without inheriting the data.
 
-
 ## Diff Algorithm
 
 I implemented the diff algorithm by referring to the [React documentation](https://ko.legacy.reactjs.org/docs/reconciliation.html).
@@ -394,18 +393,15 @@ By comparing nodes at the same depth and in the same order, if they are determin
 
 Below are the **virtual DOM comparison cases** that I considered.
 
-
-
 1. Cases where child nodes need to be completely replaced:
    1. When the tag name or component function is different.
    2. When it's a Fragment and the number of child nodes is different.
-   
 2. If the case doesn't match point 1, inherit the state from the original node, update the props, and then compare the children in the same manner:
+
    1. If the props and state are the same as the original virtual DOM after a shallow comparison, the children are not replaced, and the process ends.
    2. If the props and state are different from the original virtual DOM after a shallow comparison, compare the children in a loop.
 
 3. For loop-type child nodes, compare the `key` values to determine whether they are the same.
-
 
 ### Delaying Creation
 
@@ -480,8 +476,8 @@ One such method is to maintain `state`, variables, and methods used within the o
 Instead of directly executing the component function for re-rendering, we can define the tag portion as a function (as shown in the code below) and, when virtual DOM re-rendering is necessary, use the function instead of the component function. This way, we can reuse the `state` or variables used in the original node through closures without any additional code.
 
 ```javascript
-function Custom(props){
-  const [ valueA, setValueA ] = useState(7);
+function Custom(props) {
+  const [valueA, setValueA] = useState(7);
 
   return () => (
     <Fragment>
@@ -491,7 +487,6 @@ function Custom(props){
   );
 }
 ```
-
 
 ### Implementing `useState`
 
@@ -518,7 +513,6 @@ export default function CustomElement(props, children) {
 }
 ```
 
-
 The key points of the above code are as follows:
 
 1. For mounting, the component function is executed, and `useState` within the component function is called, setting the initial value (`initValue`) to `value`.
@@ -529,14 +523,11 @@ Upon writing this code, I realized that there are two major issues:
 1. When multiple `useState` calls are made in a single component, there is only one `value`, so only a single value can be handled.
 2. When a single component function creates multiple components, the above code has a single `value` in the module, so it can't handle multiple components properly.
 
-
-
 ### Solution for the First Problem
 
 The following code solves the case where multiple `useState` calls are executed within a single component.
 
 The `value` has been changed to an array to store multiple `state` values. Additionally, the `stateCallSeq` value, which holds the execution order, is used as a key to set and retrieve the `state`.
-
 
 ```javascript
 const value = [];
@@ -571,7 +562,7 @@ export default function CustomElement(props, children) {
 The following code solves the second problem. The `value` that manages the `state` has been changed to an object, so it can handle values for multiple components. The key is expanded based on the component's key.
 
 ```javascript
-const value =  {}
+const value = {};
 const useState = (initValue, componentKey) => {
   if (!value[componentKey] || !value[componentKey][currentSubSeq]) {
     value[vdomKey] ??= [];
@@ -600,11 +591,9 @@ Below, I've outlined the seven cases in which the virtual DOM should be compared
 
 When performing a virtual DOM diff, if the original node exists but the generated tag name differs from the original, making it a different node, we replace the original element with a new one.
 
-
 ### 2. (ADD). If there is no original node to compare, treat it as a new DOM node to be added.
 
 In the case of the previous (REPLACE) scenario, all the child nodes must be treated as new nodes that need to be added. A new HTML element is created and appended.
-
 
 ### 3. (UPDATE). If the original node exists and is of the same type, update only the DOM attributes, and if it is a text node, replace the text.
 
@@ -625,7 +614,6 @@ Even in the case of a REPLACE, we cannot guarantee that the original node and th
 This situation is similar to the case 5 (SORTED-REPLACE), but in this case, we need to perform an UPDATE instead of a REPLACE.
 
 While keeping the original DOM in place, the order must be sorted again. Therefore, the element is temporarily removed from the real DOM and then reinserted into the correct position to ensure proper order.
-
 
 ### 7. (NONE). For text nodes, if the text is the same, no change is needed, so it is left as is.
 

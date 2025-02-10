@@ -13,21 +13,28 @@ export const preload = async ({ id, origin }) => {
         title: '함수형 elseIf 유틸리티 함수 제작기',
         description:
           '종종 함수형 코딩에 관한 책이나 자료를 접할 때마다, 현실의 내 회사 업무에서 pipe를 실제 코드에 자유자재로 적용할 정도의 수준이 되려면 뭐가 더 필요한지 무의식 중에 고민했던 것 같습니다.',
-        images: [{ url: '/assets/posts/functional-elseif-utility-function-creation.png' }],
+        images: [
+          {
+            url: '/assets/posts/functional-elseif-utility-function-creation.png',
+            width: 1080,
+            height: 1080,
+          },
+        ],
       },
     },
   };
 };
 
+<img
+  src="/assets/posts/functional-elseif-utility-function-creation.png"
+  style={{ height: '300px', width: '100%', objectFit: 'cover' }}
+/>
 
-<img src="/assets/posts/functional-elseif-utility-function-creation.png" style={{ height: '300px', width: '100%', objectFit: 'cover' }} />
-
-* 목차
-	* 사건의 계기
-	* 마구잡이 구현
-	* 조금 더 나아간 구현
-	* 그래서 뭐가 좋은거지?
-
+- 목차
+  - 사건의 계기
+  - 마구잡이 구현
+  - 조금 더 나아간 구현
+  - 그래서 뭐가 좋은거지?
 
 ## 사건의 계기
 
@@ -40,11 +47,7 @@ export const preload = async ({ id, origin }) => {
 > pipe 사용 예
 
 ```javascript
-const f = R.pipe(
-    Math.pow,
-    R.negate,
-    R.inc
-);
+const f = R.pipe(Math.pow, R.negate, R.inc);
 f(3, 4); // -(3^4) + 1
 ```
 
@@ -80,23 +83,29 @@ const incCount = R.ifElse(
 );
 ```
 
-
 ## 마구잡이 구현
-
 
 깨끗하게 1depth로 표현되면 좋을 텐데, 더 많은 `if else` 조건을 붙이려면 depth 가 점점 깊어져서 마음에 들지 않네요. 결론부터 말하자면 결국 제가 원하는 인터페이스와 완벽하게 일치하는 다른 유틸함수를 찾아내긴 했습니다. 하지만 너무 늦게 찾아내는 바람에 그 사이 중간에 혼자 이상한 걸 만들어 버렸습니다.
 
 제가 만든 이상한 유틸함수의 사용 인터페이스는 아래와 같은 모습입니다. `elseIf`의 첫 번째 인자는 판별식을 두 번째 인자는 판별식이 참일 경우에 그에 맞는 리턴값을 반환합니다.
 
-
 ```javascript
 const getGrade = pipe(
-  elseIf((value) => value === 1, () => "골드회원"),
-  elseIf((value) => value === 2, () => "실버회원"),
-  elseIf((value) => value === 3, () => "일반회원"),
-  elseEnd(() => "나머지")
+  elseIf(
+    value => value === 1,
+    () => '골드회원'
+  ),
+  elseIf(
+    value => value === 2,
+    () => '실버회원'
+  ),
+  elseIf(
+    value => value === 3,
+    () => '일반회원'
+  ),
+  elseEnd(() => '나머지')
 );
-chkGrade(2) //실버회원
+chkGrade(2); //실버회원
 ```
 
 이걸 구현하기 위한 핵심 사실은 순서상 앞에 있는 `elseIf`문의 판별식이 참일 경우 뒤의 `elseIf`문은 더 이상 필요 없어집니다. 앞에서 이미 값을 결정해 버리면 뒤의 `elseIf`함수에서는 값을 처리할 필요 없이 흘려버려야 하죠.
@@ -104,10 +113,13 @@ chkGrade(2) //실버회원
 제가 찾은 해결책은 값이 결정되면 Decision이란 객체로 값을 감싸버린 후, 뒤에 체이닝 된 다른 elseIf문에서 Decision으로 감싸인 값을 만나면 통과시켜 버렸습니다. 아래코드처럼요.
 
 ```javascript
-const elseIf = curry((is, run, value) =>
-  value instanceof Decision ? value :   // Decision 객체일경우 그대로 리턴
-  is(value) ? Decision.of(run(value)) : // Desision 객체가 아니면서 판별식이 참일경우, 값을 처리하여 Desision객체로 감싸서 리턴
-  value                                 // 판별식이 거짓일경우 원본값을 그대로 리턴
+const elseIf = curry(
+  (is, run, value) =>
+    value instanceof Decision
+      ? value // Decision 객체일경우 그대로 리턴
+      : is(value)
+        ? Decision.of(run(value)) // Desision 객체가 아니면서 판별식이 참일경우, 값을 처리하여 Desision객체로 감싸서 리턴
+        : value // 판별식이 거짓일경우 원본값을 그대로 리턴
 );
 ```
 
@@ -137,15 +149,14 @@ const elseEnd = curry((run, value) =>
 
 ```js
 const fn = R.cond([
-  [R.equals(0),   R.always('water freezes at 0°C')],
+  [R.equals(0), R.always('water freezes at 0°C')],
   [R.equals(100), R.always('water boils at 100°C')],
-  [R.T,           temp => 'nothing special happens at ' + temp + '°C']
+  [R.T, temp => 'nothing special happens at ' + temp + '°C'],
 ]);
 fn(0); //=> 'water freezes at 0°C'
 fn(50); //=> 'nothing special happens at 50°C'
 fn(100); //=> 'water boils at 100°C'
 ```
-
 
 애초에 처음부터 발견했다면 제가 이것 때문에 이것저것 고민하느라 반나절을 날리지 않고 게임에만 열중했을 텐데 안타까웠습니다. 그래도 깔끔하게 생각을 마무리하기 위해 제가 만든 `elseIf` `elseEnd` 함수를 이용해서 `cond`를 구현해 봤습니다.
 
@@ -154,10 +165,10 @@ fn(100); //=> 'water boils at 100°C'
 > 구현
 
 ```js
-const cond = curry((conditaion) => {
+const cond = curry(conditaion => {
   const condPipe = pipe(
     map(([arg1, arg2]) => (arg2 ? elseIf(arg1, arg2) : elseEnd(arg1))),
-    (arr) => [...arr, elseEnd((value) => value)]
+    arr => [...arr, elseEnd(value => value)]
   )(conditaion);
 
   return pipe(...condPipe);
@@ -177,16 +188,15 @@ const cond = curry((conditaion) => {
 
 너무 간단해서 설명할 것도 없네요. 아래처럼 사용하면 됩니다. 어쨌거나 이것 때문에 어이없이 귀중한 휴일의 반나절을 날려버렸네요.
 
-
 ```js
 const chkGrade = cond([
-  [(value) => value === 1, () => "골드회원"],
-  [(value) => value === 2, () => "실버회원"],
-  [(value) => value === 3, () => "일반회원"],
-  [() => "나머지"],
+  [value => value === 1, () => '골드회원'],
+  [value => value === 2, () => '실버회원'],
+  [value => value === 3, () => '일반회원'],
+  [() => '나머지'],
 ]);
 
-chkGrade(2) //실버회원
+chkGrade(2); //실버회원
 ```
 
 ## 그래서 뭐가 좋은 거지?
@@ -197,41 +207,48 @@ chkGrade(2) //실버회원
 
 예를 들어 앞서 보여드린 chkGrade 함수 예제에서 골드회원이 아닌 것들은 전부 나머지로 표시하고 싶은 기능을 추가하고 싶다면 아래처럼 손쉽게 예외처리하여 elseIf문을 조합해 주면 됩니다.
 
-
 > elseIf 사용 예
 
 ```js
 const chkGrade = (value, chkOnlyVip) => {
-    return pipe(
-      ...[
-        elseIf((value) => value === 1, () => "골드회원"),
-        !chkOnlyVip && elseIf((value) => value === 2, () => "실버회원"),
-        !chkOnlyVip && elseIf((value) => value === 3, () => "일반회원"),
-        elseEnd(() => "나머지")
-      ].filter(item => item)
-    )(value);
-}
-chkGrade(2, true) //나머지
+  return pipe(
+    ...[
+      elseIf(
+        value => value === 1,
+        () => '골드회원'
+      ),
+      !chkOnlyVip &&
+        elseIf(
+          value => value === 2,
+          () => '실버회원'
+        ),
+      !chkOnlyVip &&
+        elseIf(
+          value => value === 3,
+          () => '일반회원'
+        ),
+      elseEnd(() => '나머지'),
+    ].filter(item => item)
+  )(value);
+};
+chkGrade(2, true); //나머지
 ```
 
 > cond 사용 예
 
 ```js
 const chkGrade = (value, chkOnlyVip) => {
-    return cond([
-      [(value) => value === 1, () => "골드회원"],
-      !chkOnlyVip && [(value) => value === 2, () => "실버회원"],
-      !chkOnlyVip && [(value) => value === 3, () => "일반회원"],
-      [() => "나머지"],
-    ].filter(item => item))(value);
-}
+  return cond(
+    [
+      [value => value === 1, () => '골드회원'],
+      !chkOnlyVip && [value => value === 2, () => '실버회원'],
+      !chkOnlyVip && [value => value === 3, () => '일반회원'],
+      [() => '나머지'],
+    ].filter(item => item)
+  )(value);
+};
 ```
 
 어쨌거나 이것저것 고민해 보면서 나름대로 즐거운 시간이었습니다. 결국 다른 사람들도 내가 생각한 것과 비슷한 걸 만들어서 사용하고 있다니, 제가 생각한 함수형 코딩의 사용방향이 크게 잘못되어 있지는 않다는 확신도 얻었습니다.
 
 그리고 얼마나 유용한지도 물론 중요하지만, 저만 즐거웠다면 그걸로 충분한 것 같습니다.
-
-
-
-
-

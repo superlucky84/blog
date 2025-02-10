@@ -6,35 +6,44 @@ export const preload = async ({ id, origin }) => {
     layout: {
       views,
       date,
-      title: 'How to Create a Virtual DOM Without Using JSX or the h(createElement) Function',
+      title:
+        'How to Create a Virtual DOM Without Using JSX or the h(createElement) Function',
       description:
-        'People who aren\'t as familiar with markup languages like HTML might find calling functions directly, like the creator of VanJS, Tao Xin, did, to be a more natural and complete approach.',
+        "People who aren't as familiar with markup languages like HTML might find calling functions directly, like the creator of VanJS, Tao Xin, did, to be a more natural and complete approach.",
       openGraph: {
-        title: 'How to Create a Virtual DOM Without Using JSX or the h(createElement) Function',
+        title:
+          'How to Create a Virtual DOM Without Using JSX or the h(createElement) Function',
         description:
-          'People who aren\'t as familiar with markup languages like HTML might find calling functions directly, like the creator of VanJS, Tao Xin, did, to be a more natural and complete approach.',
-        images: [{ url: '/assets/posts/creating-virtual-dom-without-jsx-or-h-createelement.png' }],
+          "People who aren't as familiar with markup languages like HTML might find calling functions directly, like the creator of VanJS, Tao Xin, did, to be a more natural and complete approach.",
+        images: [
+          {
+            url: '/assets/posts/creating-virtual-dom-without-jsx-or-h-createelement.png',
+            width: 1080,
+            height: 1080,
+          },
+        ],
       },
     },
   };
 };
 
-<img src="/assets/posts/creating-virtual-dom-without-jsx-or-h-createelement.png" style={{ height: '300px', width: '100%', objectFit: 'cover' }} />
+<img
+  src="/assets/posts/creating-virtual-dom-without-jsx-or-h-createelement.png"
+  style={{ height: '300px', width: '100%', objectFit: 'cover' }}
+/>
 
 The author enjoys JSX and even created a JSX-based virtual DOM library called [Lithent](https://github.com/superlucky84/lithent) as a hobby.
 
 While gathering information to create the virtual DOM library, the author came across the [VanJS](https://vanjs.org/) project. In VanJS, instead of using tag-definition styles like HTML or JSX to represent documents, the approach is to define them by calling functions, as shown below.
 
 ```javascript
-const Hello = () => div(
-  p("Hello"),
-  ul(
-    li("World"),
-    li(a({ href: "https://vanjs.org/" }, "🍦VanJS")),
-  ),
-)
+const Hello = () =>
+  div(
+    p('Hello'),
+    ul(li('World'), li(a({ href: 'https://vanjs.org/' }, '🍦VanJS')))
+  );
 
-van.add(document.body, Hello())
+van.add(document.body, Hello());
 ```
 
 Looking at this example, the readability doesn't seem too bad.
@@ -50,21 +59,22 @@ The thing with JSX is that, in order for it to run in the browser, it's actually
 Let's take the VanJS example I showed earlier and transform it into the `h(createElement)` style.
 
 ```javascript
-h('div', null,
+h(
+  'div',
+  null,
   h('p', null, 'Jello'),
-  h('ul', null,
+  h(
+    'ul',
+    null,
     h('li', null, 'World'),
-    h('li', null,
-      h('a', { href: 'https://vanjs.org/' }, '🍦VanJS')
-    ),
+    h('li', null, h('a', { href: 'https://vanjs.org/' }, '🍦VanJS'))
   )
-)
+);
 ```
 
 Tao Xin's approach seems to offer better readability, but both styles look quite similar. I thought it wouldn't be too difficult to apply Tao Xin's method to the virtual DOM library I made as a hobby. If the implementation isn't too hard, I think providing multiple expression styles wouldn't be a bad idea (since, realistically, I'll probably be the only one using this library in the future).
 
 Let's go ahead and write the code.
-
 
 ## Changing the `h` Function Style to the Function Call Style (Tao Xin's Style)
 
@@ -91,7 +101,7 @@ In practice, it would be used like this:
 ```javascript
 const { section, div} = fTags;
 
-section({ className: 'section'}, 
+section({ className: 'section'},
   div(null, 'div Block'),
 ),
 // The actual DOM created will look like this:
@@ -104,11 +114,9 @@ With the method described above, common tags like `div`, `p`, and `section` are 
 
 I opened the editor and just started writing code, following the instructions of my head and hands.
 
-
 ## Converting Fragment Component to Function Call Style
 
 It was a bit daunting, but it turned out to be really simple. To handle a Fragment, you just need to create a function that takes `children` as a parameter and then call the `h` function to actually execute the Fragment component, like this:
-
 
 ```javascript
 export const fFragment = (...children) => {
@@ -120,11 +128,9 @@ It would be used like this:
 
 ```javascript
 fFragment(
-  section({ className: 'section'}, 
-    div(null, 'div Block'),
-  ),
-  p(null, 'p Block'),
-)
+  section({ className: 'section' }, div(null, 'div Block')),
+  p(null, 'p Block')
+);
 // <section class="section">
 //   <div>div Block</div>
 // </section>
@@ -140,10 +146,10 @@ Exactly. You can just do it the same way. In fact, reading further will likely l
 If you pass a user-defined functional component through the `fMount` function I implemented below, it will be transformed into a function call style component.
 
 ```javascript
-export const fMount = (component) => {
+export const fMount = component => {
   return (props, ...children) => {
     return h(component, props, ...children);
-  }
+  };
 };
 ```
 
@@ -151,14 +157,11 @@ In practice, it would look like this:
 
 ```javascript
 const fUserComponent = fMount(function UserComponent(props) {
-    return
-      (fFragment(
-        section({ className: 'section'}, 
-          div(null, 'div Block'),
-        ),
-        p(null, 'p Block'),
-      )
-    );
+  return;
+  fFragment(
+    section({ className: 'section' }, div(null, 'div Block')),
+    p(null, 'p Block')
+  );
 });
 render(fUserComponent(), document.getElementById('root'));
 

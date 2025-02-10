@@ -13,20 +13,27 @@ export const preload = async ({ id, origin }) => {
         title: '나만의 커스텀 React 제작기',
         description:
           'Lithent는 JSX를 기반으로 만들어진 경량(zip 3kb) 가상돔 UI 라이브러리입니다.',
-        images: [{ url: '/assets/posts/virtual-dom-library-lithent-full-feature-documentation.png' }],
+        images: [
+          {
+            url: '/assets/posts/virtual-dom-library-lithent-full-feature-documentation.png',
+            width: 1080,
+            height: 1080,
+          },
+        ],
       },
     },
   };
 };
 
-<img src="/assets/posts/virtual-dom-library-lithent-full-feature-documentation.png" style={{ height: '300px', width: '100%', objectFit: 'cover' }} />
-
+<img
+  src="/assets/posts/virtual-dom-library-lithent-full-feature-documentation.png"
+  style={{ height: '300px', width: '100%', objectFit: 'cover' }}
+/>
 
 ## 소개
 
-[Github](https://github.com/superlucky84/lithent), 
+[Github](https://github.com/superlucky84/lithent),
 [Homepage](https://superlucky84.github.io/lithent/)
-
 
 Lithent는 JSX를 기반으로 만들어진 경량(zip 3kb) 가상돔 UI 라이브러리입니다.
 
@@ -38,27 +45,29 @@ Lithent는 JSX를 기반으로 만들어진 경량(zip 3kb) 가상돔 UI 라이�
 
 컴포넌트를의 상태나 기능을 정의할 때, 고차함수 및 클로저의 특성을 이용하여 정의하고 재활용하는 방식을 기본 아이디어로 채택하여 개발했습니다.
 
-
 ## 목차
 
 1. 기본기능
-  * 마운터
-  * 업데이터
-  * 리뉴어
-  * 랜더
-  * 마운트 콜백
-  * 업데이트 콜백
-  * 포털
+
+- 마운터
+- 업데이터
+- 리뉴어
+- 랜더
+- 마운트 콜백
+- 업데이트 콜백
+- 포털
+
 2. 확장기능
-  * state 헬퍼
-  * store 헬퍼
-  * cacheUpdate 헬퍼
-  * effect 헬퍼
-  * computed 헬퍼
-  * nextTick 헬퍼
+
+- state 헬퍼
+- store 헬퍼
+- cacheUpdate 헬퍼
+- effect 헬퍼
+- computed 헬퍼
+- nextTick 헬퍼
+
 3. lTag (Tagged templates 를 이용한 마크업 지원)
 4. fTags (함수 호출방식 마크업 지원)
-
 
 ## 기본기능
 
@@ -66,7 +75,6 @@ Lithent는 가상돔을 사용하는데 최소로 꼭 필요한 기본기능과,
 기본기능은 가상돔을 만들고 업데이트하고 실제 html문서에 연결하는 기능입니다.
 
 마운터, 업데이터, 리뉴어, 랜더, 마운트 콜백, 업데이트 콜백, 포털이 기본기능에 해당합니다.
-
 
 ## 마운터
 
@@ -82,31 +90,31 @@ Lithent는 가상돔을 사용하는데 최소로 꼭 필요한 기본기능과,
 
 아래는 `마운터`를 정의하고 컴포넌트를 만드는 실제 코드 예입니다. 컴포넌트는 `count`라는 상태와 `increase`라는 기능을 갖습니다. 그리고 JSX 템플릿을 만드는 함수를 리턴합니다. 타입스크립트를 사용할 경우 `mount함수`는 제네릭으로 `props`의 타입을 정의할 수 있습니다.
 
-
 ```javascript
 import { h, mount } from 'lithent';
 import { state, computed } from 'lithent/helper';
 
-const Component = mount<{ increaseCount: number }>((renew, props) => {
-  let count = 0;
-  const increase = () => {
-    count += props.increaseCount;
-    renew();
-  };
+const Component =
+  mount <
+  { increaseCount: number } >
+  ((renew, props) => {
+    let count = 0;
+    const increase = () => {
+      count += props.increaseCount;
+      renew();
+    };
 
-  return () => <button onClick={increase}>count: {count}</button>;
-});
+    return () => <button onClick={increase}>count: {count}</button>;
+  });
 
 render(<Component increaseCount={1} />, document.getElementById('root'));
 ```
-
 
 ## 업데이터
 
 `업데이터`는 `마운터` 내에 정의되는 `마운터`가 리턴하는 함수입니다. 그리고 `업데이터`는 JSX를 리턴합니다. `업데이터`가 실행되면 실제로 가상돔 객체가 만들어집니다. 왜 이름을 `업데이터`라고 지었냐면 실제로 이 함수는 컴포넌트가 업데이트될 때마다 실행되기 때문입니다.
 
 `마운터`를 설명할 때 예로 보여드렸던 컴포넌트를 다시 보겠습니다.
-
 
 ```javascript
 const Component = mount((renew, props) => {
@@ -116,7 +124,11 @@ const Component = mount((renew, props) => {
     renew();
   };
 
-  return (props) => <button onClick={increase}>count: {count.value}, increaseCount: {props.increaseCount}</button>;
+  return props => (
+    <button onClick={increase}>
+      count: {count.value}, increaseCount: {props.increaseCount}
+    </button>
+  );
 });
 
 render(<Component increaseCount={1} />, document.getElementById('root'));
@@ -128,21 +140,23 @@ render(<Component increaseCount={1} />, document.getElementById('root'));
 
 `업데이터`는 첫 번째 인자로 `props`를 제공받습니다. 물론 클로저를 이용하여 마운터에 있는 `props`를 참조할 수도 있습니다. 아래 예제코드를 보십시오.
 
-
 ```javascript
 import { h, Fragment, render, mount } from 'lithent';
 
-const Child = mount<{ count: number }>((_r, props) => {
-  const { count: countFromMounter } = props;
+const Child =
+  mount <
+  { count: number } >
+  ((_r, props) => {
+    const { count: countFromMounter } = props;
 
-  return ({ count: countFromUpdater }) => (
-    <>
-      <div>count: {props.count}</div>
-      <div>count: {countFromMounter} ("call by value" not working)</div>
-      <div>count: {countFromUpdater}</div>
-    </>
-  );
-});
+    return ({ count: countFromUpdater }) => (
+      <>
+        <div>count: {props.count}</div>
+        <div>count: {countFromMounter} ("call by value" not working)</div>
+        <div>count: {countFromUpdater}</div>
+      </>
+    );
+  });
 
 const Parent = mount(renew => {
   let count = 0;
@@ -163,13 +177,11 @@ const Parent = mount(renew => {
 
 Child 컴포넌트의 업데이터는 3가지 방식으로 `props`에 들어있는 값을 참조하는 걸 볼 수 있습니다. 여기서 `마운터 props`로부터 미리 꺼내두고 참조하는 값(countFromMounter)은 값이 이미 새로운 메모리 번지로 할당되었기 때문에, 업데이터가 새로 실행돼도 부모 `props`로부터 변경된 값을 반영하지 못합니다. 클로저가 어떻게 작동하는지 정확히 알고 있는 Javascript에 능숙한 개발자라면 그리 헷갈리는 상황은 아닙니다.
 
-
 ## 리뉴어
 
 `리뉴어`는 마운터 함수의 첫 번째 인자로 제공되는 `renew함수`입니다. `renew`가 실행되면 컴포넌트의 새로운 상태가 반영되어 그려집니다. 사용자는 `마운터` 내에 정의되는 이벤트 핸들러 함수에서 직접 사용할 수 있습니다. 어떻게 사용하는지는 앞선 예제에서 많이 보여드렸으니 여기서는 예제코드를 생략하겠습니다.
 
 리뉴어는 `state 헬퍼`나 `store 헬퍼`를 위해 사용될 수도 있는데, 자세한 내용은 뒤에서 자세히 설명하겠습니다.
-
 
 ## 랜더
 
@@ -194,16 +206,13 @@ render(<Component value={2} />, element, element.querySelector('span:nth-of-type
 const destroy = render(<Component value={4} />, element, element.querySelector('span:nth-of-type(3)'));
 ```
 
-
 주석처리된 index.html과 같은 DOM이 그려져 있을 때, `render`를 이용해 비어있는 2와 4에 해당하는 가상돔을 있어야 할 순서의 위치에 그려주고 있습니다.
 
 `render`의 두 번째 인자는 가상돔이 어떤 부모 밑에 그려져야 되는지 지정할 수 있으며, 세 번째 인자로 어떤 엘리먼트 앞에 그려져야 되는지 정할 수 있습니다. `insertBefore(DOM API)`처럼 생각하면 됩니다. 만약 세 번째 인자를 생략하면 `appendChild`가 됩니다.
 
 `render 함수`는 실행된 후 `destroy 함수`를 리턴해줍니다. `destroy 함수`가 실행되면 `render`로 인해 그려졌던 영역을 언마운트 시킵니다.
 
-
 ## 마운트 콜백
-
 
 컴포넌트로부터 DOM객체가 생성되어 브라우저에 나타나는걸 마운트라고 합니다. 반대되는 개념인 언마운트는 컴포넌트가 브라우저에서 제거되는 걸 의미합니다.
 
@@ -211,23 +220,20 @@ const destroy = render(<Component value={4} />, element, element.querySelector('
 
 아래 예제를 보면 알 수 있듯이 마운트 되고 나면 실행되는 함수를 등록할 수 있고, `mountCallback 함수`가 리턴하는 함수는 언마운트시 실행되는 콜백으로 등록됩니다. 언마운트 됐을 때 아무 후속 처리가 필요 없다면 리턴을 생략하면 됩니다.
 
-
 ```javascript
 import { h, mount, mountCallback } from 'lithent';
 
-const Children = mount(
-  (_r, props) => {
-    mountCallback(() => {
-      console.log('mounted');
+const Children = mount((_r, props) => {
+  mountCallback(() => {
+    console.log('mounted');
 
-      return () => {
-        console.log('unmount');
-      };
-    });
+    return () => {
+      console.log('unmount');
+    };
+  });
 
-    return () => <span>Children</span>;
-  }
-);
+  return () => <span>Children</span>;
+});
 ```
 
 ## 업데이트 콜백
@@ -236,27 +242,26 @@ const Children = mount(
 
 업데이트콜백은 Lithent가 제공하는 `updateCallback`을 통해 등록할 수 있으며, `updateCallback`이 리턴하는 함수는 컴포넌트의 업데이티가 끝난 후 실행되는 콜백으로 등록됩니다. 업데이트가 완료된 후 아무 후속 처리가 필요 없다면 리턴을 생략하면 됩니다.
 
-
 ```javascript
-const Children = mount<{ count: number }>((_r, props) => {
-  updateCallback(
-    () => {
-      console.log('clean up');
+const Children =
+  mount <
+  { count: number } >
+  ((_r, props) => {
+    updateCallback(
+      () => {
+        console.log('clean up');
 
-      return () => console.log('updated');
-    },
-    () => [props.count]
-  );
-  return ({ count }) => <span>child updated count: {count}</span>;
-});
+        return () => console.log('updated');
+      },
+      () => [props.count]
+    );
+    return ({ count }) => <span>child updated count: {count}</span>;
+  });
 ```
-
 
 위 예제 코드를 보면 `mountCallback`과는 다르게 `updateCallback`에는 두 번째 인자가 있습니다. 컴포넌트 내에 특정 상태가 변경될 때만 콜백을 실행하기 위함입니다. 배열을 리턴하는 함수로 정의하며, 변경을 감지하고 싶은 값을 배열에 넣어주면 됩니다.
 
 콜백이나 디팬던시에 `props`를 사용할 때는 `props.` 프리픽스를 전부 다 붙여서 사용해야 정확히 비교됩니다. 왜냐하면 `마운터`는 컴포넌트가 마운트 될 때 한 번만 실행되고 그 안에서 정의된 콜백함수들이나 디펜던시 체크 함수는 컴포넌트가 업데이트될 때마다 클로저를 이용해 `props`값에 접근하기 때문입니다. 앞서 업데이터에서 설명한 이슈와 같습니다.
-
-
 
 ## 포털
 
@@ -292,7 +297,6 @@ lithent는 기본 기능만으로도 충분히 좋지만 기본 기능을 활용
 
 헬퍼 코드의 모든 구현은 [저장소](https://github.com/superlucky84/lithent/tree/master/helper/src/hook)에서 확인하세요.
 
-
 ## state 헬퍼
 
 컴포넌트의 상태가 변경될 때마다 확인하여 `renew 함수`를 실행시키는 방식은 사용자가 직접 컴포넌트가 갱신되는 시기를 결정할 수 있으므로 그냥 그대로 사용해도 충분히 유용합니다. 하지만 너무 정밀하게 컴포넌트 갱신시점을 결정할 필요가 없고 그냥 값이 변경될 때마다 컴포넌트를 업데이트하게 하고 싶다면 `state 헬퍼`를 사용하면 됩니다.
@@ -304,7 +308,7 @@ import { h, Fragment, render, mount } from 'lithent';
 import { state, computed } from 'lithent/helper';
 
 const Component = mount(renew => {
-  const count = state<number>(1, renew);
+  const count = state < number > (1, renew);
   const increase = () => {
     count.value += 1;
   };
@@ -319,7 +323,6 @@ const Component = mount(renew => {
   );
 });
 ```
-
 
 `state 헬퍼`는 `renew` 함수를 특정 상태와 묶어주는 역할을 합니다.
 아래 코드는 `state 헬퍼` 구현 코드입니다. 구현 원리는 간단합니다. `state`는 초기값과 `renew 함수`를 받고 `getter`, `setter`를 가진 객체를 반환합니다. 이 객체는 값을 확인할 수 있고 값을 변경할 경우에는 `renew`를 실행시켜 줍니다.
@@ -358,7 +361,6 @@ export const state = <T>(
 
 `할당자` 함수의 두 번째 인자를 사용하면, `store`로부터 특정 속성에 대해서만 공유받아 사용할 수 있습니다. 두 번째 인자는 함수의 형태이며 아래 예제처럼 사용하고 싶은 값만 정의하여 배열로 나열하여 리턴해 주면 됩니다. 속성 전체를 전부 사용하고 싶다면 두 번째 인자를 생략하면 됩니다.
 
-
 ```javascript
 import { h, Fragment, render, mount } from 'lithent';
 import { store } from 'lithent/helper';
@@ -388,11 +390,9 @@ render(<Component />, element, element.querySelector('span:nth-of-type(2)'));
 render(<Component />, element, element.querySelector('span:nth-of-type(3)'));
 ```
 
-
 `store 헬퍼`의 구현 방법은 `state 헬퍼`의 구현방법과 유사합니다. 다만 `store 헬퍼`는 `state 헬퍼`와는 다르게 여러 컴포넌트의 `renew`를 가지고 있을 수 있으므로, 언마운트 되어 사라진 컴포넌트의 `리뉴어`를 항상 확인하여 제거해줘야 합니다. 이미 제거된 `리뉴어`를 실행하면 리턴 값으로 false를 반환하는 특성을 이용하여 이를 구현합니다..
 
 코드는 [저장소](https://github.com/superlucky84/lithent/blob/master/helper/src/hook/store.ts)에서 확인 가능합니다.
-
 
 ## cacheUpdate 헬퍼
 
@@ -407,8 +407,8 @@ import { h, Fragment, render, mount } from 'lithent';
 import { cacheUpdate } from 'lithent/helper';
 
 const Component = mount(renew => {
-  const count1 = state<number>(0, renew);
-  const count2 = state<number>(0, renew);
+  const count1 = state < number > (0, renew);
+  const count2 = state < number > (0, renew);
 
   const insCount1 = () => {
     count1.value += 1;
@@ -445,7 +445,7 @@ import { h, Fragment, render, mount } from 'lithent';
 import { state, effect } from 'lithent/helper';
 
 const Children = mount((r, props) => {
-  const count = state<number>(0, r);
+  const count = state < number > (0, r);
   const change = () => {
     count.v += 1;
   };
@@ -484,9 +484,15 @@ const Component = mount(renew => {
     renew();
   };
 
-  const computed = computed<number>(() => {
-    return [1, 3, 5, 7, 9].reduce((accumulator, current) => accumulator + current * count, 0);
-  });
+  const computed =
+    computed <
+    number >
+    (() => {
+      return [1, 3, 5, 7, 9].reduce(
+        (accumulator, current) => accumulator + current * count,
+        0
+      );
+    });
 
   return () => (
     <Fragment>
@@ -517,7 +523,6 @@ nextTick().then(() => {
 });
 ```
 
-
 ## lTag (Tagged templates 마크업 지원)
 
 `lTag`를 사용하면 JSX와 유사한 사용법으로 별도의 트랜스파일러 없이 일반 Javascript 구문을 사용하여 개발할 수 있습니다.
@@ -532,30 +537,33 @@ nextTick().then(() => {
 <script src="https://cdn.jsdelivr.net/npm/lithent@1.7.0/tag/dist/lithentTag.umd.js"></script>
 
 <script>
-const { h, Fragment, render, mount } = lithent;
-const { state } = lithentHelper;
-const { lTag } = lithentTag;
+  const { h, Fragment, render, mount } = lithent;
+  const { state } = lithentHelper;
+  const { lTag } = lithentTag;
 
-const Component = mount((renew, props) => {
-  const count = state(0, renew);
+  const Component = mount((renew, props) => {
+    const count = state(0, renew);
 
-  const change = () => {
-    count.value += props.propValue;
-  };
+    const change = () => {
+      count.value += props.propValue;
+    };
 
-  // Updater
-  return () => lTag`
+    // Updater
+    return () => lTag`
     <${Fragment}>
       <li>count: ${count.value}</li>
       <button onClick=${change}>increase</button>
     <//>
   `;
-});
+  });
 
-// appendChild or insertBefore
-// The third argument is an optional value for insertBefore.
-const destroy = render(lTag`<${Component} propValue=${1} />`, document.getElementById('root'), document.getElementById('#insert-before-this-element'));
-
+  // appendChild or insertBefore
+  // The third argument is an optional value for insertBefore.
+  const destroy = render(
+    lTag`<${Component} propValue=${1} />`,
+    document.getElementById('root'),
+    document.getElementById('#insert-before-this-element')
+  );
 </script>
 ```
 
@@ -579,7 +587,7 @@ const destroy = render(lTag`<${Component} propValue=${1} />`, document.getElemen
 // import { fTags, fFragment, fMount } from 'lithent/ftags';
 const { render } = lithent;
 const { fTags, fMount, fFragment } = lithentFTags;
-  
+
 const { section, div, p, br, strong } = fTags;
 
 const fTagComponent = fMount((_r, props, children) => {
@@ -603,33 +611,3 @@ render(
 );
 </script>
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

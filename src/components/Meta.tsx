@@ -8,7 +8,7 @@ type Preload = {
   openGraph: {
     title: string;
     description: string;
-    images: { url: string }[];
+    images: { url: string; width?: number; height?: number }[];
   };
 };
 
@@ -20,7 +20,54 @@ const Meta = mount<{ origin: string; id: string; preload: { v: Preload } }>(
       <>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link
+          rel="preload"
+          href="/assets/JTUQjIg1_i6t8kCHKm459WxRyS7m0dR9pA.woff2"
+          as="font"
+          crossorigin
+          type="font/woff2"
+        />
+        <link
+          rel="preload"
+          href="/assets/JTUSjIg1_i6t8kCHKm459WlhyyTh89Y.woff2"
+          as="font"
+          crossorigin
+          type="font/woff2"
+        />
+        {isKo.v && (
+          <>
+            <link
+              rel="preload"
+              href="/assets/GangwonEdu.woff"
+              as="font"
+              crossorigin
+              type="font/woff"
+            />
+            <link
+              rel="preload"
+              href="/assets/PretendardStd-Regular.woff2"
+              as="font"
+              crossorigin
+              type="font/woff2"
+            />
+            <link
+              rel="preload"
+              href="/assets/PretendardStd-Bold.woff2"
+              as="font"
+              crossorigin
+              type="font/woff2"
+            />
+            <link
+              rel="preload"
+              href="/assets/PretendardStd-Medium.woff2"
+              as="font"
+              crossorigin
+              type="font/woff2"
+            />
+          </>
+        )}
         <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Subtleflo" />
         <meta property="og:locale" content={isKo.v ? 'ko_KR' : 'en_US'} />
         <meta
           property="og:url"
@@ -35,13 +82,15 @@ const Meta = mount<{ origin: string; id: string; preload: { v: Preload } }>(
         />
         {(preload.v?.openGraph?.images || []).length > 0 ? (
           preload.v.openGraph.images.map(item => (
-            <meta property="og:image" content={origin + item.url} />
+            <>
+              <meta property="og:image" content={origin + item.url} />
+              <meta property="og:image:width" content={item.width || 1080} />
+              <meta property="og:image:height" content={item.height || 1080} />
+            </>
           ))
         ) : (
           <meta property="og:image" content={origin + '/assets/kim.jpg'} />
         )}
-        <meta property="og:image:width" content="1080" />
-        <meta property="og:image:height" content="1080" />
         <meta
           property="og:description"
           content={

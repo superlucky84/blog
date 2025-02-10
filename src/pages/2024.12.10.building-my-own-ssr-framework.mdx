@@ -8,36 +8,45 @@ export const preload = async ({ id, origin }) => {
       date,
       title: 'Building My Own SSR Framework',
       description:
-				'My ultimate goal was to create something that functions like an SSR framework, such as Next.js. Yesterday, I finally achieved the goal I set at the beginning. While it may not be enough to be called a full framework, I believe it\'s a satisfactory result for personal use, created as a hobby.',
+        "My ultimate goal was to create something that functions like an SSR framework, such as Next.js. Yesterday, I finally achieved the goal I set at the beginning. While it may not be enough to be called a full framework, I believe it's a satisfactory result for personal use, created as a hobby.",
       openGraph: {
         title: 'Building My Own SSR Frameworkstate-ref 라이브러리 인터뷰',
         description:
-					'My ultimate goal was to create something that functions like an SSR framework, such as Next.js. Yesterday, I finally achieved the goal I set at the beginning. While it may not be enough to be called a full framework, I believe it\'s a satisfactory result for personal use, created as a hobby.',
-        images: [{ url: '/assets/posts/building-my-own-ssr-framework.png' }],
+          "My ultimate goal was to create something that functions like an SSR framework, such as Next.js. Yesterday, I finally achieved the goal I set at the beginning. While it may not be enough to be called a full framework, I believe it's a satisfactory result for personal use, created as a hobby.",
+        images: [
+          {
+            url: '/assets/posts/building-my-own-ssr-framework.png',
+            width: 1080,
+            height: 1080,
+          },
+        ],
       },
     },
   };
 };
 
-<img src="/assets/posts/building-my-own-ssr-framework.png" style={{ height: '300px', width: '100%', objectFit: 'cover' }} />
+<img
+  src="/assets/posts/building-my-own-ssr-framework.png"
+  style={{ height: '300px', width: '100%', objectFit: 'cover' }}
+/>
 
-* Table of Contents
-  * Overview
-  * Creating renderToString
-  * Creating Hydration
-    * First: Matching Virtual DOM Nodes with Real DOM Nodes
-    * Second: Connecting Virtual DOM Event Binding Information to the Real DOM
-  * Hydrating the Real DOM Created in the Express Router
-  * Determining Routing Rules Based on File Names
-  * Implementing Simple Routing
-  * Preparing Initial Data for SSR
-  * Conclusion
+- Table of Contents
+  - Overview
+  - Creating renderToString
+  - Creating Hydration
+    - First: Matching Virtual DOM Nodes with Real DOM Nodes
+    - Second: Connecting Virtual DOM Event Binding Information to the Real DOM
+  - Hydrating the Real DOM Created in the Express Router
+  - Determining Routing Rules Based on File Names
+  - Implementing Simple Routing
+  - Preparing Initial Data for SSR
+  - Conclusion
 
 ## Overview
 
 I am working on a UI library as a hobby. It started from the idea that it would be fun to study by implementing the workings of a virtual DOM myself. Initially, the plan was to share what I learned while building it through writing.
 
-* [https://github.com/superlucky84/lithent](https://github.com/superlucky84/lithent)
+- [https://github.com/superlucky84/lithent](https://github.com/superlucky84/lithent)
 
 The ultimate goal was to create something that functions like an SSR framework, similar to Next.js. Yesterday, I finally achieved the initial goal I had set. While it may fall short of being called a full-fledged framework, I believe the result is more than satisfactory for personal use as a hobby project.
 
@@ -45,12 +54,11 @@ Having achieved my initial goal, I decided to write this article as a mid-point 
 
 As a reference, I am also sharing related articles that I wrote during the course of this project below.
 
-* [Creating My Custom React](https://medium.com/p/d14ba89373d3)
-* [How to Build a Virtual DOM Without Using JSX or the h(createElement) Function](https://medium.com/p/e99ee25b4bf1)
-* [Comprehensive Guide to the Features of the Virtual DOM Library, Lithent"](https://medium.com/p/3cfab04c0722)
+- [Creating My Custom React](https://medium.com/p/d14ba89373d3)
+- [How to Build a Virtual DOM Without Using JSX or the h(createElement) Function](https://medium.com/p/e99ee25b4bf1)
+- [Comprehensive Guide to the Features of the Virtual DOM Library, Lithent"](https://medium.com/p/3cfab04c0722)
 
 This article will likely be the last in this series. As it reflects on my small challenges and experiments, I'm not sure how helpful it will be to others, but I hope this content can inspire or assist someone, even if just a little.
-
 
 ## Creating renderToString
 
@@ -72,7 +80,7 @@ The goal of `renderToString` is to convert a 'virtual DOM object' into an 'HTML 
 > HTML string
 
 ```js
-'<div>test1</div>'
+'<div>test1</div>';
 ```
 
 Traverse the tree-like virtual DOM object and convert it into a text string.
@@ -85,10 +93,7 @@ I renamed the existing `vDomToDom` function to `vDomToString`, and the function 
 
 Since the DOM tree has a tree structure, the `vDomChildrenToString` function, which converts child nodes into a string, inevitably includes recursive calls."
 
-
-
 Ultimately, `renderToString` was completed with the following three functions. [Code Link](https://github.com/superlucky84/lithent/blob/master/ssr/src/renderToString.ts)
-
 
 1. `vDomToString`: The core function that converts the virtual DOM into a string.
 2. `vDomChildrenToString`: A function that recursively traverses the child nodes of the virtual DOM and applies `vDomToString`.
@@ -133,7 +138,6 @@ function vDomToString(vDom: VDom) {
 
 Here, when the `isAllowSelfClose(tag)` condition is true, the tag is handled as a self-closing tag.
 
-
 I thought the code was relatively simple, but to ensure I hadn't missed anything, I took a look at the code for React and Preact. Both have much more exception handling, features, and are more complex. The biggest difference is that React strongly supports streaming SSR through the latest API, `renderToPipeableStream`. In Preact, a similar API was implemented under a different name.
 
 `renderToPipeableStream` is designed to stream HTML strings to the client through integration with `Suspense`. This allows for faster page loading speeds and an improved user experience.
@@ -144,20 +148,21 @@ However, since Lithent that I created doesn't have asynchronous rendering featur
 
 After completing `renderToString`, I was eager to connect it to the server and test rendering through actual HTTP requests. However, I felt that proceeding without hydration would result in a half-baked implementation, so I decided to hold off a little longer and implement hydration first.
 
-
 Hydration is the process of 'reusing' the HTML generated on the server while restoring the state and event bindings between the actual DOM (real DOM) and the virtual DOM on the client side. In other words, it brings a static page to life by enabling state changes and event handling within the virtual DOM.
 
 I approached hydration with the understanding that it serves two key roles.
 
 1. Matching the real DOM with the virtual DOM
-  * Traversing the real DOM tree and linking nodes that match in structure and position with the virtual DOM.
+
+- Traversing the real DOM tree and linking nodes that match in structure and position with the virtual DOM.
+
 2. Restoring event bindings
-  * Reattaching event binding information defined in the virtual DOM to the real DOM. These two tasks must be performed sequentially—first, the real DOM nodes must be accurately matched with the virtual DOM nodes; only then can event listeners be correctly registered.
+
+- Reattaching event binding information defined in the virtual DOM to the real DOM. These two tasks must be performed sequentially—first, the real DOM nodes must be accurately matched with the virtual DOM nodes; only then can event listeners be correctly registered.
 
 ### First: Matching the real DOM with the virtual DOM
 
 The first task must be completed before the second one can proceed. Properly matching the real DOM nodes with the virtual DOM nodes is essential for registering event listeners.
-
 
 The virtual DOM holds references to the corresponding real DOM nodes as properties. In Preact, this reference is accessible through the `._dom` property, while in my custom vDom implementation, it is stored in the `.el` property. The first step in this process is linking real DOM references to virtual DOM nodes that do not yet have them.
 
@@ -167,12 +172,12 @@ To express the core idea simply in code, it can be represented as follows. This 
 
 ```js
 function hydration(realDom, virtualDom) {
-    Array.from(realDom.childNodes).forEach((realChildNode, index) => {
-        const virtualChildNode = virtualDom[index];
+  Array.from(realDom.childNodes).forEach((realChildNode, index) => {
+    const virtualChildNode = virtualDom[index];
 
-        virtualChildNode.el = realChildNode;
-        // ...
-    });
+    virtualChildNode.el = realChildNode;
+    // ...
+  });
 }
 ```
 
@@ -220,9 +225,7 @@ Thanks to the successful completion of the first task, the second task was alrea
 
 I added the `isHydration` flag as the third argument in the `render` method (`render(<Component />, document.getElementById('root'), isHydration)`) and implemented the solution by handling exceptions for the part where the real DOM is created using `document.createElement` when the `isHydration` flag is present.
 
-
 The completed hydration code can be found [here](https://github.com/superlucky84/lithent/blob/master/ssr/src/hydration.ts).
-
 
 ## Using `renderToString` in an Express router
 
@@ -250,13 +253,11 @@ app.get(`/${expressPath.replace(/_/g, ':')}`, async (req, res, next) => {
 }
 ```
 
-
 `Page` and `Layout` are modules that implement virtual DOM components. Since using JSX in Node.js code requires additional transpilers, adding unnecessary complexity, I implemented it by directly using the `h` function.
 
 In the example above, the `vite.ssrLoadModule` API is used to import modules through Vite. This API offers several advantages, with the biggest one being the ability to dynamically load modules in a server environment. Since the page module needs to be dynamically imported by the Express router, I chose this method.
 
 Additionally, `vite.transformIndexHtml` integrates the generated HTML with Vite's plugin chain. It automatically inserts code for Hot Module Replacement (HMR) in development mode, and when used with TailwindCSS, dynamic CSS styles are added through Vite plugins.
-
 
 As you might have noticed from my explanation, the code above is an example that runs in development mode.
 
@@ -294,9 +295,7 @@ app.get(`/${expressPath.replace(/_/g, ':')}`, async (req, res, next) => {
 
 In development mode, `vite.ssrLoadModule` is used to dynamically load modules, but in production mode, the already built files are imported. The CSS is also the built, minified version, which is inserted into the head section.
 
-
 ## Hydrating the Real DOM Created in an Express Router
-
 
 As mentioned earlier, without hydration, it's just a half-baked implementation.
 
@@ -313,7 +312,10 @@ pageString = appHtmlOrig.replace(
 );
 //...
 
-res.status(200).set({ 'Content-Type': 'text/html' }).end(`<!doctype html>${pageString}`);
+res
+  .status(200)
+  .set({ 'Content-Type': 'text/html' })
+  .end(`<!doctype html>${pageString}`);
 ```
 
 By adding the following just below the `<body>` tag in the HTML string, the `load` function will be executed immediately on the client.
@@ -329,36 +331,35 @@ export default async function load(key) {
   const res = await pageModules[`../pages/${key}`]();
 
   // const Page = h(res!.default as TagFunction, props) as VDom;
-  const LayoutVDom = h(
-    Layout,
-    { page: res.default },
-  );
-  hydration(LayoutVDom, document.documentElement)
+  const LayoutVDom = h(Layout, { page: res.default });
+  hydration(LayoutVDom, document.documentElement);
 }
 ```
 
 The `import.meta.glob('../pages/*.tsx')` above informs the transpiler to prepare the components that need to be dynamically imported. This method is a feature provided by Vite, which allows dynamically importing files that match a specific pattern.
 
-
 ## Determining Routing Rules by Filename
 
 Routing is determined based on the filenames in the `/src/pages/` directory.
 
-* `src/pages/index.tsx` is mapped to the root URL `http://localhost:3000`.
-* `src/pages/one.tsx` is mapped to `http://localhost:3000/one`.
+- `src/pages/index.tsx` is mapped to the root URL `http://localhost:3000`.
+- `src/pages/one.tsx` is mapped to `http://localhost:3000/one`.
 
-Dynamic segments are defined using an underscore (_) in the filename.
+Dynamic segments are defined using an underscore (\_) in the filename.
 
-* `src/pages/index._type.tsx` is mapped to a dynamic path like `http://localhost:3000/:type`.
-* `src/pages/one._type._name.tsx` is mapped to `http://localhost:3000/one/:type/:name`.
+- `src/pages/index._type.tsx` is mapped to a dynamic path like `http://localhost:3000/:type`.
+- `src/pages/one._type._name.tsx` is mapped to `http://localhost:3000/one/:type/:name`.
 
-The implementation involves reading all the files in the `/src/pages/` folder and storing them in the `filePaths` variable. Then, it loops through them and matches them to the Express router. In Express routing rules, dynamic segments are defined using a colon (:), so the underscores (_) used in the filenames are replaced with colons (:).
+The implementation involves reading all the files in the `/src/pages/` folder and storing them in the `filePaths` variable. Then, it loops through them and matches them to the Express router. In Express routing rules, dynamic segments are defined using a colon (:), so the underscores (\_) used in the filenames are replaced with colons (:).
 
 ```js
 filePaths.forEach(path => {
   app.get(`/${path.replace(/_/g, ':')}`, async (req, res, next) => {
     // ...
-    res.status(200).set({ 'Content-Type': 'text/html' }).end(`<!doctype html>${pageString}`);
+    res
+      .status(200)
+      .set({ 'Content-Type': 'text/html' })
+      .end(`<!doctype html>${pageString}`);
   });
 });
 ```
@@ -366,7 +367,6 @@ filePaths.forEach(path => {
 ## Simple Routing Implementation
 
 Since the virtual DOM library I created doesn't include a dedicated router, a simple routing implementation was necessary to complete the topic of this article.
-
 
 When the user first enters a page, it is rendered using SSR (Server-Side Rendering). However, when the user navigates to another page using the `navigate('/path')` API, it behaves in CSR (Client-Side Rendering) mode.
 
@@ -401,7 +401,6 @@ After manually updating the page information in this root object, calling `route
 By dynamically loading the page component corresponding to the page path with `const res = await pageModules[key]()`, a loading state occurs. Therefore, the `routeRef.loading` value is used to handle the loading state.
 
 `routeRef` is a state management object that works reactively with the UI. When its values change, the UI is dynamically updated.
-
 
 ## Creating Initial Data for SSR
 
@@ -455,7 +454,6 @@ I’m not particularly fond of using `globalThis`, but I plan to improve this pa
 Even when page navigation works with CSR after rendering, the `preload` function can still be imported and used in the same way, so the `preload` function should be implemented to work on both the server and the client.
 
 While implementing this, I gained a clearer understanding of the difference between server components and regular components introduced in React 18. Server components are only fetched and executed on the server, so there’s no need to worry about how they behave on the client. Also, since there’s no need to re-import the components on the client for hydration, the amount of JavaScript resources required on the client naturally decreases.
-
 
 ## Conclusion
 
