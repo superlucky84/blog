@@ -2,12 +2,13 @@ import { h } from 'lithent';
 import { renderToString } from 'lithent/ssr';
 
 export default class MakePage {
-  constructor({ key, req, props, isDev, vite }) {
+  constructor({ key, req, props, isDev, vite, tagManagerId }) {
     this.key = key || '';
     this.props = props;
     this.vite = vite;
     this.isDev = isDev;
     this.req = req;
+    this.tagManagerId = tagManagerId;
   }
   async run() {
     const { Layout, Page, preload } = await this.makeComponents();
@@ -41,6 +42,7 @@ export default class MakePage {
     }
 
     globalThis.pagedata = initProp;
+    globalThis.gtmId = this.tagManagerId;
 
     return initProp;
   }

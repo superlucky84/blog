@@ -6,7 +6,7 @@ import PageWrap from '@/components/PageWrap';
 import Header from '@/components/Header';
 import Meta from '@/components/Meta';
 import mdxComponents from '@/mdxComponents';
-import { getPreloadData } from '@/base/data';
+import { getPreloadData, getGtmId } from '@/base/data';
 import 'highlight.js/styles/hybrid.css';
 // import clsx from '@/helper/clsx';
 import { routeWatch } from '@/base/routeStore';
@@ -40,6 +40,7 @@ const Layout = mount<{
         };
       }>()?.layout
   );
+  const gtmId = getGtmId();
 
   mountCallback(() => {
     systemColor = window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -69,14 +70,14 @@ const Layout = mount<{
             j.async = true;
             j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
             f.parentNode.insertBefore(j, f);
-          })(window, document, 'script', 'dataLayer', 'GTM-KWM544DZ');
+          })(window, document, 'script', 'dataLayer', '${gtmId}');
           `}
         />
       </head>
       <body class="font-blog dark:text-gray-100 max-w-2xl m-auto">
         <noscript
           innerHTML={`<iframe
-                src="https://www.googletagmanager.com/ns.html?id=GTM-KWM544DZ"
+                src="https://www.googletagmanager.com/ns.html?id=${gtmId}"
                 height="0"
                 width="0"
                 style="display:none;visibility:hidden"></iframe>`}

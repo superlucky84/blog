@@ -1,6 +1,6 @@
 # Blog
 
-This blog was created using the [SSR boilerplate for Lithent](https://github.com/superlucky84/lithent/tree/master/createLithent#welcome-to-lithent-ssr-boilerplate), a virtual DOM library I developed.
+This blog was built using the [SSR boilerplate for Lithent](https://github.com/superlucky84/lithent/tree/master/createLithent#welcome-to-lithent-ssr-boilerplate), a virtual DOM library.
 
 
 ## How to run
@@ -43,6 +43,21 @@ Routing is determined by the filenames under the `/src/pages/` directory. The ro
     * `src/pages/one._type._name.tsx` maps to `http://localhost:3000/one/:type/:name`.
 
 These routing patterns allow you to create both static and dynamic URLs with flexibility in your project structure.
+
+
+### HMR Usage Notice
+To enable HMR (Hot Module Replacement), make sure to uncomment the relevant comments in /src/base/load.ts.
+
+This will allow selective HMR application only to components under /pages/ in the component tree.
+
+### Using Upstash Redis in This Project
+
+This project utilizes the Redis service from [Upstash](https://upstash.com/) and is configured using an `.env` file located at the project root with the following settings:
+
+```
+UPSTASH_REDIS_REST_URL=https://your-upstash-endpoint.upstash.io  
+UPSTASH_REDIS_REST_TOKEN=your-upstash-token
+```
 
 ### State Management
 

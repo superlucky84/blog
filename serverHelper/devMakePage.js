@@ -12,7 +12,7 @@ export default class DevMakePage extends MakePage {
         import load from '/src/base/load';
         load('${this.key}', ${JSON.stringify(
           Object.assign({}, this.props)
-        )}, ${JSON.stringify(initProp)});
+        )}, ${JSON.stringify(initProp)}, '${this.tagManagerId}');
        </script></body>`
     );
   }

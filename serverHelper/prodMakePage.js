@@ -22,7 +22,7 @@ export default class ProdMakePage extends MakePage {
 
         load('${this.key}', ${JSON.stringify(
           Object.assign({}, this.props)
-        )}, ${JSON.stringify(initProp)});
+        )}, ${JSON.stringify(initProp)}, '${this.tagManagerId}');
         </script></body>`
     );
   }

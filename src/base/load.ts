@@ -5,10 +5,15 @@ import { makeRoute, makePathToKey } from '@/base/route';
 import { routeRef, pageModules } from '@/base/routeStore';
 import Layout from '@/layout';
 
+//@ts-ignore
+// const tagManagerId = process.env.GOOGLE_TAG_MANAGER_ID;
+// console.log('TAGMANAGERID', tagManagerId);
+
 export default async function load(
   key?: string,
   props?: Props,
-  initProp?: any
+  initProp?: any,
+  gtmId?: string
 ) {
   makeRoute();
 
@@ -24,6 +29,7 @@ export default async function load(
   const { pathname, search } = location;
 
   (globalThis as any).pagedata = initProp;
+  (globalThis as any).gtmId = gtmId;
   // const Page = h(res!.default as TagFunction, props) as WDom;
   const LayoutWDom = h(
     Layout as TagFunction,

@@ -124,12 +124,20 @@ async function createServer() {
       const protocol = req.protocol;
       const host = req.get('host');
       const origin = `${protocol}://${host}`;
+      const tagManagerId = process.env.GOOGLE_TAG_MANAGER_ID;
 
       const props = { id: key, params: req.params, query: req.query, origin };
       let finalHtml = '';
 
       try {
-        const pageIns = createMakePage({ key, req, props, isDev, vite });
+        const pageIns = createMakePage({
+          key,
+          req,
+          props,
+          isDev,
+          vite,
+          tagManagerId,
+        });
         finalHtml = await pageIns.run();
       } catch (e) {
         isDev && vite.ssrFixStacktrace(e);
@@ -141,6 +149,7 @@ async function createServer() {
           props,
           isDev,
           vite,
+          tagManagerId,
         });
         finalHtml = await pageIns.runOops();
       }
