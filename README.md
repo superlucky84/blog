@@ -2,6 +2,7 @@
 
 This blog was built using the [SSR boilerplate for Lithent](https://github.com/superlucky84/lithent/tree/master/createLithent#welcome-to-lithent-ssr-boilerplate), a virtual DOM library.
 
+This code is the actual operational code of the blog at https://subtleflo.com.
 
 ## How to run
 
@@ -27,7 +28,7 @@ npm run build
 npm run start
 ```
 
-### Routing Rules
+### Fundamental Routing Rules
 
 Routing is determined by the filenames under the `/src/pages/` directory. The routing behavior is as follows:
 
@@ -44,8 +45,15 @@ Routing is determined by the filenames under the `/src/pages/` directory. The ro
 
 These routing patterns allow you to create both static and dynamic URLs with flexibility in your project structure.
 
+### Rules Specialized for the Blog
+
+1. The list information displayed on the main screen is determined by the data in `src/posts.json`.
+2. The `id` attribute refers to the filename of the `.mdx` file located under the `src/pages/` path and should only contain English IDs.  
+3. Korean content files are created by adding the prefix `ko.` to the English content filename.
+
 
 ### HMR Usage Notice
+
 To enable HMR (Hot Module Replacement), make sure to uncomment the relevant comments in /src/base/load.ts.
 
 This will allow selective HMR application only to components under /pages/ in the component tree.
@@ -66,3 +74,4 @@ This template includes [state-ref](https://github.com/superlucky84/state-ref), a
 ### Styling
 
 This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience.
+
