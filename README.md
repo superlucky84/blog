@@ -50,7 +50,7 @@ These routing patterns allow you to create both static and dynamic URLs with fle
 ### Rules Specialized for the Blog
 
 1. The list information displayed on the main screen is determined by the data in `src/posts.json`.
-2. The `id` attribute refers to the filename of the `.mdx` file located under the `src/pages/` path and should only contain English IDs.  
+2. The `id` attribute refers to the filename of the `.mdx` file located under the `src/pages/` path, and only filenames corresponding to English content should be used.
 3. Korean content files are created by adding the prefix `ko.` to the English content filename.
 
 
