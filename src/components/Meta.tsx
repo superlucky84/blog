@@ -89,7 +89,10 @@ const Meta = mount<{ origin: string; id: string; preload: { v: Preload } }>(
             </>
           ))
         ) : (
-          <meta property="og:image" content={origin + '/assets/kim.jpg'} />
+          <meta
+            property="og:image"
+            content={origin + '/assets/subtleflo.png'}
+          />
         )}
         <meta
           property="og:description"
@@ -126,7 +129,10 @@ const Meta = mount<{ origin: string; id: string; preload: { v: Preload } }>(
             content={origin + preload.v?.openGraph?.images[0].url}
           />
         ) : (
-          <meta property="twitter:image" content={origin + '/assets/kim.jpg'} />
+          <meta
+            property="twitter:image"
+            content={origin + '/assets/subtleflo.png'}
+          />
         )}
       </>
     );
