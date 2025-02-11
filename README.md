@@ -28,6 +28,8 @@ npm run build
 npm run start
 ```
 
+## Architecture
+
 ### Fundamental Routing Rules
 
 Routing is determined by the filenames under the `/src/pages/` directory. The routing behavior is as follows:
@@ -58,14 +60,11 @@ To enable HMR (Hot Module Replacement), make sure to uncomment the relevant comm
 
 This will allow selective HMR application only to components under /pages/ in the component tree.
 
-### Using Upstash Redis in This Project
+## Key Dependency Modules
 
-This project utilizes the Redis service from [Upstash](https://upstash.com/) and is configured using an `.env` file located at the project root with the following settings:
+### JSX-based Virtual DOM Library
 
-```
-UPSTASH_REDIS_REST_URL=https://your-upstash-endpoint.upstash.io  
-UPSTASH_REDIS_REST_TOKEN=your-upstash-token
-```
+This blog is built on the JSX-based virtual DOM library [Lithent](https://github.com/superlucky84/lithent).
 
 ### State Management
 
@@ -74,4 +73,14 @@ This template includes [state-ref](https://github.com/superlucky84/state-ref), a
 ### Styling
 
 This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience.
+
+
+### Using Upstash Redis in This Project
+
+This project utilizes the Redis service from [Upstash](https://upstash.com/) and is configured using an `.env` file located at the project root with the following settings:
+
+```
+UPSTASH_REDIS_REST_URL=https://your-upstash-endpoint.upstash.io  
+UPSTASH_REDIS_REST_TOKEN=your-upstash-token
+```
 
