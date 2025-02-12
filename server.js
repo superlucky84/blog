@@ -11,10 +11,16 @@ dotenv.config();
 
 const postsData = JSON.parse(readFileSync('./src/posts.json', 'utf-8')).posts;
 
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN,
-});
+let redis;
+if (
+  process.env.UPSTASH_REDIS_REST_URL &&
+  process.env.UPSTASH_REDIS_REST_TOKEN
+) {
+  redis = new Redis({
+    url: process.env.UPSTASH_REDIS_REST_URL,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN,
+  });
+}
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
@@ -77,7 +83,8 @@ async function createServer() {
 
   app.get(`/api/views/:id`, async (req, res, next) => {
     const id = req.params.id.replace(/^ko\./, '');
-    const views = (await redis.hincrby('views', id, 1)) ?? 0;
+    const views = redis ? ((await redis.hincrby('views', id, 1)) ?? 0) : 0;
+
     const item = postsData.find(item => item.id === id);
     const result = { ...item, views };
 
@@ -91,7 +98,7 @@ async function createServer() {
     const sortedPosts = postsData.sort(
       (a, b) => new Date(b.date) - new Date(a.date)
     );
-    const allViews = (await redis.hgetall('views')) || {};
+    const allViews = redis ? (await redis.hgetall('views')) || {} : {};
 
     const sortedPostsWithView = sortedPosts.map(item => {
       return {
