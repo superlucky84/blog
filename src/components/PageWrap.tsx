@@ -40,7 +40,7 @@ const PageWrap = mount<{ id: string; preload: any }>(
             </span>
           </span>
         </p>
-        <section class="mt-5 whitespace-normal break-all dark:prose-invert prose sm:prose">
+        <section class="mt-5 whitespace-normal break-words dark:prose-invert prose sm:prose">
           {children}
         </section>
       </article>
