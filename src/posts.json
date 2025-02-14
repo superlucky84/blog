@@ -1,6 +1,12 @@
 {
   "posts": [
     {
+      "id": "2025.2.14.my-thoughts-on-technical-debt.mdx",
+      "date": "February 14, 2025",
+      "title": "My Thoughts on Technical Debt",
+      "title_ko": "내가 생각하는 기술부체애 대하여"
+    },
+    {
       "id": "2024.12.10.building-my-own-ssr-framework.mdx",
       "date": "December 10, 2024",
       "title": "Building My Own SSR Framework",
