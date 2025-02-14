@@ -4,6 +4,7 @@ import checker from 'vite-plugin-checker';
 import dts from 'vite-plugin-dts';
 import fs from 'fs';
 import mdx from '@mdx-js/rollup';
+import tailwindcss from '@tailwindcss/vite';
 
 const cachedEntries = getEntries();
 
@@ -50,6 +51,7 @@ export default defineConfig(async ({ mode }) => {
         jsxImportSource: 'lithent', // Preact의 JSX pragma 사용
         outputFormat: 'esm',
       }),
+      tailwindcss(),
       fixMdxExports(),
     ],
     resolve: {

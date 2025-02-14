@@ -11,7 +11,7 @@ const PageWrap = mount<{ id: string; preload: any }>(
           {preload.value?.title || 'Jinwoo Kim'}
         </h1>
         <p class="font-blog flex text-xs text-gray-500 dark:text-gray-500">
-          <span class="flex-grow">
+          <span class="grow">
             <span class="hidden md:inline">
               <span>
                 <a

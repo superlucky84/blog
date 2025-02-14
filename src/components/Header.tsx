@@ -44,7 +44,7 @@ const Header = mount<{ mode: { v: string }; id: string }>((_r, props) => {
     <header class="flex mb-5 md:mb-10 items-center">
       <span class="text-md md:text-lg whitespace-nowrap font-bold">
         <a
-          class="hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424] p-2 rounded-sm -ml-2 transition-[background-color]"
+          class="hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424] p-2 rounded-xs -ml-2 transition-[background-color]"
           href="/"
           onClick={goHome}
         >
@@ -56,7 +56,7 @@ const Header = mount<{ mode: { v: string }; id: string }>((_r, props) => {
           onClick={toggleMode}
           aria-label="Toggle theme"
           class={clsx([
-            'inline-flex  active:bg-gray-300 transition-[background-color] dark:active:bg-[#242424] rounded-sm p-1',
+            'inline-flex  active:bg-gray-300 transition-[background-color] dark:active:bg-[#242424] rounded-xs p-1',
             'hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424]',
             'theme-system:!bg-inherit',
             '[&_.moon-icon]:hidden',
@@ -64,7 +64,7 @@ const Header = mount<{ mode: { v: string }; id: string }>((_r, props) => {
             'dark:[&_.moon-icon]:inline',
           ])}
         >
-          <span class={`text-[9px] text-gray-400 mr-1`}>{mode.v}</span>
+          <span class={`text-[9px]/4 text-gray-400 mr-1`}>{mode.v}</span>
           <span class="sun-icon">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -113,7 +113,7 @@ const Header = mount<{ mode: { v: string }; id: string }>((_r, props) => {
           {isKo.v ? 'KR' : 'US'}
         </button>
         <a
-          class="inline-flex hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424] rounded-sm p-1 transition-[background-color]"
+          class="inline-flex hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424] rounded-xs p-1 transition-[background-color]"
           href="/about"
           onClick={goAbout}
         >
@@ -122,7 +122,7 @@ const Header = mount<{ mode: { v: string }; id: string }>((_r, props) => {
         <a
           href="https://bsky.app/profile/superlucky84.bsky.social"
           target="_blank"
-          class="inline-flex hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424] items-center p-1 rounded-sm transition-[background-color] whitespace-nowrap -mr-2"
+          class="inline-flex hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424] items-center p-1 rounded-xs transition-[background-color] whitespace-nowrap -mr-2"
         >
           <svg
             class="mr-1"
