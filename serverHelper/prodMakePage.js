@@ -29,9 +29,8 @@ export default class ProdMakePage extends MakePage {
 
   async makePageString(Layout, Page) {
     const pageString = this.commonPageToString(Layout, Page);
-    const cssResourcePath = getScriptPath('style');
 
-    // dist/style-BKg2e0Gw.css
+    const cssResourcePath = getScriptPath('style');
 
     return pageString.replace(
       '</head>',

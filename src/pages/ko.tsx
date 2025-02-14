@@ -103,7 +103,7 @@ const Index = mount<{ isDark: { v: boolean } }>(() => {
                       </span>
                     </span>
                     <span class="flex pt-1 pl-1 pb-1 ml-14 text-gray-500 dark:text-gray-500 text-xs">
-                      <span class="grow">
+                      <span class="flex-grow">
                         {item.date}{' '}
                         <span class="sm:inline hidden">
                           ({timeago.ago(item.date)})

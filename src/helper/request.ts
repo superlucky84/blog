@@ -15,7 +15,7 @@ export async function fetchTypeList() {
 
   return result.results.filter(
     (item: { name: string; url: string }) =>
-      !['stellar', 'unknown', 'shadow-sm'].includes(item.name)
+      !['stellar', 'unknown', 'shadow'].includes(item.name)
   );
 }
 

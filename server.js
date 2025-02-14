@@ -29,10 +29,15 @@ let vite;
 
 if (isDev) {
   const { createServer: createViteServer } = await import('vite');
-  const tailwindcss = (await import('@tailwindcss/vite')).default;
+  const tailwindcss = (await import('tailwindcss')).default;
+  const autoprefixer = (await import('autoprefixer')).default;
 
   vite = await createViteServer({
-    plugins: [tailwindcss()], // 미리 import한 플러그인 사용
+    css: {
+      postcss: {
+        plugins: [tailwindcss, autoprefixer], // 미리 import한 플러그인 사용
+      },
+    },
     server: {
       middlewareMode: 'ssr',
       hmr: true,
