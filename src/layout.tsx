@@ -18,13 +18,15 @@ const Layout = mount<{
   origin: string;
   params: Record<string, string>;
   query: Record<string, string>;
-}>((r, { origin }) => {
+}>((r, props) => {
   let systemColor = 'dark';
+  const { origin } = props;
   const routeRef = routeWatch(r);
   const mode = state('init', r);
   const isDark = computed(() => {
     return mode.v === 'system' ? systemColor === 'dark' : mode.v === 'dark';
   });
+  const isIndex = computed(() => ['index.tsx', 'ko.tsx'].includes(props.id));
   const preload = computed(
     () =>
       getPreloadData<{
@@ -83,10 +85,10 @@ const Layout = mount<{
                 style="display:none;visibility:hidden"></iframe>`}
         />
         <main class="p-6 pt-3 md:pt-6 min-h-[calc(100vh-64px)]">
-          <Header mode={mode} id={id} />
+          <Header mode={mode} isIndex={isIndex} isDark={isDark} id={id} />
           {routeRef.loading.value ? (
             <LoadingText />
-          ) : ['index.tsx', 'ko.tsx'].includes(id) ? (
+          ) : isIndex.v ? (
             <Page isDark={isDark} />
           ) : (
             <PageWrap preload={preload} id={id}>

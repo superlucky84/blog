@@ -3,8 +3,14 @@ import { computed } from 'lithent/helper';
 import clsx from '@/helper/clsx';
 import { navigate } from '@/base/route';
 import { transformFilename } from '@/helper/calculator';
+import { getLabColor } from '@/helper/labColor';
 
-const Header = mount<{ mode: { v: string }; id: string }>((_r, props) => {
+const Header = mount<{
+  mode: { v: string };
+  isDark: { v: boolean };
+  isIndex: { v: boolean };
+  id: string;
+}>((_r, props) => {
   const isKo = computed(() => /^ko\./.test(props.id));
 
   const goHome = (event: Event) => {
@@ -40,15 +46,30 @@ const Header = mount<{ mode: { v: string }; id: string }>((_r, props) => {
     }
   };
 
-  return ({ mode }) => (
+  return ({ mode, isDark, isIndex }) => (
     <header class="flex mb-5 md:mb-10 items-center">
       <span class="text-md md:text-lg whitespace-nowrap font-bold">
         <a
-          class="hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424] p-2 rounded-sm -ml-2 transition-[background-color]"
+          class="relative hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424] p-2 rounded-sm -ml-2"
           href="/"
           onClick={goHome}
+          style={{
+            color: isIndex.v ? 'inherit' : getLabColor(isDark.v, 0, 1),
+          }}
         >
-          Subtleflo
+          <span>Subtleflo</span>
+          <span
+            class="absolute top-2 left-2 animate-glitch"
+            style="--glitch-translate: -8px; animation-delay: 120ms;"
+          >
+            Subtleflo
+          </span>
+          <span
+            class="absolute top-2 left-2 animate-glitch"
+            style="animation-delay: 240ms;"
+          >
+            Subtleflo
+          </span>
         </a>
       </span>
       <nav class="text-xs grow justify-end items-center flex gap-1 md:gap-3">

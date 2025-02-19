@@ -22,6 +22,7 @@ export default {
       },
       animation: {
         dots: 'dots 1.5s infinite steps(1, end)',
+        glitch: 'glitch 4s ease infinite 2s alternate-reverse',
       },
       keyframes: {
         dots: {
@@ -30,6 +31,22 @@ export default {
           '50%': { '--dots': '"Loading.."' },
           '75%': { '--dots': '"Loading..."' },
           '100%': { '--dots': '"Loading."' },
+        },
+        glitch: {
+          '0%': {
+            display: 'block',
+            textShadow: '-2px 3px 0 red, 2px -3px 0 blue',
+            transform: 'translate(var(--glitch-translate))',
+          },
+          '2%': {
+            display: 'block',
+            textShadow: '2px -3px 0 red, -2px 3px 0 blue',
+          },
+          '4%, 100%': {
+            display: 'none',
+            textShadow: 'none',
+            transform: 'none',
+          },
         },
       },
     },
