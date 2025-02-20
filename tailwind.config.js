@@ -49,12 +49,12 @@ export default {
         glitchwhite: {
           '0%': {
             // textShadow: '-2px 3px 0 red, 2px -3px 0 blue',
-            textShadow: '-2px 3px 0 black, 2px -3px 0 yellow',
+            textShadow: '-2px 3px 0 pink, 2px -3px 0 pink',
             transform: 'translate(var(--glitch-translate))',
           },
           '2%': {
             // textShadow: '2px -3px 0 red, -2px 3px 0 blue',
-            textShadow: '-2px 3px 0 black, 2px -3px 0 yellow',
+            textShadow: '-2px 3px 0 pink, 2px -3px 0 pink',
           },
           '4%, 100%': {
             textShadow: 'none',
