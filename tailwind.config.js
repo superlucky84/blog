@@ -22,7 +22,8 @@ export default {
       },
       animation: {
         dots: 'dots 1.5s infinite steps(1, end)',
-        glitch: 'glitch 2s ease infinite 10s alternate-reverse',
+        glitch: 'glitch 2s ease 2s infinite alternate-reverse',
+        glitchwhite: 'glitchwhite 2s ease 2s infinite alternate-reverse',
       },
       keyframes: {
         dots: {
@@ -39,6 +40,23 @@ export default {
           },
           '2%': {
             textShadow: '2px -3px 0 red, -2px 3px 0 blue',
+          },
+          '4%, 100%': {
+            textShadow: 'none',
+            transform: 'none',
+          },
+        },
+        glitchwhite: {
+          '0%': {
+            // textShadow: '-2px 3px 0 red, 2px -3px 0 blue',
+            textShadow:
+              '-2px 3px 5px rgba(0, 255, 255, 0.8), 2px -3px 5px rgba(255, 0, 255, 0.8)',
+            transform: 'translate(var(--glitch-translate))',
+          },
+          '2%': {
+            // textShadow: '2px -3px 0 red, -2px 3px 0 blue',
+            textShadow:
+              '-2px 3px 5px rgba(0, 255, 255, 0.8), 2px -3px 5px rgba(255, 0, 255, 0.8)',
           },
           '4%, 100%': {
             textShadow: 'none',
