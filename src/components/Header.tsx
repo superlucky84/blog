@@ -66,13 +66,13 @@ const Header = mount<{
           </span>
           <span
             class="absolute top-2 left-2 animate-glitch"
-            style="--glitch-translate: 8px; animation-delay: 120ms; --stack-height: calc(100% / 3 - 1px); --inverse-index: calc(2 - 1); --clip-top: calc(var(--stack-height) * 1); --clip-bottom: calc(var(--stack-height) * var(--inverse-index)); clip-path: inset(var(--clip-top) 0 var(--clip-bottom) 0);"
+            style="--glitch-translate: 8px; animation-delay: 100ms; --stack-height: calc(100% / 3 - 1px); --inverse-index: calc(2 - 1); --clip-top: calc(var(--stack-height) * 1); --clip-bottom: calc(var(--stack-height) * var(--inverse-index)); clip-path: inset(var(--clip-top) 0 var(--clip-bottom) 0);"
           >
             Subtleflo
           </span>
           <span
             class="absolute top-2 left-2 animate-glitch"
-            style="--glitch-translate: -8px; animation-delay: 240ms; --stack-height: calc(100% / 3 - 1px); --inverse-index: calc(2 - 2); --clip-top: calc(var(--stack-height) * 2); --clip-bottom: calc(var(--stack-height) * var(--inverse-index)); clip-path: inset(var(--clip-top) 0 var(--clip-bottom) 0);"
+            style="--glitch-translate: -8px; animation-delay: 200ms; --stack-height: calc(100% / 3 - 1px); --inverse-index: calc(2 - 2); --clip-top: calc(var(--stack-height) * 2); --clip-bottom: calc(var(--stack-height) * var(--inverse-index)); clip-path: inset(var(--clip-top) 0 var(--clip-bottom) 0);"
           >
             Subtleflo
           </span>

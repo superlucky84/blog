@@ -22,7 +22,7 @@ export default {
       },
       animation: {
         dots: 'dots 1.5s infinite steps(1, end)',
-        glitch: 'glitch 7s ease infinite 7s alternate-reverse',
+        glitch: 'glitch 2s ease infinite 10s alternate-reverse',
       },
       keyframes: {
         dots: {
