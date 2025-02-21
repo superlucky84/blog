@@ -3,7 +3,7 @@ import { computed } from 'lithent/helper';
 import clsx from '@/helper/clsx';
 import { navigate } from '@/base/route';
 import { transformFilename } from '@/helper/calculator';
-import { getLabColor } from '@/helper/labColor';
+import Logo from '@/components/Logo';
 
 const Header = mount<{
   mode: { v: string };
@@ -48,51 +48,7 @@ const Header = mount<{
 
   return ({ mode, isDark, isIndex }) => (
     <header class="flex mb-5 md:mb-10 items-center">
-      <span class="text-md md:text-lg whitespace-nowrap font-bold">
-        <a
-          class="relative hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424] p-2 rounded-sm -ml-2"
-          href="/"
-          onClick={goHome}
-          style={{
-            color: isIndex.v ? 'inherit' : getLabColor(isDark.v, 0, 1),
-          }}
-        >
-          <span class="opacity-0">Subtleflo</span>
-          <span
-            class={clsx([
-              'absolute',
-              'top-2',
-              'left-2',
-              isDark.v ? 'animate-glitch' : 'animate-glitchwhite',
-            ])}
-            style="animation-delay: 4000ms; --glitch-translate: -8px; --stack-height: calc(100% / 3 - 1px); --inverse-index: calc(2 - 0); --clip-top: calc(var(--stack-height) * 0); --clip-bottom: calc(var(--stack-height) * var(--inverse-index)); clip-path: inset(var(--clip-top) 0 var(--clip-bottom) 0);"
-          >
-            Subtleflo
-          </span>
-          <span
-            class={clsx([
-              'absolute',
-              'top-2',
-              'left-2',
-              isDark.v ? 'animate-glitch' : 'animate-glitchwhite',
-            ])}
-            style="--glitch-translate: 8px; animation-delay: 4100ms; --stack-height: calc(100% / 3 - 1px); --inverse-index: calc(2 - 1); --clip-top: calc(var(--stack-height) * 1); --clip-bottom: calc(var(--stack-height) * var(--inverse-index)); clip-path: inset(var(--clip-top) 0 var(--clip-bottom) 0);"
-          >
-            Subtleflo
-          </span>
-          <span
-            class={clsx([
-              'absolute',
-              'top-2',
-              'left-2',
-              isDark.v ? 'animate-glitch' : 'animate-glitchwhite',
-            ])}
-            style="--glitch-translate: -8px; animation-delay: 4200ms; --stack-height: calc(100% / 3 - 1px); --inverse-index: calc(2 - 2); --clip-top: calc(var(--stack-height) * 2); --clip-bottom: calc(var(--stack-height) * var(--inverse-index)); clip-path: inset(var(--clip-top) 0 var(--clip-bottom) 0);"
-          >
-            Subtleflo
-          </span>
-        </a>
-      </span>
+      <Logo goHome={goHome} isDark={isDark} isIndex={isIndex} />
       <nav class="text-xs grow justify-end items-center flex gap-1 md:gap-3">
         <button
           onClick={toggleMode}

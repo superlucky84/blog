@@ -22,8 +22,8 @@ export default {
       },
       animation: {
         dots: 'dots 1.5s infinite steps(1, end)',
-        glitch: 'glitch 2s ease 2s infinite alternate-reverse',
-        glitchwhite: 'glitchwhite 2s ease 2s infinite alternate-reverse',
+        glitch: 'glitch 2s',
+        glitchwhite: 'glitchwhite 2s',
       },
       keyframes: {
         dots: {
@@ -48,12 +48,10 @@ export default {
         },
         glitchwhite: {
           '0%': {
-            // textShadow: '-2px 3px 0 red, 2px -3px 0 blue',
             textShadow: '-2px 3px 0 #ff00ff, 2px -3px 0 #00ffff',
             transform: 'translate(var(--glitch-translate))',
           },
           '2%': {
-            // textShadow: '2px -3px 0 red, -2px 3px 0 blue',
             textShadow: '-2px 3px 0 #ff00ff, 2px -3px 0 #00ffff',
           },
           '4%, 100%': {
