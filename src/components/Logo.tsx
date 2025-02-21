@@ -49,7 +49,7 @@ const Logo = mount<{
         {aniState.map((item, index) => (
           <span
             class={clsx(['absolute', 'top-2', 'left-2', item.v])}
-            style={`animation-delay: ${index * 100}ms; --glitch-translate: -8px; --stack-height: calc(100% / 3 - 1px); --inverse-index: calc(2 - ${index}); --clip-top: calc(var(--stack-height) * ${index}); --clip-bottom: calc(var(--stack-height) * var(--inverse-index)); clip-path: inset(var(--clip-top) 0 var(--clip-bottom) 0);`}
+            style={`animation-delay: ${index * 100}ms; --glitch-translate: ${index === 1 ? '8' : '-8'}px; --stack-height: calc(100% / 3 - 1px); --inverse-index: calc(2 - ${index}); --clip-top: calc(var(--stack-height) * ${index}); --clip-bottom: calc(var(--stack-height) * var(--inverse-index)); clip-path: inset(var(--clip-top) 0 var(--clip-bottom) 0);`}
           >
             Subtleflo
           </span>
