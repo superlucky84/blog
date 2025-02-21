@@ -22,8 +22,8 @@ export default {
       },
       animation: {
         dots: 'dots 1.5s infinite steps(1, end)',
-        glitch: 'glitch 2500ms',
-        glitchwhite: 'glitchwhite 2500ms',
+        glitch: 'glitch 4000ms',
+        glitchwhite: 'glitchwhite 4000ms',
       },
       keyframes: {
         dots: {
