@@ -22,8 +22,8 @@ export default {
       },
       animation: {
         dots: 'dots 1.5s infinite steps(1, end)',
-        glitch: 'glitch 8s',
-        glitchwhite: 'glitchwhite 8s',
+        glitch: 'glitch 7s',
+        glitchwhite: 'glitchwhite 7s',
       },
       keyframes: {
         dots: {
@@ -48,11 +48,11 @@ export default {
         },
         glitchwhite: {
           '0%': {
-            textShadow: '-2px 3px 0 #ff00ff, 2px -3px 0 #00ffff',
+            textShadow: '-2px 3px 0 #ff0000, 2px -3px 0 #00cccc',
             transform: 'translate(var(--glitch-translate))',
           },
           '2%': {
-            textShadow: '-2px 3px 0 #ff00ff, 2px -3px 0 #00ffff',
+            textShadow: '-2px 3px 0 #ff3333, 2px -3px 0 #00b3b3',
           },
           '4%, 100%': {
             textShadow: 'none',
