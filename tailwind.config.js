@@ -48,11 +48,11 @@ export default {
         },
         glitchwhite: {
           '0%': {
-            textShadow: '-2px 3px 0 #ff00ff, 2px -3px 0 #00ffff', // 원래 번짐 유지
+            textShadow: '-2px 3px 0 #ff00ff, 2px -3px 0 #00ffff',
             transform: 'translate(var(--glitch-translate))',
           },
           '2%': {
-            textShadow: '-2px 3px 0 #ff00cc, 2px -3px 0 #00cccc', // 색상만 부드럽게 수정
+            textShadow: '-2px 3px 0 #ff00cc, 2px -3px 0 #00cccc',
           },
           '4%, 100%': {
             textShadow: 'none',
