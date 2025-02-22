@@ -22,8 +22,8 @@ export default {
       },
       animation: {
         dots: 'dots 1.5s infinite steps(1, end)',
-        glitch: 'glitch 7s',
-        glitchwhite: 'glitchwhite 7s',
+        glitch: 'glitch 8s',
+        glitchwhite: 'glitchwhite 8s',
       },
       keyframes: {
         dots: {
@@ -48,11 +48,11 @@ export default {
         },
         glitchwhite: {
           '0%': {
-            textShadow: '-2px 3px 0 #ff0000, 2px -3px 0 #00cccc',
+            textShadow: '-2px 3px 0 #ff00ff, 2px -3px 0 #00ffff', // 원래 번짐 유지
             transform: 'translate(var(--glitch-translate))',
           },
           '2%': {
-            textShadow: '-2px 3px 0 #ff3333, 2px -3px 0 #00b3b3',
+            textShadow: '-2px 3px 0 #ff00cc, 2px -3px 0 #00cccc', // 색상만 부드럽게 수정
           },
           '4%, 100%': {
             textShadow: 'none',
