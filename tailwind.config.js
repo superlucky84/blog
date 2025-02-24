@@ -52,7 +52,7 @@ export default {
             transform: 'translate(var(--glitch-translate))',
           },
           '2%': {
-            textShadow: '-2px 3px 0 #ff00cc, 2px -3px 0 #00cccc',
+            textShadow: '2px -3px 0 #ff00cc, -2px 3px 0 #00cccc',
           },
           '4%, 100%': {
             textShadow: 'none',
