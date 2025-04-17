@@ -1,0 +1,127 @@
+export const preload = async ({ id, origin }) => {
+  const { views, date } = await fetch(`${origin}/api/views/${id}`).then( response => response.json()
+  );
+  return {
+    layout: {
+      views,
+      date,
+      title: "Moving code blocks here and there, that's an important task",
+      description:
+        'Code reviews are a good practice. But in truly great teams, people can freely look at each other’s code and offer suggestions or make improvements without relying on a strict process.',
+      openGraph: {
+        title: "Moving code blocks here and there, that's an important task",
+        description:
+          'Code reviews are a good practice. But in truly great teams, people can freely look at each other’s code and offer suggestions or make improvements without relying on a strict process.',
+        images: [
+          {
+            url: '/assets/posts/moving-code-important.png',
+            width: 1024,
+            height: 1024,
+          },
+        ],
+      },
+    },
+  };
+};
+
+<img
+  src="/assets/posts/moving-code-important.png"
+  style={{ height: '300px', width: '100%', objectFit: 'cover' }}
+/>
+
+## Overview
+
+I once overheard a conversation among senior colleagues, where someone was evaluating the results of a refactor.
+
+> You improved the code? You just moved the code around, didn't you?
+
+Since this was a remark from a senior I respected, I thought it was valid. Refactoring should have a good reason, and claiming improvement by simply moving code around without clear justification seemed unprofessional.
+
+Especially in a company where results need to be proven, this senior's point felt even more relevant. However, as I gained more experience, my perspective shifted, and I began to think that moving code around, even without a clear reason, could actually be something worth encouraging.
+
+This is just my personal opinion, but let me share my thoughts.
+
+## Dead Code
+
+"Dead code" refers to code that is abandoned and no longer touched.
+
+Of course, there are codes that no longer need modification. However, when an important piece of code, which should ideally be frequently updated, becomes overly complicated to the point where everyone avoids editing it, it can essentially be considered dead code.
+
+Dead code doesn't suddenly appear with a "voila!" moment due to someone's decisive action. It is created over time as various hands touch it, accumulating stories and complications, until it eventually becomes dead code.
+
+Complex code is hard to understand, and any minor mistake in modification can lead to side effects that affect various parts of the system. As a result, no one dares to touch it.
+
+So, how can we prevent dead code? The easiest method that comes to mind is writing thorough test cases in advance. However, I don't believe that code reviews or test cases are a panacea. Test cases themselves can become dead code, and if they are excessive or poorly written, they can add confusion and contribute to the creation of dead code. Rather than code that's solely focused on coverage, I believe it’s more beneficial to write test cases that are appropriate and efficient.
+
+Since the focus of this article isn’t on test cases, I’ll move on. What I want to talk about are the mindset, habits, and culture surrounding this issue.
+
+## To Avoid Dead Code, You Need to Frequently Tinker with It
+
+How can we prevent dead code? What I really want to highlight is our attitude and attention toward the code.
+
+To put it in a metaphor, it’s like a parent taking care of their child. It means we need to treat the code with responsibility, just like caring for a child.
+
+A child doesn’t grow up with perfect character just with a "voila!" moment and no guidance. They need constant corrections and care in order to grow up healthy.
+
+The same goes for code. No one can write the perfect code all at once. Even if someone thinks they wrote the best code and it passes code reviews perfectly, after a little time, gaps and shortcomings will inevitably appear. At these moments, continuous attention and small tweaks are needed to improve it.
+
+I've also heard somewhere that even experienced developers generally need at least 3 to 4 rounds of refactoring before they feel that the code is "good enough." And even then, it might still feel lacking to someone else who isn’t the original author.
+
+In the end, there is no such thing as perfect code. That’s why having the wisdom to be satisfied with a reasonable level of quality is important. Over-optimized code might actually make future changes more difficult. Instead of striving for perfect optimization, I believe it's more desirable to approach code with a long-term maintenance perspective.
+
+Also, if we think of code improvement as an overwhelming task, it only adds pressure. While working on development, if we come across a piece of code that seems out of place, simply moving it to a more appropriate location and aligning it with the surrounding code's level of abstraction can improve the flow significantly. This will enhance readability and naturally help in preventing dead code.
+
+When we move code around like this, it evolves into a better, more logically separated code base. As a result, even when higher-level refactoring is needed, the foundation for making those changes is much easier to work with.
+
+## Trust and Affection Create Better Code
+
+Even if the code wasn't written by you, anyone on the same team should be able to modify the code without the burden of failure.
+
+In the books I've read, this is referred to as the "Boy Scout Rule". The principle is, "Leave the place better than you found it." In order for someone to modify my code or for me to modify someone else's, there must be trust among the team members who share the code.
+
+A development team with this kind of trust has less resistance to fixing each other's code or having their own code modified. I believe this is the true meaning of teamwork.
+
+Code reviews are a good practice. But in truly great teams, people can freely look at each other’s code and offer suggestions or make improvements without relying on a strict process.
+
+Of course, in order to create such a culture, the qualities of individual developers are important, and it cannot arise in a rigid atmosphere where everyone is constantly questioning and assigning blame for each other's responsibilities.
+
+Also, just as if you let a child play with toys, you need to give them time to clean up afterward. The same applies to code.
+
+If enough work has been done on feature development, there needs to be time to organize the newly added code to fit well with the surrounding code. However, in teams that operate solely based on feature delivery, this process is hard to happen naturally.
+
+A development culture that is overly process-driven can actually be harmful. In a great team, good code comes out naturally without the leader having to enforce it, and as the processes are simplified, performance can actually improve.
+
+All of this is only possible in a culture built on trust and interest in the team and colleagues.
+
+## A Good Code Culture Comes from Attachment and Autonomy
+
+Some people say, 'Don’t get too attached to your code.' This is because excessive attachment can lead to an obsession with the original code, making you overly sensitive to others' advice.
+
+However, I have a different perspective. If you don’t have attachment to your own code, is it really possible to maintain it over time and ensure its continued functionality?
+
+I believe it’s better to be attached to your code, while also being able to acknowledge and accept its flaws.
+
+We don’t neglect children we love. We teach them good values, habits, and social rules, and we continue to pay attention to their growth.
+
+The same goes for code. Without attachment, it will eventually be neglected.
+
+Of course, some teams may think, 'If we have a strong code review process, it’s fine not to have attachment to the code.'
+
+However, if developers rely solely on code reviews, they can gradually adopt an attitude of 'as long as it passes the review, that’s enough' and end up writing code that only meets the minimum standards. This can also lead to a complacent mindset of 'since it passed the review, it must be fine'.
+
+As a result, whenever issues arise, more complex and burdensome procedures are introduced, creating an atmosphere of increasing surveillance and control, which can harm teamwork.
+
+Here’s what I think:
+A team with a strong development culture is not one that relies on rigid norms, processes, or performance metrics.
+
+In fact, it’s the opposite. Strong norms are merely a fallback; what’s most important is the individual’s attachment, autonomy, and trust.
+
+## Conclusion
+
+In some organizations, it may be necessary to artificially add reasons for code changes and performance metrics in order to justify the changes. It cannot be definitively said that this is wrong.
+
+However, freely rearranging existing code blocks is a perfectly natural action, and it is certainly something that should be encouraged and praised.
+
+While it’s possible to come up with a clear justification, the simple reason of wanting to make it look better is more than enough.
+
+On the contrary, that is a much more professional attitude than someone who neglects the code, and it can be said that the developer has a good habit with pure motivation.

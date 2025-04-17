@@ -1,6 +1,12 @@
 {
   "posts": [
     {
+      "id": "2025.4.18.moving-code-important.mdx",
+      "date": "April 18, 2025",
+      "title": "Moving code blocks here and there, that's an important task",
+      "title_ko": "코드 블록을 이리저리 옮기는 것, 그건 중요한 일입니다"
+    },
+    {
       "id": "2025.2.14.my-thoughts-on-technical-debt.mdx",
       "date": "February 14, 2025",
       "title": "My Thoughts on Technical Debt",
