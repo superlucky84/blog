@@ -1,0 +1,541 @@
+export const preload = async ({ id, origin }) => {
+  const { views, date } = await fetch(`${origin}/api/views/${id}`).then(
+    response => response.json()
+  );
+  return {
+    layout: {
+      views,
+      date,
+      title: 'Building the State Management Library',
+      description:
+        'As a hobby, I created a library based on concepts I was curious about and shared what I learned along the way. This time, I’m sharing the story of how I built a state management library.',
+      openGraph: {
+        title: 'Building the State Management Library',
+        description:
+          'As a hobby, I created a library based on concepts I was curious about and shared what I learned along the way. This time, I’m sharing the story of how I built a state management library.',
+        images: [
+          {
+            url: '/assets/posts/building-the-state-management-library.png',
+            width: 1080,
+            height: 1080,
+          },
+        ],
+      },
+    },
+  };
+};
+
+<img
+  src="/assets/posts/building-the-state-management-library.png"
+  style={{ height: '300px', width: '100%', objectFit: 'cover' }}
+/>
+
+- Table of Contents
+  - Overview
+  - Signal Pattern
+  - Lens
+  - Using Lens
+  - Combining Signal and Lens Patterns
+  - Registering Subscription Functions
+  - Bound References
+  - Unbound References
+  - Bound Outer References
+  - Canceling Subscriptions
+  - Conclusion
+
+## Overview
+
+ As a hobby, I built a library using concepts I had been curious about and had been sharing what I learned along the way.
+
+"> There are already other series available: [Building My Own Custom React](https://subtleflo.com/ko/2022/9/4/my-custom-react-creation) , [Creating My Own SSR Framework](https://subtleflo.com/ko/2024/12/10/building-my-own-ssr-framework).
+
+This time, I’m sharing the story of creating a state management library ([state-ref](https://github.com/superlucky84/state-ref))
+
+To implement the state management library, I needed to understand a few concepts: the `Signal pattern` and `Lens`, which is used in functional programming.
+
+## Signal Pattern
+
+One of the main motivations for creating `state-ref` was that I wanted to experiment with the Signal pattern and build something practical using it.
+
+When I first set out to build it, I knew what I wanted to implement, but I didn’t realize that the pattern matched the Signal pattern. I understood the concept, but not the terminology.
+
+I just thought it was a convenient form of the Observer pattern, and it wasn’t until long after I had finished that I learned this pattern is actually called the Signal pattern.
+
+The Signal pattern is a method where a subscription relationship is automatically formed the moment a user tries to access a specific value. The collected callback functions are executed whenever that value is updated. In other words, it’s a pattern that naturally embeds ‘subscription’ within the execution flow, without explicitly specifying the usual ‘subscribe → execute’ process.
+
+The code below is a simplified excerpt of the core implementation of the Signal pattern in the `preact/signal` library. It is implemented using JavaScript’s property accessors.
+
+When a specific value is accessed via a property accessor, the addDependency function registers the corresponding subscription callbacks.
+
+When the value is modified, access occurs through the property setter (`set`), which triggers any subscription functions bound to that value, e.g., `node._target._notify();`.
+
+```ts
+Object.defineProperty(Signal.prototype, "value", {
+	get(this: Signal) {
+            const node = addDependency(this);
+            ...
+            return this._value;
+	},
+	set(this: Signal, value) {
+            this._value = value;
+            ...
+            node._target._notify(); // Execute subscription functions
+            ...
+	},
+});
+```
+
+In `preact/signal`, you can register subscription functions using the `effect` function.
+
+In the example below, the subscription function calculates the number of elements in a matrix by multiplying `rowCount` and `columnCount`.
+
+When a specific property of the matrix object is accessed inside the subscription function, it is automatically added to the dependency list. Later, if the value changes, the function defined within effect is executed.
+
+```ts
+effect(() => {
+	const matrixCount = matrix.rowCount * matrix.columCount;
+	console.log(matrixCount);
+});
+```
+
+Simple, right? In the frontend field, this concept is already widely known and familiar. Additionally, libraries such as Vue, MobX, and SolidJS are also known to utilize the signal pattern.
+
+Actually, this is not a new concept; I only recently realized that it has been widely used for quite some time.
+
+## Lens
+
+When I decided to create a state management library, the part I struggled with the most was how to track values.
+
+For example, if you are using a state object created with [`Zustand`](https://github.com/pmndrs/zustand) in a specific component, you can subscribe to the exact value you want by specifying it precisely using dot notation, as shown below.
+
+```js
+export default function Board() {
+	// Accessing nested values in a state object
+	const squares = useGameStore((state) => state.game.board.squares);
+    ...
+}
+```
+
+I wanted to actually implement a feature that could precisely subscribe to specific values within nested objects, like in the example above. I also had a small wish to peek at how other libraries tackled this problem.
+
+However, contrary to my plans, I didn’t have much free time back then due to childcare and other responsibilities, so I couldn’t check or test other code. As a result, whenever I got a brief moment, the best I could do was mentally simulate the code and imagine, ‘This is how I could implement it.’
+
+What came to my mind during this process was the concept of a `Lens`.
+
+Frontend developers often need to maintain data purity when manipulating state. For example, when using libraries like `React-Redux`, they often rely on `immer` to handle such scenarios.
+
+Lens serves a similar purpose as `immer`, but it is designed to be more declarative and easier to work with, in line with the philosophy of functional programming.
+
+In any case, the `Lens` pattern is extremely convenient when you want to track specific values within deeply nested objects.
+
+## Using Lens
+
+`Lens` is a concept that originated in the functional programming language Haskell, but in JavaScript, many developers have implemented and used it in various ways.
+
+While creating state-ref, I also [implemented Lens](https://github.com/superlucky84/state-ref/blob/main/packages/state-ref/src/lens/index.ts) in a way that was convenient for me to work with. Below is an example of how to use it.
+
+```js
+const targetObject1 = { a: { b: { c: { k: 1, j: 2, w: 3 } } } };
+const targetObject2 = { a: { b: { c: { k: 1, j: 11, w: 111 } } } };
+
+const lensInstance = lens().chain("a").chain("b").chain("c").chain("j");
+
+// Accessing values in a nested object
+console.log(lensInstance.get(targetObject1)); // return 2
+console.log(lensInstance.get(targetObject2)); // return 11
+
+// Modifying values in a nested object using copy-on-write
+lensInstance.set(7)(targetObject2);
+```
+
+As shown in the code above, using the `chain` method allows you to simply express the intention of "which value I want to access." The actual object from which the value is retrieved is determined at the moment `get()` is called.
+
+Using this pattern, even if the object reference changes, you can always retrieve the latest value as long as you know the "property path" stored in the Lens instance.
+
+When subscribing to a deeply nested value, if you store the `lensInstance` object that records the reference path along with the value at the time of subscription, you can call `lensInstance.get()` when the value changes to check whether it has actually been updated.
+
+The process proceeds as follows:
+
+1. Store a pair consisting of the value at the time of subscription and the corresponding `Lens` instance.
+2. When a change in the object is detected via the observer pattern, compare the stored original value with the updated value (the latest value at the changed location can be retrieved using the `Lens`).
+3. If the values differ, consider it a change and execute the subscriber functions registered via the signal pattern.
+
+#### Copy-on-Write
+
+When modifying a value using set, it operates in a copy-on-write manner.
+
+Copy-on-write is a technique frequently used in functional programming that allows changes to be handled while maintaining data immutability.
+
+When updating a specific value in an object, the original object itself is not modified; only the parts that need to change are copied into a new object, while the rest continues to reference the existing object. This allows the program to easily determine whether an object has changed using simple reference comparison, ensuring both performance and stability.
+
+By leveraging this feature of `Lens`, it becomes straightforward to track whether a specific part of a subscribed object’s state has changed.
+
+
+## Combining Signal and Lens Patterns
+
+The `state-ref` I created is, simply put, an object that combines the characteristics of the signal pattern and the `Lens` pattern.  
+
+What makes it unique, however, is that values can only be read or set through `.value`.  
+
+For example, to directly use the value of `state.a.b` in a specific object, you need to append `.value`.
+
+
+```
+console.log(state.a.b.value);
+```
+
+And when you need to set a new value to `state.a.b`, you assign it using `.value =` as shown in the example below.
+
+
+```
+state.a.b.value = 3;
+```
+
+The process of accessing and assigning values is abstracted through `.value`.
+
+This approach is inspired by the way `preact/signal` works, enforcing that all reads and writes go through `.value`, which makes data access clear and keeps both implementation and usage intuitive and simple.
+
+To combine the characteristics of the signal pattern and the Lens pattern, we utilized [Proxy](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Proxy)
+
+Here is a simplified example of the core `state-ref` code that combines the signal pattern with the `Lens` pattern using Proxy.
+
+```js
+export function makeProxy(value, lensInstance, subscribeCallback) {
+  return new Proxy(
+	...
+    {
+      /**
+       * When accessing a value or reference from an object
+       */
+      get(_: T, prop: keyof T) {
+	   /**
+        * When accessing via .value
+	    */
+        if (prop === 'value') {
+		  /**
+           * Collect subscription callbacks
+		   */
+          collector(
+            lensInstance.get(rootValue),
+            () => lensInstance.get(rootValue),
+            subscribeCallback,
+          );
+
+          return value;
+        }
+
+        // Using dot notation allows the Lens to be continuously chained.
+        const chainedLensInstance = lensInstance.chain(prop);
+        const propertyValue: any = lens.get(rootValue);
+
+        return makeProxy(propertyValue, chainedLensInstance, subscribeCallback);
+      },
+      /**
+       * When modifying a value or updating a reference in an object
+       */
+      set(_, prop: string | symbol, value) {
+        if (prop !== 'value') {
+          throw new Error('Can only be assigned to a "value".');
+        } else if (prop === 'value' && value !== lensValue.get(rootValue)) {
+          const newTree = lensValue.set(value)(rootValue);
+          rootValue.root = newTree.root;
+
+          // Execute collected subscription callbacks
+          // First argument (storeRenderList): list of subscription callbacks (referenced from makeProxy's outer scope)
+          // Second argument (rootProxy): root proxy of the store (referenced from makeProxy's outer scope)"
+		  runner(storeRenderList, rootProxy);
+        }
+
+        return true;
+      },
+    }
+  );
+}
+```
+
+#### Accessing and Consuming Values
+
+In this code, when you access a value using .value—for example, `console.log(state.a.b.value);`—the proxy's get handler is triggered.
+
+When `get` is executed, the `subscribeCallback`, the current value at that location `lensValue.get(rootValue)`, and a function to retrieve the value at a future change `() => lensValue.get(rootValue)` are stored via the collector function, so they can be executed at the time of change.
+
+#### Updating Values
+
+
+When a value is changed, like `state.a.b.value = 3;`, the proxy’s `set` is triggered.
+
+When `set` is called, it compares the previously collected value from `get` with the newly assigned value. If the two values differ, the Lens instance’s `set` updates the original object using a copy-on-write approach.
+
+Finally, the `subscribeCallbacks` collected at the get stage are executed to reflect the changes.
+
+
+## Registering Subscription Functions
+
+Like the `effect` in `preact/signal` mentioned earlier, `state-ref` provides a `watch` function to register subscription callbacks.
+
+Below is a simplified implementation of the `watch` function for illustration purposes.
+
+```js
+function watch(subscribeCallback) {
+	const lensRootInstance = lens();
+
+	const rootProxy = makeProxy({
+		rootValue,
+		lensRootInstance,
+		subscribeCallback,
+	});
+
+    // Execute once initially to collect subscriptions
+	subscribeCallback(rootProxy, true);
+
+	return rootProxy;
+}
+```
+
+The `watch` function takes a callback that should be executed whenever the store changes.
+
+Using the previously introduced `makeProxy` function, it creates a `rootProxy` object.
+
+This proxy object simultaneously serves as a `Lens` for accessing nested properties and as a mechanism to subscribe to and react to changes in the original object.
+
+
+## Bound References
+
+When you register a subscription function via `watch`, it is executed once initially to collect dependencies.
+
+At this time, the `rootProxy` is passed as an argument, like `subscribeCallback(rootProxy, true)`. The second argument indicates whether this is the first run for dependency collection.
+
+It’s easier to understand if you imagine defining and using a subscription function as shown in the example below.
+
+```ts
+const matrixSubscribeCallback = (innerRef, isFirst) => {
+	const matrixCount = innerRef.rowCount.value * innerRef.columCount.value;
+	console.log(matrixCount);
+};
+
+// References bound to a specific subscription function
+const outerRef = watch(matrixSubscribeCallback);
+
+// References not bound to any subscription function
+const anotherRef = watch();
+```
+
+In the code above, the first argument of `matrixSubscribeCallback`, `innerRef` is the root proxy object of the store. The `outerRef` returned by watch is the same reference as `innerRef`.
+
+These `innerRef` and `outerRef` are connected to matrixSubscribeCallback.
+
+Therefore, when you access values from `innerRef` or `outerRef` (e.g., `console.log(ref.rowCount.value);`), the corresponding subscription information is registered via the `collector` function. Subsequently, whenever the `rowCount` value changes, the connected subscription function is executed.
+
+In the `matrixSubscribeCallback` example, the subscription function runs whenever `rowCount` or `columnCount` changes.
+
+> The second parameter, `isFirst`, returns `true` on the function’s initial execution and `false` thereafter, allowing you to distinguish between a run triggered by actual changes and one for dependency collection.
+
+
+## Unbound References
+
+
+On the other hand, `anotherRef` is not connected to any subscription function. This is because, although `watch` was executed to obtain the reference, no subscription function was passed as an argument.
+
+Therefore, accessing values through `anotherRef` will not trigger any subscription function.
+
+As shown in the example below, even if `anotherRef` is directly referenced within the `matrixSubscribeCallback` subscription function, it is not collected by the `collector`. In other words, `anotherRef.etcCount` is not linked to any callback function, so changes to its value will not cause `matrixSubscribeCallback` to run.
+
+```ts
+// References not bound to any subscription function
+const anotherRef = watch();
+
+const matrixSubscribeCallback = (innerRef, isFirst) => {
+	const matrixCount =
+		innerRef.rowCount.value *
+		innerRef.columCount.value *
+		anotherRef.etcCount.value;
+	console.log(matrixCount);
+};
+
+// References bound to a specific subscription function
+const outerRef = watch(matrixSubscribeCallback);
+```
+
+You can leverage this characteristic to use certain values without having them collected by subscriptions. In other words, it allows users to clearly distinguish between cases where a value is tracked and cases where it is not.
+
+The underlying principle is that when a proxy object is created, the subscription function injected into `watch` gets linked to the collected dependency information through the `collector`.
+
+```js
+return new Proxy(
+	...
+	{
+		get(_: T, prop: keyof T) {
+			if (prop === 'value') {
+				/**
+				 * Collecting subscription callbacks
+				 */
+				collector(
+					lensInstance.get(rootValue),
+					() => lensInstance.get(rootValue),
+					subscribeCallback,
+				);
+
+				return value;
+			}
+		}
+        ...
+	}
+	...
+);
+```
+
+## Bound Outer References
+
+Besides the `innerRef` reference object used inside the subscription function, as seen in the previous example, the `outerRef` returned by `watch` allows access outside the subscription callback. This design makes it easier to integrate with components in a UI library.
+
+To illustrate, I’ll use my hobby project, the component-based UI library [lithent](https://github.com/superlucky84/lithent), as an example.
+
+
+```js
+const Component = mount((renew) => {
+  let count = 1;
+
+  const change = () => {
+    count += 1;
+    renew();
+  };
+
+  return () => <button onClick={change}>{count}</button>;
+});
+```
+
+`mount` is a function that creates a component, and it provides a `renew` function as the first argument to the function it consumes.
+
+The `renew` function requests an update for the component. In the example below, it increments the `count` value by 1 and then re-renders the component.
+
+> Note that, in general, directly calling a function like `lithent`’s `renew` can be considered an anti-pattern, as it breaks the reactive declarative paradigm where state changes are automatically propagated.
+> Nevertheless, we adopted manual updates as the primary interface to keep state management as simple as possible using native closures, without tying it to a specific pattern. Moreover, since the library was designed for light and convenient use by its creator, personal needs and practical considerations are naturally reflected.
+
+If you want to share store values using `state-ref` instead of the component’s internal `count` state, you can do so as follows.
+
+
+```js
+const watch = createStore(1); // watch 생성
+
+const Component = mount((renew) => {
+  count countRef = watch(renew);
+
+  const change = () => {
+    countRef.value += 1;
+  };
+
+  return () => <button onClick={change}>{count.value}</button>;
+});
+```
+
+By returning a proxy reference externally via `watch`, you can easily collect the subscription points outside of the subscription function, making it useful in various scenarios.
+
+Using `outerRef`, you can effortlessly connect components with state.
+
+Building on this feature, you can also connect state easily in `React` and `Preact` using simple snippets:
+
+* [Preact Snippet](https://github.com/superlucky84/state-ref/blob/main/packages/connect-preact/src/index.ts)
+* [React Snippet](https://github.com/superlucky84/state-ref/blob/main/packages/connect-react/src/index.ts)
+
+> It is designed to operate non-invasively without modifying the UI library, using only the basic `useState` functionality and a simple subscription pattern. If needed, snippets based on `useSyncExternalStore` can also be easily customized.
+
+
+## Canceling Subscriptions
+
+
+There are two ways to implement subscription cancellation.
+
+#### Cancellation Using AbortSignal
+
+The first method leverages [AbortSignal](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal).
+
+While this feature is commonly used to cancel `fetch` requests, it can also be applied to custom event handling.
+
+To cancel a subscription, we return an `AbortSignal` from the subscription function, which allows the cancellation to be handled accordingly.
+
+Below is a concrete example of its usage.
+
+
+```js
+const abortController = new AbortController();
+
+watch((stateRef) => {
+	console.log(
+		"Changed John's Second House Color",
+		stateRef.john.house[1].color.value
+	);
+
+	return abortController.signal;
+});
+
+abortController.abort(); // run abort
+```
+
+To cancel a subscription, an `AbortController` is created, and the subscription function is set up to return it when executed.
+
+The following code is a simplified example of a function that runs alongside the first execution for collecting subscription values:
+
+```js
+// Executes when the subscription function runs for the first time to collect subscriptions
+
+function subscribeFirstRunner(subscribeCallback, storeRenderList) {
+	const result = subscribeCallback(rootProxy, true);
+
+	if (result instanceof AbortSignal) {
+		result.addEventListener("abort", () => {
+			storeRenderList.delete(subscribeCallback);
+		});
+	}
+}
+```
+
+If the value returned by `subscribeCallback` is an `AbortSignal`, an `abort` event listener is bound to this `signal` object.
+
+When `abortController.abort();` is called, the registered listener executes and removes the subscription function from the collected subscription list.
+
+
+#### Canceling by Returning `false`
+
+While using `AbortSignal` provides a reliable and useful way to cancel subscriptions, it can be somewhat cumbersome.
+
+As an alternative, you can cancel a subscription easily when certain conditions are met. In the example below, the subscription is canceled by checking a condition and returning `false`.
+
+
+```js
+watch((stateRef) => {
+	const color = stateRef.john.house[1].color.value;
+	console.log("Changed John's Second House Color", color);
+
+	return color === "red" ? false : true;
+});
+```
+
+When a value changes, the `runner` in the example below is executed (called from the `setter` in the earlier `makeProxy` example).
+
+If the subscription callback returns exactly `false` after execution, the corresponding subscription function is removed from the collected subscription list.
+
+```js
+function runner(storeRenderList, rootProxy) {
+  ...
+  runableRenewList.forEach(subscribeCallback => {
+    if (subscribeCallback(rootProxy, false) === false) {
+	  storeRenderList.delete(run);
+    }
+  });
+  ...
+}
+```
+
+## Conclusion
+
+My motivation was partly pure curiosity, but in reality, I created this state management library to solve a specific problem.
+
+The company I work for has a traditional structure where multiple files are loaded to build a page. The `preact/signal` library I had used before couldn’t share state across files when built separately, because each file would run in a different runtime context.
+
+To allow all files to freely reference the same state, I created `state-ref`.
+
+I hope this library can be a small help for those, like me, who want lightweight and flexible state management in legacy environments. Even if you don’t use the code as-is, if you enjoyed reading this article, I believe the concepts and code are simple enough to implement or adapt on your own.
+
+If you found it even a little enjoyable, please give a star to the [state-ref repository](https://github.com/superlucky84/state-ref). A single click brings me great joy.
+
+
