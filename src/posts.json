@@ -1,6 +1,12 @@
 {
   "posts": [
     {
+      "id": "2025.9.14.building-the-state-management-library.mdx",
+      "date": "September 14, 2025",
+      "title": "Building the State Management Library",
+      "title_ko": "상태 관리 라이브러리 만들기"
+    },
+    {
       "id": "2025.4.18.moving-code-important.mdx",
       "date": "April 18, 2025",
       "title": "Moving code blocks here and there, that's an important task",
