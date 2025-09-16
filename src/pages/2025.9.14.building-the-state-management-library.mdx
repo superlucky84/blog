@@ -47,7 +47,7 @@ export const preload = async ({ id, origin }) => {
 
  As a hobby, I built a library using concepts I had been curious about and had been sharing what I learned along the way.
 
-"> There are already other series available: [Building My Own Custom React](https://subtleflo.com/ko/2022/9/4/my-custom-react-creation) , [Creating My Own SSR Framework](https://subtleflo.com/ko/2024/12/10/building-my-own-ssr-framework).
+"> There are already other series available: [Building My Own Custom React](https://subtleflo.com/2022/9/4/my-custom-react-creation) , [Creating My Own SSR Framework](https://subtleflo.com/2024/12/10/building-my-own-ssr-framework).
 
 This time, I’m sharing the story of creating a state management library ([state-ref](https://github.com/superlucky84/state-ref))
 
@@ -195,7 +195,7 @@ The process of accessing and assigning values is abstracted through `.value`.
 
 This approach is inspired by the way `preact/signal` works, enforcing that all reads and writes go through `.value`, which makes data access clear and keeps both implementation and usage intuitive and simple.
 
-To combine the characteristics of the signal pattern and the Lens pattern, we utilized [Proxy](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Proxy)
+To combine the characteristics of the signal pattern and the Lens pattern, we utilized [Proxy](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Proxy)
 
 Here is a simplified example of the core `state-ref` code that combines the signal pattern with the `Lens` pattern using Proxy.
 
