@@ -15,7 +15,7 @@
     "express": "^4.21.1",
     "highlight.js": "^11.11.1",
     "lithent": "^1.18.5",
-    "state-ref": "^1.3.0",
+    "state-ref": "^2.0.0",
     "time-ago": "^0.2.1"
   },
   "devDependencies": {
