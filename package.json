@@ -14,14 +14,16 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.1",
     "highlight.js": "^11.11.1",
-    "lithent": "^1.19.1",
+    "lithent": "^1.20.1",
     "state-ref": "^2.0.0",
     "time-ago": "^0.2.1"
   },
   "devDependencies": {
     "vite": "^5.4.8",
-    "@mdx-js/rollup": "^3.1.0",
+    "@lithent/lithent-mdx": "^0.2.3",
+    "@lithent/lithent-vite": "^0.2.3",
     "@tailwindcss/typography": "^0.5.16",
+    "@tailwindcss/vite": "^4.0.6",
     "@testing-library/jest-dom": "^6.5.0",
     "@typescript-eslint/eslint-plugin": "^8.17.0",
     "@typescript-eslint/parser": "^8.17.0",

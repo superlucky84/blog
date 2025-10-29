@@ -1,4 +1,4 @@
-import { mount } from 'lithent';
+import { mount, Fragment } from 'lithent';
 import { computed } from 'lithent/helper';
 
 type Preload = {

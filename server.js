@@ -33,21 +33,13 @@ if (isDev) {
   const autoprefixer = (await import('autoprefixer')).default;
 
   vite = await createViteServer({
+    root: process.cwd(),
     css: {
       postcss: {
         plugins: [tailwindcss, autoprefixer], // 미리 import한 플러그인 사용
       },
     },
-    server: {
-      middlewareMode: 'ssr',
-      hmr: true,
-    },
-    root: process.cwd(),
-    resolve: {
-      alias: {
-        '@': '/src',
-      },
-    },
+    server: { middlewareMode: 'ssr', hmr: true },
   });
 }
 
