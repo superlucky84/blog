@@ -1,0 +1,385 @@
+export const preload = async ({ id, origin }) => {
+  const { views, date } = await fetch(`${origin}/api/views/${id}`).then(
+    response => response.json()
+  );
+  return {
+    layout: {
+      views,
+      date,
+      title: 'Things I Learned from Building the Context API Myself',
+      description:
+        'In fact, even though I’ve been working as a front-end developer for a long time, I was embarrassed to realize that I hadn’t truly understood even something as fundamental as the Context API.',
+      openGraph: {
+        title: 'Things I Learned from Building the Context API Myself',
+        description:
+          'In fact, even though I’ve been working as a front-end developer for a long time, I was embarrassed to realize that I hadn’t truly understood even something as fundamental as the Context API.',
+        images: [
+          {
+            url: '/assets/posts/implementing-the-context.png',
+            width: 1024,
+            height: 1024,
+          },
+        ],
+      },
+    },
+  };
+};
+
+
+<img
+  src="/assets/posts/implementing-the-context.png"
+  style={{ height: '300px', width: '100%', objectFit: 'cover' }}
+/>
+
+- Table of Contents
+  - Overview
+  - Misconceptions and Truth about the Context API
+  - Thinking About Why the Context API Exists
+  - Implementing the Context API Myself
+  - Identifying the Cause of Failure
+  - Taking a Different Approach from React
+  - Walking Back Up the Tree Again
+  - Conclusion
+
+## Overview
+
+In fact, even though I’ve been working as a front-end developer for a long time, I was embarrassed to realize that I hadn’t truly understood even something as fundamental as the Context API.
+
+In the community, I would often hear things like “the Context API has bad performance” or “there are limitations in how it handles rendering.”
+
+But to be honest, I had never really used the Context API deeply, so whenever I saw those debates, I often wondered, “Is this something everyone knows… except me?”
+
+I kept thinking that I should dig into it someday, and that opportunity finally came when I needed to add context support to the [personal virtual DOM library (Lithent)](https://github.com/superlucky84/lithent) I was building as a study project.
+
+In this post, I share the problems I encountered while implementing it myself, and the understanding I gained through that exploration.
+
+## Misconceptions and Truth about the Context API
+
+To build something, you first need to understand what it is. Before diving in, I only knew one thing about the Context API:
+
+> The Context API is a feature that lets you easily pass a component’s state down the component tree without prop passing or drilling.
+
+With that level of knowledge, I went through various tech blogs and documentation to verify what people commonly say about it.
+
+Although some of the detailed explanations that tried to convey the core concepts felt a bit difficult at first, after reading multiple posts and organizing the information myself, the main ideas became clear.
+
+Here are the key points of the Context API as I understand them:
+
+### 1. Not every component under a Provider always re-renders.
+
+You often hear “using context causes the whole tree to re-render,” but that's only half true.
+
+### 2. By using a Context Consumer boundary separation pattern, only the components that actually call useContext will re-render — not the entire subtree under the Provider.
+
+For example:
+
+```js
+const Ctx = createContext();
+
+function CustomProvider({ children }) {
+  const [v, setV] = useState(0);
+  return <Ctx.Provider value={{ v, setV }}>{children}</Ctx.Provider>;
+}
+
+function App() {
+  return (
+    <CustomProvider>
+      <Layout /> {/* No useContext → no re-render */}
+      <UseValue /> {/* ✅ Only this one re-renders since it uses useContext */}
+    </CustomProvider>
+  );
+}
+```
+
+Just like in the example above, if you separate the boundaries so only the components that actually consume the context read from it, only the necessary parts will re-render.
+
+The `children` passed to `CustomProvider` are already the evaluated result of the upper tree, so even if the `Ctx.Provider` re-renders, that inner subtree is not recalculated.
+
+### 3. It is fundamentally not possible to subscribe to only a specific property within an object state.
+
+For example, you can't subscribe only to `a` from `{ a, b, c }`. You can achieve this with something like `use-context-selector`, but at that point, it's essentially the same as using a separate state management library.
+
+## Thinking About Why the Context API Exists
+
+After thinking about it, I realized that the true nature of the Context API is not global state management, but scoped value propagation.
+
+When we write JavaScript, variables defined in a scope are accessible only within that scope and its child scopes. That’s the basic rule of closures and scope chaining.
+
+The React Context API works in a similar way. A state can only be shared within the subtree under a specific Provider. So rather than being “global state,” it’s actually a tree-scoped mechanism.
+
+Developers know how powerful scope chaining is.
+React essentially took that concept of “scope” and applied it to the UI tree level.
+
+In particular, one reason React became popular in the SPA era is that it makes nested routing easier in complex UI structures — and context plays a crucial role in that. Not just routing, but features like `<ErrorBoundary />` and `<Suspense />` also rely on special “scopes” within the UI tree.
+
+So I arrived at this conclusion:
+
+> The Context API is not a global state management tool — it is a core mechanism for expressing tree-based scope. Its behavior that looks like global state sharing is merely a side effect.
+
+## Implementing the Context API Myself
+
+I finally gained enough confidence to implement a Context API myself for [Lithent](https://github.com/superlucky84/lithent), the virtual DOM library I built.
+
+So I asked Claude AI — which I've been chatting with quite a bit lately — how I might implement a Context API.
+
+Claude’s answer was surprisingly simple:
+
+> Just have the Consumer component walk up the virtual DOM tree until it finds the Provider’s state.
+
+As soon as I heard it, I thought, “Huh? This is easier than I expected.”
+
+I even felt confident enough to think, “I can probably implement this in an hour or two.”
+
+So, as I usually do, I decided to start coding first before overthinking it.
+
+### Naively Trying to Implement the Same API Interface as React
+
+I started lightly by implementing the Provider component first.
+
+> All code examples in this post are [Lithent](https://github.com/superlucky84/lithent) implementation examples written in a React-like syntax for clarity.
+> (These examples are meant to illustrate how [Lithent](https://github.com/superlucky84/lithent) works internally, and they behave differently from real React.)
+
+```js
+// Lithent example written in a React-style interface (not actual React behavior)
+export function createContext() {
+  // Provider simply wraps children
+  // (a simplified structure — unlike React, it doesn't push value into a context stack)
+  function Provider({ value, children }) {
+    return <Fragment>{children}</Fragment>;
+  }
+
+  function useContext(context) {
+    // Check if this context instance matches the Provider
+    if (context.Provider === Provider) {
+      // ❗ Naive approach: walk up the VDOM tree and find the value on the Provider
+      const state = findValuePropFromVdomTree(context.Provider);
+      return state;
+    }
+
+    // If the Provider hasn’t rendered yet, return null
+    return null;
+  }
+
+  return { Provider, useContext };
+}
+```
+
+At a glance, this post might make it seem like I solved the problem quickly, but that’s far from the truth.
+
+Even while spending time with my family, my mind was stuck on this issue for nearly half the day.
+
+And… as you might expect, that wasn’t the end of it.
+
+## Identifying the Cause of Failure
+
+```js
+const A = h(
+  'A',
+  null,
+  h('B', null, h('D'), h('E')),
+  h('C', null, h('F'), h('G'))
+);
+```
+
+When the tree is executed like this, the call order becomes:
+
+`D → E → B → F → G → C → A`
+
+```js
+A [wait]
+├─ B [wait]
+│  ├─ D [making]
+│  └─ E [making]
+└─ C [wait]
+   ├─ F [making]
+   └─ G [making]
+```
+
+If we assume the Provider is the A node and the Consumer is the D node, then at the moment D calls `useContext`, the tree is still being constructed, so the Provider node hasn’t been completed yet.
+
+That’s why `useContext` kept returning `null`.
+
+There’s no point blaming Claude AI for not explaining the situation in detail from the start. If you ask an AI shallowly, it will usually answer at the questioner’s level of depth.
+
+When I asked in more detail, I learned that React first builds an Element (POJO) tree from the bottom up, then makes a top-down pass to complete the Fiber tree — this is called the render phase. During this phase, the Provider value stack is built, and that’s when context is determined.
+
+As React walks downward during render, each component can see its nearest upstream Provider.
+
+So React evaluates JSX to build a bottom-up Element tree, and then constructs the Fiber tree top-down during the render phase.
+
+In contrast, my virtual DOM built the tree in a single bottom-up pass and stopped there. As a result, when the Consumer was called, the Provider wasn’t ready yet — which is why context was always `null`.
+
+## Taking a Different Approach from React
+
+However, the virtual DOM I built uses a single-pass structure that evaluates from bottom to top to build the tree. It’s not a dual-pass system like React.
+
+Therefore, there is no timing to inject the Provider value in a second top-down phase as React does.
+
+As a result, I needed a completely different approach to deliver context.
+
+The idea I came up with was lazy evaluation. When the Provider actually executes, it defers pushing the value to any Consumers that have registered up to that point.
+
+The code below makes this clearer:
+
+```js
+// Lithent example written in a React-style interface (not actual React behavior)
+
+export function createContext() {
+  // A queue (stack) for filling values later if Consumers run before the Provider
+  const lazyEvolutionStack = [];
+
+  function Provider({ value, children }) {
+    // When the Provider appears, deliver the value to all Consumers
+    // that have registered with “please give me the context” so far
+    lazyEvolutionStack.forEach(consumerCallback => {
+      consumerCallback(value);
+    });
+
+    // Remove delivered requests (one-time during initial render)
+    lazyEvolutionStack.splice(0);
+
+    return <Fragment>{children}</Fragment>;
+  }
+
+  function useContext(context) {
+    const [value, setValue] = useState(null);
+
+    // If a Consumer runs before the Provider, push a callback onto the stack
+    if (context.Provider === Provider) {
+      lazyEvolutionStack.push(contextValue => {
+        // When the Provider runs later, this callback is invoked to set the value
+        setValue(contextValue);
+      });
+    }
+
+    // Initially null; asynchronously filled after the Provider executes
+    return value;
+  }
+
+  return { Provider, useContext };
+}
+```
+
+It might look like an easy fix, but it really isn’t.
+
+The next day — over the weekend — even while spending time with my family, I found myself unconsciously spending the whole day looking for a solution in the back of my mind.
+
+But… as you might have guessed, this wasn’t the end.
+
+## Walking Back Up the Tree Again
+
+When rendering the DOM for the first time, the lazy-evaluation approach worked perfectly. Even if a Consumer ran first, the Provider would appear later and supply the value.
+
+But soon, a problem surfaced. When a middle node in the tree updated due to user interaction, this method no longer worked.
+
+Since the Provider had already been processed, there was no moment left to “push the value backward” anymore.
+
+In other words, I had solved the initial render case, but hit a new wall when handling updates.
+
+Eventually, I realized that I still needed a way to traverse the tree directly.
+
+When I asked the AI again, it explained that React also falls back to tree traversal in these cases. React doesn’t rely on a single mechanism — it uses multiple strategies depending on the situation to find the right Provider.
+
+In my virtual DOM, I did have a lifecycle event indicating when the real DOM mounted (`mounted`), but I did not have a callback for when the virtual DOM finished building.
+
+So a new API was required — because to traverse the tree, I need to know when it’s complete.
+
+> `mountReadyCallback` — a callback triggered right after the virtual DOM tree is built
+
+At that moment, I could walk up the tree and retrieve the Provider value.
+
+Below is an illustrative Lithent example written in React-style code — again, not actual React internals:
+
+```js
+// Lithent example written in a React-style interface (not actual React behavior)
+
+// ✅ After the tree is built, walk up to find the Provider value
+//    This works because it's before the DOM commit, so re-rendering is allowed
+export function createContext() {
+  function Provider({ value, children }) {
+    // Provider simply passes value as a prop
+    // (assume value is managed inside the Provider via useState)
+    return <Fragment>{children}</Fragment>;
+  }
+
+  function useContext(context) {
+    const [state, setState] = useState(null);
+
+    // Called when the virtual DOM tree is fully built
+    // Still pre-commit, so setState triggers a valid re-render
+    mountReadyCallback(() => {
+      if (context.Provider === Provider) {
+        // Walk up the VDOM tree and find the Provider’s props.value
+        const providerState = findValuePropFromVdomTree(context.Provider);
+
+        // ✅ At this moment, setState works and correctly injects Provider value
+        setState(providerState);
+      }
+    });
+
+    // Initially null — value is filled during mount-ready
+    return state;
+  }
+
+  return { Provider, useContext };
+}
+```
+
+In the end, I decided to abandon the lazy-evaluation approach.
+
+Lithent — the virtual DOM library I'm building — aims to stay lightweight and simple. I didn't want to add complexity just for a one-off convenience or a tiny performance benefit.
+
+Instead, I expanded the design so that a single Provider can manage multiple pieces of state, and consumers can selectively subscribe only to the values they need.
+
+Here’s the final Provider interface as exposed to users:
+
+```ts
+import { h, mount } from "lithent";
+import { createContext } from "lithent-helper";
+
+type AppState = { user: string; theme: string; count: number };
+
+const AppContext = createContext<AppState>();
+const { Provider, contextState, useContext } = AppContext;
+
+const AppProvider = xmount((_renew, _props, children) => {
+  const user = contextState('Alice');
+  const theme = contextState('dark');
+  const count = contextState(0);
+
+  return () => (
+    <Provider user={user} theme={theme} count={count}>
+      {children}
+    </Provider>
+  );
+});
+
+const StatsPanel = xmount(renew => {
+  const ctx = useContext(AppContext, renew);
+
+  return () => (
+    <section>
+      <p>User: {ctx.user?.value}</p>
+      <p>Theme: {ctx.theme?.value}</p>
+      <p>Count: {ctx.count?.value}</p>
+      <button onClick={() => ctx.count && (ctx.count.value += 1)}>
+        Increment
+      </button>
+      <button onClick={() => ctx.count && (ctx.count.value = 3)}>
+        Set count to 3
+      </button>
+    </section>
+  );
+});
+```
+
+## Conclusion
+
+I could have simply read a few blog posts to understand the Context API, but by actually implementing it myself, I gained a much deeper understanding of React’s fiber structure and rendering model.
+
+And I’m also happy that my virtual DOM library, [lithent](https://github.com/superlucky84/lithent), now has another solid feature added to it.
+
+You can check out the actual implementation in the repository below.
+
+🔗 [https://github.com/superlucky84/lithent/blob/master/helper/src/hook/context.tsx](https://github.com/superlucky84/lithent/blob/master/helper/src/hook/context.tsx)
+

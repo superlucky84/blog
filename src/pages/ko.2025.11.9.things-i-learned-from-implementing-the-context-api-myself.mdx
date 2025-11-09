@@ -1,0 +1,384 @@
+export const preload = async ({ id, origin }) => {
+  const { views, date } = await fetch(`${origin}/api/views/${id}`).then(
+    response => response.json()
+  );
+  return {
+    layout: {
+      views,
+      date,
+      title: 'Context API를 직접 만들어보며 알게 된 것들',
+      description:
+        '프론트엔드 개발자로 오랫동안 일해왔지만, 사실 Context API 같은 개념조차 깊이 이해하지 못하고 있었다는 게 부끄러웠습니다.',
+      openGraph: {
+        title: 'Context API를 직접 만들어보며 알게 된 것들',
+        description:
+          '프론트엔드 개발자로 오랫동안 일해왔지만, 사실 Context API 같은 개념조차 깊이 이해하지 못하고 있었다는 게 부끄러웠습니다.',
+        images: [
+          {
+            url: '/assets/posts/implementing-the-context.png',
+            width: 1024,
+            height: 1024,
+          },
+        ],
+      },
+    },
+  };
+};
+
+<img
+  src="/assets/posts/implementing-the-context.png"
+  style={{ height: '300px', width: '100%', objectFit: 'cover' }}
+/>
+
+- 목차
+  - 개요
+  - context API에 대한 오해와 진실
+  - context API의 존재 이유 생각해보기
+  - context API 직접 구현하기
+  - 실패의 원인 파악
+  - 리액트와는 다른 방식으로 접근하기
+  - 다시 트리를 거슬러 올라가기
+  - 맺음말
+
+## 개요
+
+프론트엔드 개발자로 오랫동안 일해왔지만, 사실 Context API 같은 개념조차 깊이 이해하지 못하고 있었다는 게 부끄러웠습니다.
+
+커뮤니티에서는 종종 “context API는 성능이 안 좋다”, “렌더링 방식에 한계가 있다” 라는 이야기를 듣곤 했습니다.
+
+하지만 솔직히 말하면, 저는 context API를 깊게 사용해본 적도 없었고 그래서 그런 논쟁을 볼 때마다 “나만 빼고 다 알고 있는 이야기인가?” 하는 마음이 들곤 했습니다.
+
+언젠가는 제대로 파봐야겠다고 생각만 하고 있었는데, 마침 공부 삼아 만들고 있던 [개인 가상 DOM 라이브러리 (Lithent)](https://github.com/superlucky84/lithent)에 context 기능을 붙일 일이 생기면서 드디어 이 주제를 깊이 탐구할 기회를 갖게 되었습니다.
+
+이 글에서는 제가 직접 구현하며 부딪힌 문제들, 그리고 탐구 끝에 얻은 이해를 공유합니다.
+
+## context API에 대한 오해와 진실
+
+context API가 무엇인지 알아야, 직접 만들어볼 수도 있겠죠. 제가 처음 알고 있던 사실은 딱 하나였습니다.
+
+“context API란, 특정 컴포넌트의 상태를 prop 전달이나 drilling 없이 하위 컴포넌트 트리로 쉽게 전달할 수 있게 해주는 기능이다.”
+
+이 정도 지식을 가진 채로 여러 기술 블로그와 문서를 찾아보며 사람들이 흔히 말하는 내용을 하나씩 검증해 보았습니다.
+
+본질을 전달하려는 자세한 설명들이 다소 어렵게 느껴졌지만, 여러 글을 읽고 스스로 정리해보니 결국 핵심은 명확했습니다.
+
+제가 파악한 context API의 핵심 요점은 다음과 같습니다.
+
+### 1. **Provider 아래 모든 컴포넌트가 항상 리렌더되는 것은 아니다.**
+
+종종 “context 쓰면 트리 전체가 리렌더된다”는 말을 듣지만, 이는 절반만 맞는 이야기입니다.
+
+### 2. **Context Consumer boundary 분리 패턴을 사용하면**, Provider 하위 전체가 아니라 **정말로 `useContext`를 호출하는 컴포넌트만 리렌더되게 만들 수 있다.**
+
+예를 들어:
+
+```jsx
+const Ctx = createContext();
+
+function CustomProvider({ children }) {
+  const [v, setV] = useState(0);
+  return <Ctx.Provider value={{ v, setV }}>{children}</Ctx.Provider>;
+}
+
+function App() {
+  return (
+    <CustomProvider>
+      <Layout /> {/* useContext 사용하지 않는 경우 리렌더 X */}
+      <UseValue /> {/* ✅ useContext를 사용하는 여기만 리렌더 */}
+    </CustomProvider>
+  );
+}
+```
+
+위 예제처럼 context를 실제로 소비하는 boundary만 분리하면 **필요한 곳만 리렌더**됩니다.
+
+CustomProvider의 children은 이미 상위에서 평가된 결과가 넘어오기 때문에, `Ctx.Provider`가 리렌더되어도 그 내부 트리는 다시 계산되지 않습니다.
+
+### 3. **객체 상태에서 특정 속성만 선택적으로 구독하는 것은 기본적으로 불가능하다.**
+
+예를 들어 `{ a, b, c }` 중 `a`만 구독하는 방식은 제공되지 않습니다. `use-context-selector` 같은 것을 쓰면 가능하지만, 사실상 별도의 상태 관리 라이브러리를 사용하는 것과 마찬가지입니다.
+
+## context API의 존재 이유 생각해보기
+
+곰곰이 생각해보니, context API의 본질은 **글로벌 상태 관리가 아니라 스코핑된 값 전달**에 더 가깝다는 생각이 들었습니다.
+
+우리가 자바스크립트를 사용할 때, 특정 스코프에서 정의한 변수는 그 스코프와 하위 스코프에서만 접근할 수 있습니다. 이건 클로저와 스코프 체이닝의 기본 규칙이죠.
+
+React의 context API 역시 비슷합니다. 특정 하위 Provider 아래에서만 해당 상태를 공유할 수 있습니다. 즉, “전역 상태”라기보다는 **트리 기반 스코핑 메커니즘**에 가깝습니다.
+
+개발자라면 스코프 체이닝이 얼마나 유용한지 잘 알고 있을 겁니다.
+React는 이 “스코프” 개념을 UI 트리 레벨로 확장해 적용한 셈입니다.
+
+특히 SPA 시대에 React가 인기 있었던 이유 중 하나는 복잡한 UI 구조에서의 **중첩 라우팅**을 쉽게 지원한다는 점인데, 이때 context가 중요한 역할을 합니다. 라우팅뿐만 아니라 `<ErrorBoundary />`, `<Suspense />` 같은 기능들도 트리 기반으로 동작하는 특수한 “스코프”를 필요로 하죠.
+
+그래서 저는 이렇게 결론 내렸습니다:
+
+> Context API는 전역 상태 관리 도구가 아니라, 트리 기반 스코프를 표현하기 위한 핵심 메커니즘이다. 전역 상태를 공유하는 것처럼 보이는 특성은 어디까지나 부가적인 효과다.
+
+## context API 직접 구현하기
+
+비로소 제가 만든 가상 DOM 라이브러리인 [Lithent](https://github.com/superlucky84/lithent)를 위해 직접 Context API를 구현해볼 만큼의 자신감이 생겼습니다.
+
+요즘 이것저것 물어보며 친하게 지내고 있는 Claude AI에게 context API를 어떻게 구현하면 좋을지 물어봤습니다.
+
+Claude의 답은 아주 간단했습니다.
+
+> 그냥 Consumer 컴포넌트에서 가상 DOM 트리를 타고 위로 올라가서 Provider 상태를 찾으면 됩니다.
+
+딱 듣자마자 “어? 이거 생각보다 쉬운데?” 싶었습니다.
+
+심지어 “이 정도면 한두 시간 투자하면 구현하지 않을까?” 하는 자신감도 들었습니다.
+
+그래서 평소 하던 대로 깊게 고민하기 전에 일단 손부터 움직여 보기로 했습니다.
+
+### 무작정 React의 context API 인터페이스 따라 구현해보기
+
+우선 시작은 가볍게 Provider 컴포넌트부터 만들었습니다.
+
+> 이 글에서 앞으로 등장하는 모든 코드는 이해를 돕기 위해 React와 유사한 문법으로 작성된 [Lithent](https://github.com/superlucky84/lithent) 구현 예제입니다.
+> ([Lithent](https://github.com/superlucky84/lithent)의 동작 방식을 설명하기 위한 예제이며, 실제 React와는 동작 방식이 다릅니다.)
+
+```js
+// React 스타일로 표현한 Lithent 예제입니다. (실제 React 동작 방식과는 다릅니다.)
+export function createContext() {
+  // Provider는 단순히 children을 감싸는 역할만 함
+  // (리액트처럼 value를 컨텍스트 스택에 push하지 않는 단순 구조)
+  function Provider({ value, children }) {
+    return <Fragment>{children}</Fragment>;
+  }
+
+  function useContext(context) {
+    // 컨텍스트 인스턴스가 동일한 Provider인지 확인
+    if (context.Provider === Provider) {
+      // ❗ 단순 접근 방식: 현재 VDOM에서 Provider까지 거슬러 올라가 value 찾기
+      const state = findValuePropFromVdomTree(context.Provider);
+      return state;
+    }
+
+    // Provider가 아직 렌더링되지 않았다면 null
+    return null;
+  }
+
+  return { Provider, useContext };
+}
+```
+
+딱 봐도 단순합니다.
+
+Claude AI가 말했던 대로라면, `useContext` 시점에 `findValuePropFromVdomTree()`로 가상 DOM 트리를 쭉 타고 올라가서 Provider의 `value`를 찾아오면 됩니다.
+
+하지만 테스트를 돌려 보았더니, 테스트가 깨졌습니다.
+이상하게도 `useContext`가 리턴하는 값이 항상 `null`입니다.
+
+## 실패의 원인 파악
+
+```js
+const A = h(
+  'A',
+  null,
+  h('B', null, h('D'), h('E')),
+  h('C', null, h('F'), h('G'))
+);
+```
+
+위와 같이 함수가 호출되면 `D → E → B → F → G → C → A` 순서로 실행됩니다.
+
+```
+A [wait]
+├─ B [wait]
+│  ├─ D [making]
+│  └─ E [making]
+└─ C [wait]
+   ├─ F [making]
+   └─ G [making]
+```
+
+프로바이더가 A 노드라고 하고, 컨슈머가 D 노드라고 하면 D가 `useContext`를 호출한 시점에는 아직 트리가 만들어지고 있는 상태이기 때문에 Provider 노드가 완성되지 않았습니다.
+
+그래서 `useContext`의 결과 값이 항상 `null`이었던 것이죠.
+
+처음부터 상황을 자세히 안 알려준 Claude AI를 탓해봤자 소용없습니다. AI 들은 깊이 없이 가볍게 물어보면 질문자의 수준에 맞게 가볍게 이야기해 줍니다.
+
+좀 더 자세히 물어보니 React는 먼저 아래에서 위로 Element(POJO) 트리를 만들고, 다시 top-down 훑으면서 Fiber 트리를 완성시키는데 이 단계를 render 단계라고 하며 이 단계에서 Provider 값 스택이 쌓이고 그때 context가 정해집니다.
+
+렌더의 위에서 아래로 내려가면서 훑는 단계에서 자기 상위의 프로바이더를 알 수 있는 것이죠.
+
+React는 JSX 평가로 bottom-up Element 트리를 만든 뒤, render 단계에서 top-down으로 Fiber를 구축합니다.
+
+반면 제가 만든 가상 DOM은 **단일 bottom-up 패스**로 트리를 만들고 끝나는 방식이었기 때문에 Consumer가 호출될 때 Provider가 아직 준비되지 않았고, 그 때문에 context가 계속 `null`이었던 것입니다.
+
+## 리액트와는 다른 방식으로 접근하기
+
+하지만 제가 만든 가상 DOM은 **한 번 아래에서 위로 쭉 평가해서 트리를 만드는 단일 패스 구조**입니다.React처럼 이중 패스 방식이 아닙니다.
+
+따라서 React처럼 Provider 값을 두 번째 top-down 단계에서 주입할 타이밍이 없습니다.
+
+결과적으로, context를 전달하기 위해 **전혀 다른 방식이 필요했습니다.**
+
+그래서 떠올린 방법이 바로 **지연 평가(Lazy Evaluation)** 입니다. Provider가 실제로 실행될 때, 그 시점까지 등록된 Consumer들에게 값을 나중에 흘려주는 방식입니다.
+
+아래 코드를 보시면 더 명확하게 이해할 수 있습니다.
+
+```js
+// React 스타일로 표현한 Lithent 예제입니다. (실제 React 동작 방식과는 다릅니다.)
+
+export function createContext() {
+  // Consumer가 Provider보다 먼저 실행될 경우 값을 나중에 채워 넣기 위한 큐(스택)
+  const lazyEvolutionStack = [];
+
+  function Provider({ value, children }) {
+    // Provider가 등장한 시점에서, 지금까지 "context 주세요"라고 등록된 모든 Consumer에 값 전달
+    lazyEvolutionStack.forEach(consumerCallback => {
+      consumerCallback(value);
+    });
+
+    // 한 번 전달된 요청은 제거 (초기 렌더링 동안 1회성)
+    lazyEvolutionStack.splice(0);
+
+    return <Fragment>{children}</Fragment>;
+  }
+
+  function useContext(context) {
+    const [value, setValue] = useState(null);
+
+    // Consumer가 Provider보다 먼저 실행되면, 콜백을 스택에 쌓아둔다
+    if (context.Provider === Provider) {
+      lazyEvolutionStack.push(contextValue => {
+        // Provider가 나중에 실행되면 이 콜백이 불려서 값이 세팅됨
+        setValue(contextValue);
+      });
+    }
+
+    // 초기에는 null, Provider 실행 후 비동기로 값이 채워짐
+    return value;
+  }
+
+  return { Provider, useContext };
+}
+```
+
+이 글만 보면 금방 해결한 것처럼 보일지 모르지만, 실제로는 전혀 그렇지 않았습니다.
+
+가족과 함께하는 시간에도, 머릿속은 반나절 가까이 이 문제를 붙잡고 있었으니까요.
+
+그리고… 예상하셨겠지만, 그게 끝이 아니었습니다.
+
+## 다시 트리를 거슬러 올라가기
+
+처음 DOM을 렌더링할 때는, 위에서 설명한 지연 평가 방식이 완벽하게 잘 동작했습니다. Consumer가 먼저 실행돼도, Provider가 나중에 등장하며 값을 흘려줄 수 있었기 때문입니다.
+
+하지만 곧 문제가 하나 드러났습니다. 사용자 인터랙션으로 인해 **트리의 중간 노드가 업데이트되는 경우**, 이 방식은 제대로 동작하지 않습니다.
+
+Provider가 이미 지나간 뒤이기 때문에, 더 이상 값을 “거꾸로” 전달해 줄 타이밍이 존재하지 않습니다.
+
+즉, **초기 렌더링은 해결했지만, 업데이트 처리라는 새로운 벽이 등장한 것**이죠.
+
+결국 어쨌든 트리를 직접 탐색하는 방식이 필요하다는 점을 깨달았습니다.
+
+AI에게 다시 물어보니, React 역시 이러한 경우에는 트리 탐색이 불가피하다고 하더군요.React도 단일 방식이 아닌, 상황에 따라 여러 메커니즘을 사용하여 Provider를 탐색합니다.
+
+제가 만든 가상 DOM에는 DOM이 실제로 반영되는 시점(`mounted`)을 알 수 있는 생명주기는 있었지만, **가상 DOM이 완성되는 시점을 알려주는 콜백은 존재하지 않았습니다.**
+
+결국 새로운 API가 필요했습니다. 트리 탐색을 하려면 트리가 완성되는 시점에 탐색을 시작해야 하니까요.
+
+> **`mountReadyCallback` — 가상 DOM 트리가 완성된 직후 호출되는 콜백**
+
+이 시점에 트리를 다시 거슬러 올라가 Provider 값을 찾는 방식으로 문제를 해결했습니다.
+
+아래 코드는 설명을 위해 Lithent 예제를 React 스타일로 변환한 것이며, 실제 React 동작 방식과는 다릅니다.
+
+```js
+// React 스타일로 표현한 Lithent 예제입니다. (실제 React 동작 방식과는 다릅니다.)
+
+// ✅ 트리 생성이 끝난 직후, Provider의 value를 거슬러 올라가 얻는 방식
+//    이 시도는 실제로 동작함 (DOM 커밋 전에 다시 렌더링되기 때문)
+export function createContext() {
+  function Provider({ value, children }) {
+    // Provider는 value를 props로 전달만 함
+    // (state는 Provider 내부 useState에서 관리된다고 가정)
+    return <Fragment>{children}</Fragment>;
+  }
+
+  function useContext(context) {
+    // Consumer가 사용할 로컬 state
+    const [state, setState] = useState(null);
+
+    // 가상 DOM 트리가 완성된 시점(mount-ready)에 호출
+    // 이 타이밍은 아직 DOM에 커밋되기 전이므로 setState가 유효하게 작동
+    mountReadyCallback(() => {
+      if (context.Provider === Provider) {
+        // Provider 노드까지 역탐색하여 props.value를 찾아옴
+        const providerState = findValuePropFromVdomTree(context.Provider);
+
+        // ✅ 이 시점의 setState는 Consumer를 다시 렌더링하고
+        //    Provider의 value를 성공적으로 주입함
+        setState(providerState);
+      }
+    });
+
+    // 초기 렌더에서는 null,
+    // mount-ready에서 값을 세팅하며 정상적으로 동작
+    return state;
+  }
+
+  return { Provider, useContext };
+}
+```
+
+결국 고민 끝에 처음 생각해냈던 지연 평가 방식은 제외했습니다.
+제가 만든 가상 DOM 라이브러리 Lithent는 가볍고 단순한 렌더링 모델을 지향하기 때문에, 일회성 편의나 미미한 성능 이점을 위해 복잡성을 추가하고 싶지 않았습니다.
+
+대신 추가로 **여러 상태를 하나의 Provider에서 관리하고, 소비자는 필요한 값만 선택적으로 구독할 수 있는 형태로 확장하였습니다.**
+
+아래는 제가 구현한 프로바이더 기능의 최종 사용자 인터페이스입니다.
+
+```ts
+import { h, mount } from "lithent";
+import { createContext } from "lithent-helper';
+
+type AppState = { user: string; theme: string; count: number };
+
+const AppContext = createContext<AppState>();
+const { Provider, contextState, useContext } = AppContext;
+
+const AppProvider = mount((_renew, _props, children) => {
+  const user = contextState('Alice');
+  const theme = contextState('dark');
+  const count = contextState(0);
+
+  return () => (
+    <Provider user={user} theme={theme} count={count}>
+      {children}
+    </Provider>
+  );
+});
+
+const StatsPanel = mount(renew => {
+  const ctx = useContext(AppContext, renew);
+
+  return () => (
+    <section>
+      <p>User: {ctx.user?.value}</p>
+      <p>Theme: {ctx.theme?.value}</p>
+      <p>Count: {ctx.count?.value}</p>
+      <button onClick={() => ctx.count && (ctx.count.value += 1)}>
+        Increment
+      </button>
+      <button onClick={() => ctx.count && (ctx.count.value = 3)}>
+        Set count to 3
+      </button>
+    </section>
+  );
+});
+```
+
+## 맺음말
+
+그냥 context API를 이해하기 위해 블로그를 읽고 끝낼 수도 있었지만, 직접 구현해 보면서 React의 fiber 구조와 렌더링 방식까지 더 깊이 이해할 수 있었습니다.
+
+그리고 제 가상 DOM 라이브러리 [lithent](https://github.com/superlucky84/lithent)에도 또 하나 훌륭한 기능이 추가되어 기쁩니다.
+
+실제 구현은 아래 저장소에서 확인할 수 있습니다.
+
+🔗 [https://github.com/superlucky84/lithent/blob/master/helper/src/hook/context.tsx](https://github.com/superlucky84/lithent/blob/master/helper/src/hook/context.tsx)
+
