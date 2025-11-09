@@ -342,34 +342,25 @@ type AppState = { user: string; theme: string; count: number };
 const AppContext = createContext<AppState>();
 const { Provider, contextState, useContext } = AppContext;
 
-const AppProvider = xmount((_renew, _props, children) => {
+// Even if values inside the provider change, the entire subtree will NOT re-render.
+// Only components that subscribe to the specific value will update.
+const AppProvider = mount((_renew, _props, children) => {
   const user = contextState('Alice');
   const theme = contextState('dark');
   const count = contextState(0);
 
   return () => (
     <Provider user={user} theme={theme} count={count}>
-      {children}
+      <ThemeBadge />
     </Provider>
   );
 });
 
-const StatsPanel = xmount(renew => {
-  const ctx = useContext(AppContext, renew);
-
-  return () => (
-    <section>
-      <p>User: {ctx.user?.value}</p>
-      <p>Theme: {ctx.theme?.value}</p>
-      <p>Count: {ctx.count?.value}</p>
-      <button onClick={() => ctx.count && (ctx.count.value += 1)}>
-        Increment
-      </button>
-      <button onClick={() => ctx.count && (ctx.count.value = 3)}>
-        Set count to 3
-      </button>
-    </section>
-  );
+const ThemeBadge = mount(renew => {
+  // Subscribes only to the `theme` value.
+  // Changes to `user` or `count` will NOT re-render this component.
+  const ctx = useContext(AppContext, renew, ['theme']);
+  return () => <span>Theme: {ctx.theme?.value}</span>;
 });
 ```
 
