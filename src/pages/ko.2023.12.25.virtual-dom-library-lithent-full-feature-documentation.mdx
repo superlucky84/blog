@@ -91,8 +91,8 @@ Lithent는 가상돔을 사용하는데 최소로 꼭 필요한 기본기능과,
 아래는 `마운터`를 정의하고 컴포넌트를 만드는 실제 코드 예입니다. 컴포넌트는 `count`라는 상태와 `increase`라는 기능을 갖습니다. 그리고 JSX 템플릿을 만드는 함수를 리턴합니다. 타입스크립트를 사용할 경우 `mount함수`는 제네릭으로 `props`의 타입을 정의할 수 있습니다.
 
 ```javascript
-import { h, mount } from 'lithent';
-import { state, computed } from 'lithent/helper';
+import { h, mount } from "lithent";
+import { state, computed } from "lithent/helper";
 
 const Component =
   mount <
@@ -141,7 +141,7 @@ render(<Component increaseCount={1} />, document.getElementById('root'));
 `업데이터`는 첫 번째 인자로 `props`를 제공받습니다. 물론 클로저를 이용하여 마운터에 있는 `props`를 참조할 수도 있습니다. 아래 예제코드를 보십시오.
 
 ```javascript
-import { h, Fragment, render, mount } from 'lithent';
+import { h, Fragment, render, mount } from "lithent";
 
 const Child =
   mount <
@@ -198,7 +198,7 @@ Lithent는 `render 함수`를 제공합니다. `render 함수`는 가상돔과 �
 </div>
 */
 
-import { h, render, mount } from 'lithent';
+import { h, render, mount } from "lithent";
 
 const Component = mount<{ value: number }>(() => ({ value }) => <span>{value}<span>);
 
@@ -221,7 +221,7 @@ const destroy = render(<Component value={4} />, element, element.querySelector('
 아래 예제를 보면 알 수 있듯이 마운트 되고 나면 실행되는 함수를 등록할 수 있고, `mountCallback 함수`가 리턴하는 함수는 언마운트시 실행되는 콜백으로 등록됩니다. 언마운트 됐을 때 아무 후속 처리가 필요 없다면 리턴을 생략하면 됩니다.
 
 ```javascript
-import { h, mount, mountCallback } from 'lithent';
+import { h, mount, mountcallback } from "lithent";
 
 const Children = mount((_r, props) => {
   mountCallback(() => {
@@ -270,7 +270,7 @@ const Children =
 사용법은 아래와 같습니다.
 
 ```javascript
-import { h, mount, portal } from 'lithent'
+import { h, mount, portal } from "lithent"
 
 const Component = mount(renew => {
   let count = 0;
@@ -304,8 +304,8 @@ lithent는 기본 기능만으로도 충분히 좋지만 기본 기능을 활용
 아래 코드를 보면 쉽게 사용법을 알수 있습니다.
 
 ```javascript
-import { h, Fragment, render, mount } from 'lithent';
-import { state, computed } from 'lithent/helper';
+import { h, Fragment, render, mount } from "lithent";
+import { state, computed } from "lithent/helper";
 
 const Component = mount(renew => {
   const count = state < number > (1, renew);
@@ -362,8 +362,8 @@ export const state = <T>(
 `할당자` 함수의 두 번째 인자를 사용하면, `store`로부터 특정 속성에 대해서만 공유받아 사용할 수 있습니다. 두 번째 인자는 함수의 형태이며 아래 예제처럼 사용하고 싶은 값만 정의하여 배열로 나열하여 리턴해 주면 됩니다. 속성 전체를 전부 사용하고 싶다면 두 번째 인자를 생략하면 됩니다.
 
 ```javascript
-import { h, Fragment, render, mount } from 'lithent';
-import { store } from 'lithent/helper';
+import { h, Fragment, render, mount } from "lithent";
+import { store } from "lithent/helper";
 
 /*
 <div>
@@ -403,8 +403,8 @@ render(<Component />, element, element.querySelector('span:nth-of-type(3)'));
 예제를 보면 사용법을 쉽게 알 수 있습니다. 아래의 예는 `count1`의 값만 컴포넌트의 이전 상태와 확인하여 캐시 해주고 있습니다. 오직 `count1`의 값만 확인하며, `count2`는 값이 변경되어도 컴포넌트가 업데이트되지 않습니다.
 
 ```javascript
-import { h, Fragment, render, mount } from 'lithent';
-import { cacheUpdate } from 'lithent/helper';
+import { h, Fragment, render, mount } from "lithent";
+import { cacheUpdate } from "lithent/helper";
 
 const Component = mount(renew => {
   const count1 = state < number > (0, renew);
@@ -441,8 +441,8 @@ render(<Component />, document.getElementById('root'));
 주의해야 할 점은 세 번째 인수는 배열을 반환하는 것 “함수”여야 합니다. 그리고 `effect 헬퍼`도 다른 기능들과 마찬가지로 마운터의 모든 값에 클로저를 이용해 접근하므로, 사용하려는 값의 `call by value`, `call by reference` 상태를 잘 확인하고 사용해야 합니다.
 
 ```javascript
-import { h, Fragment, render, mount } from 'lithent';
-import { state, effect } from 'lithent/helper';
+import { h, Fragment, render, mount } from "lithent";
+import { state, effect } from "lithent/helper";
 
 const Children = mount((r, props) => {
   const count = state < number > (0, r);
@@ -474,8 +474,8 @@ const Children = mount((r, props) => {
 아래는 `computed 헬퍼`를 사용하는 간단한 예입니다.
 
 ```jsx
-import { h, Fragment, render, mount } from 'lithent';
-import { computed } from 'lithent/helper';
+import { h, Fragment, render, mount } from "lithent";
+import { computed } from "lithent/helper";
 
 const Component = mount(renew => {
   let count = 0;
@@ -583,8 +583,8 @@ nextTick().then(() => {
 <script src="https://cdn.jsdelivr.net/npm/lithent@1.9.0/ftags/dist/lithentFTags.umd.js"></script>
 
 <script>
-// import { render } from 'lithent';
-// import { fTags, fFragment, fMount } from 'lithent/ftags';
+// import { render } from "lithent";
+// import { fTags, fFragment, fMount } from "lithent/ftags";
 const { render } = lithent;
 const { fTags, fMount, fFragment } = lithentFTags;
 
