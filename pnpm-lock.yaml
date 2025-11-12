@@ -24,8 +24,8 @@ importers:
         specifier: ^11.11.1
         version: 11.11.1
       lithent:
-        specifier: ^1.20.1
-        version: 1.20.1
+        specifier: ^1.20.2
+        version: 1.20.2
       state-ref:
         specifier: ^2.0.0
         version: 2.0.0
@@ -34,11 +34,11 @@ importers:
         version: 0.2.1
     devDependencies:
       '@lithent/lithent-mdx':
-        specifier: ^0.2.3
-        version: 0.2.3(acorn@8.14.0)(lithent@1.20.1)(rollup@4.30.1)(vite@5.4.11(lightningcss@1.30.2)(terser@5.37.0))
+        specifier: ^0.2.4
+        version: 0.2.4(acorn@8.14.0)(lithent@1.20.2)(rollup@4.30.1)(vite@5.4.11(lightningcss@1.30.2)(terser@5.37.0))
       '@lithent/lithent-vite':
-        specifier: ^0.2.3
-        version: 0.2.3(lithent@1.20.1)(vite@5.4.11(lightningcss@1.30.2)(terser@5.37.0))
+        specifier: ^0.3.1
+        version: 0.3.1(lithent@1.20.2)(vite@5.4.11(lightningcss@1.30.2)(terser@5.37.0))
       '@tailwindcss/typography':
         specifier: ^0.5.16
         version: 0.5.16(tailwindcss@3.4.17)
@@ -387,17 +387,25 @@ packages:
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
 
-  '@lithent/hmr-parser@0.2.0':
-    resolution: {integrity: sha512-OWOvt+bubhlA+baQlWGieTEzY4MDykKruChFJYscHamlFhNmGqcmiDuUk/Le65B1oQGNw+GISjt5iz6gyOb+FQ==}
+  '@lithent/hmr-parser@0.2.1':
+    resolution: {integrity: sha512-JRzXpIzxoXglhdBgFss+J4zys2fl+1s8McFhR4jj09hnP6+NkmdQHlrYBiie1uIJe0pUtOmMTDxlibuDMNWpWw==}
 
-  '@lithent/lithent-mdx@0.2.3':
-    resolution: {integrity: sha512-ftUU6Yhzvo/4HA39TchKMNGV+3igkt78dCXMudaLjhAtQFcpggQJ45R65Xjt6YJTzGNJIiDLQX10Y83TClAsKw==}
+  '@lithent/lithent-mdx@0.2.4':
+    resolution: {integrity: sha512-QVMxZLHW1xBsbeSFnHT5a6L+vMy76LTiVUQ6ATGSxhot20JFDEGe+3RknzLEn4wvWuv8AxptrDlhTW/iemMVrw==}
     peerDependencies:
-      lithent: ^1.20.1
+      lithent: ^1.20.2
       vite: ^5.0.0
 
-  '@lithent/lithent-vite@0.2.3':
-    resolution: {integrity: sha512-VNsI8DbDeEQTFCbDsa1YGKeuouJj0y+CbympiWBbevXPeZLMkS8aEbClJgL31JdkDajtGhZCRNmmw1E5LoHVVQ==}
+  '@lithent/lithent-template-parser@0.1.0':
+    resolution: {integrity: sha512-s05uvhosU5WB630WbaG3COcz3tL65OO1FZ28CKewDv5C6uWlI7uthfTRfAOE86zDC8/ow/x3V4BE02qvSIlMUg==}
+
+  '@lithent/lithent-template-vite@0.1.0':
+    resolution: {integrity: sha512-rpUGbhCzK2c8+tXCTVicm0kp4DyRV6c4bMSHVHEOmluDTVJAcGIHHY60DeLR0VPbnaUc/COCWWTAtidZQmfwaQ==}
+    peerDependencies:
+      vite: ^5.0.0
+
+  '@lithent/lithent-vite@0.3.1':
+    resolution: {integrity: sha512-xK59i5mAPiWHp+Mdrj5YoEG4bVymd1mHk/goJyPcr1gK6G2FQd/WZeeFP0AKwZPl6oaoeago2e717tNNu8BSpQ==}
     peerDependencies:
       lithent: ^1.20.1
       vite: ^5.0.0
@@ -1720,8 +1728,8 @@ packages:
   lines-and-columns@1.2.4:
     resolution: {integrity: sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==}
 
-  lithent@1.20.1:
-    resolution: {integrity: sha512-9ArK5ME9nqrV2GLNS5552Ov0fm2LbHFeIN0/Sfh+5RfCgC1kG1NmBh6wIkLIV+74zKb89y6nuV5KPqkZBg1i0w==}
+  lithent@1.20.2:
+    resolution: {integrity: sha512-jir7mixD54FlWkNixFQKSXBwjEIZZukO+INMfbmCQwsxcxzB5UqCxicea0W/p0JTduEvfzQOc8ip21JCvHVEjA==}
 
   local-pkg@0.5.1:
     resolution: {integrity: sha512-9rrA30MRRP3gBD3HTGnC6cDFpaE1kVDWxWgqWJUN0RvDNAo+Nz/9GxB+nHOH0ifbVFy0hSA1V6vFDvnx54lTEQ==}
@@ -2986,26 +2994,36 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@lithent/hmr-parser@0.2.0':
+  '@lithent/hmr-parser@0.2.1':
     dependencies:
       '@babel/parser': 7.26.5
       '@babel/types': 7.26.5
       magic-string: 0.30.21
 
-  '@lithent/lithent-mdx@0.2.3(acorn@8.14.0)(lithent@1.20.1)(rollup@4.30.1)(vite@5.4.11(lightningcss@1.30.2)(terser@5.37.0))':
+  '@lithent/lithent-mdx@0.2.4(acorn@8.14.0)(lithent@1.20.2)(rollup@4.30.1)(vite@5.4.11(lightningcss@1.30.2)(terser@5.37.0))':
     dependencies:
       '@mdx-js/rollup': 3.1.0(acorn@8.14.0)(rollup@4.30.1)
-      lithent: 1.20.1
+      lithent: 1.20.2
       vite: 5.4.11(lightningcss@1.30.2)(terser@5.37.0)
     transitivePeerDependencies:
       - acorn
       - rollup
       - supports-color
 
-  '@lithent/lithent-vite@0.2.3(lithent@1.20.1)(vite@5.4.11(lightningcss@1.30.2)(terser@5.37.0))':
+  '@lithent/lithent-template-parser@0.1.0':
     dependencies:
-      '@lithent/hmr-parser': 0.2.0
-      lithent: 1.20.1
+      magic-string: 0.30.21
+
+  '@lithent/lithent-template-vite@0.1.0(vite@5.4.11(lightningcss@1.30.2)(terser@5.37.0))':
+    dependencies:
+      '@lithent/lithent-template-parser': 0.1.0
+      vite: 5.4.11(lightningcss@1.30.2)(terser@5.37.0)
+
+  '@lithent/lithent-vite@0.3.1(lithent@1.20.2)(vite@5.4.11(lightningcss@1.30.2)(terser@5.37.0))':
+    dependencies:
+      '@lithent/hmr-parser': 0.2.1
+      '@lithent/lithent-template-vite': 0.1.0(vite@5.4.11(lightningcss@1.30.2)(terser@5.37.0))
+      lithent: 1.20.2
       vite: 5.4.11(lightningcss@1.30.2)(terser@5.37.0)
 
   '@mdx-js/mdx@3.1.0(acorn@8.14.0)':
@@ -4444,7 +4462,7 @@ snapshots:
 
   lines-and-columns@1.2.4: {}
 
-  lithent@1.20.1: {}
+  lithent@1.20.2: {}
 
   local-pkg@0.5.1:
     dependencies:

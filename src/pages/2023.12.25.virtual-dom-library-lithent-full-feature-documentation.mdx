@@ -96,8 +96,8 @@ When defining the **mount** function, the first argument passed to it is the **r
 Here is an example of defining the **mount** function and creating a component. The component has a state called `count` and a function called `increase`. It then returns a function that generates a JSX template. When using TypeScript, the **mount** function can define the type of **props** through generics.
 
 ```javascript
-import { h, mount } from "lithent";
-import { state, computed } from "lithent/helper";
+import { h, mount } from 'lithent';
+import { state, computed } from 'lithent/helper';
 
 const Component =
   mount <
@@ -146,7 +146,7 @@ The `updater` is executed whenever the component's state needs to be reflected i
 The `updater` receives `props` as its first argument. Of course, using closures, it can also reference the `props` within the `mount`. Please see the example code below.
 
 ```javascript
-import { h, Fragment, render, mount } from "lithent";
+import { h, Fragment, render, mount } from 'lithent';
 
 const Child =
   mount <
@@ -203,7 +203,7 @@ You can easily understand it by looking at the example below, without needing mu
 </div>
 */
 
-import { h, render, mount } from "lithent";
+import { h, render, mount } from 'lithent';
 
 const Component = mount<{ value: number }>(() => ({ value }) => <span>{value}<span>);
 
@@ -226,7 +226,7 @@ You can specify certain functions to be executed when a component is mounted or 
 As shown in the example below, you can register a function to be executed once the component is mounted, and the function returned by `mountCallback` is registered as a callback to be executed during unmounting. If no follow-up actions are needed when unmounting, you can omit the return.
 
 ```javascript
-import { h, mount, mountcallback } from "lithent";
+import { h, mount, mountCallback } from 'lithent';
 
 const Children = mount((_r, props) => {
   mountCallback(() => {
@@ -275,7 +275,7 @@ A portal allows you to render a child element to a different part of the DOM.
 Here’s how you use it.
 
 ```javascript
-import { h, mount, portal } from "lithent";
+import { h, mount, portal } from 'lithent';
 
 const Component = mount(renew => {
   let count = 0;
@@ -309,8 +309,8 @@ The approach where the user manually determines when the component should be upd
 The following code shows how to use it easily.
 
 ```javascript
-import { h, Fragment, render, mount } from "lithent";
-import { state, computed } from "lithent/helper";
+import { h, Fragment, render, mount } from 'lithent';
+import { state, computed } from 'lithent/helper';
 
 const Component = mount(renew => {
   const count = state < number > (1, renew);
@@ -368,8 +368,8 @@ When a specific property within the shared proxy object is changed, all componen
 By using the second argument of the `assigner` function, you can choose to only share specific properties from the `store`. The second argument is in the form of a function, and as shown in the example below, you can define the values you want to use and return them as an array. If you want to use all properties, you can simply omit the second argument.
 
 ```javascript
-import { h, Fragment, render, mount } from "lithent";
-import { store } from "lithent/helper";
+import { h, Fragment, render, mount } from 'lithent';
+import { store } from 'lithent/helper';
 
 /*
 <div>
@@ -409,8 +409,8 @@ Whether it's a component's `prop`, `state`, or any other form of state, when an 
 You can easily understand how to use it by looking at the example below. In this example, only the value of `count1` is checked against the previous state and cached. Only `count1` is checked, and even if `count2` changes, the component will not be updated.
 
 ```javascript
-import { h, Fragment, render, mount } from "lithent";
-import { cacheUpdate } from "lithent/helper";
+import { h, Fragment, render, mount } from 'lithent';
+import { cacheUpdate } from 'lithent/helper';
 
 const Component = mount(renew => {
   const count1 = state < number > (0, renew);
@@ -447,8 +447,8 @@ The first argument runs after the mount or update. The second argument runs befo
 An important note is that the third argument must be a function that returns an array. Also, since the `effect Helper` accesses all values of the mounter through closures, it is important to check the `call by value` and `call by reference` states of the values you intend to use.
 
 ```javascript
-import { h, Fragment, render, mount } from "lithent";
-import { state, effect } from "lithent/helper";
+import { h, Fragment, render, mount } from 'lithent';
+import { state, effect } from 'lithent/helper';
 
 const Children = mount((r, props) => {
   const count = state < number > (0, r);
@@ -480,8 +480,8 @@ The `computed Helper` is a tool that simplifies templates when complex calculati
 Below is a simple example of how to use the `computed Helper`.
 
 ```jsx
-import { h, Fragment, render, mount } from "lithent";
-import { computed } from "lithent/helper";
+import { h, Fragment, render, mount } from 'lithent';
+import { computed } from 'lithent/helper';
 
 const Component = mount(renew => {
   let count = 0;
@@ -589,8 +589,8 @@ It can be used as shown in the example below.
 <script src="https://cdn.jsdelivr.net/npm/lithent@1.9.0/ftags/dist/lithentFTags.umd.js"></script>
 
 <script>
-// import { render } from "lithent";
-// import { fTags, fFragment, fMount } from "lithent/ftags";
+// import { render } from 'lithent';
+// import { fTags, fFragment, fMount } from 'lithent/ftags';
 const { render } = lithent;
 const { fTags, fMount, fFragment } = lithentFTags;
 
