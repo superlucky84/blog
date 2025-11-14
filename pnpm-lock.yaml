@@ -37,8 +37,8 @@ importers:
         specifier: ^0.2.4
         version: 0.2.4(acorn@8.14.0)(lithent@1.20.2)(rollup@4.30.1)(vite@5.4.11(lightningcss@1.30.2)(terser@5.37.0))
       '@lithent/lithent-vite':
-        specifier: ^0.3.1
-        version: 0.3.1(lithent@1.20.2)(vite@5.4.11(lightningcss@1.30.2)(terser@5.37.0))
+        specifier: ^0.3.2
+        version: 0.3.2(lithent@1.20.2)(vite@5.4.11(lightningcss@1.30.2)(terser@5.37.0))
       '@tailwindcss/typography':
         specifier: ^0.5.16
         version: 0.5.16(tailwindcss@3.4.17)
@@ -387,8 +387,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
 
-  '@lithent/hmr-parser@0.2.1':
-    resolution: {integrity: sha512-JRzXpIzxoXglhdBgFss+J4zys2fl+1s8McFhR4jj09hnP6+NkmdQHlrYBiie1uIJe0pUtOmMTDxlibuDMNWpWw==}
+  '@lithent/hmr-parser@0.2.2':
+    resolution: {integrity: sha512-RPM9KxMcve5PanpD9WyZJpxpTkqCiDMje4PMcQ7uLc2m09g0TFCzv4RIJvfTkXFJAAPX4Ws9FH8Qcq17fYcZug==}
 
   '@lithent/lithent-mdx@0.2.4':
     resolution: {integrity: sha512-QVMxZLHW1xBsbeSFnHT5a6L+vMy76LTiVUQ6ATGSxhot20JFDEGe+3RknzLEn4wvWuv8AxptrDlhTW/iemMVrw==}
@@ -404,10 +404,10 @@ packages:
     peerDependencies:
       vite: ^5.0.0
 
-  '@lithent/lithent-vite@0.3.1':
-    resolution: {integrity: sha512-xK59i5mAPiWHp+Mdrj5YoEG4bVymd1mHk/goJyPcr1gK6G2FQd/WZeeFP0AKwZPl6oaoeago2e717tNNu8BSpQ==}
+  '@lithent/lithent-vite@0.3.2':
+    resolution: {integrity: sha512-g6i0CPnH1khVnDJfVwdi7cLQaWWq2+pt4tzmV6dwNuTqGC9FtGEgrwRlhFsG1zUmmWxKu/6o+RUI32VgQSTpzw==}
     peerDependencies:
-      lithent: ^1.20.1
+      lithent: ^1.20.2
       vite: ^5.0.0
 
   '@mdx-js/mdx@3.1.0':
@@ -2994,7 +2994,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@lithent/hmr-parser@0.2.1':
+  '@lithent/hmr-parser@0.2.2':
     dependencies:
       '@babel/parser': 7.26.5
       '@babel/types': 7.26.5
@@ -3019,9 +3019,9 @@ snapshots:
       '@lithent/lithent-template-parser': 0.1.0
       vite: 5.4.11(lightningcss@1.30.2)(terser@5.37.0)
 
-  '@lithent/lithent-vite@0.3.1(lithent@1.20.2)(vite@5.4.11(lightningcss@1.30.2)(terser@5.37.0))':
+  '@lithent/lithent-vite@0.3.2(lithent@1.20.2)(vite@5.4.11(lightningcss@1.30.2)(terser@5.37.0))':
     dependencies:
-      '@lithent/hmr-parser': 0.2.1
+      '@lithent/hmr-parser': 0.2.2
       '@lithent/lithent-template-vite': 0.1.0(vite@5.4.11(lightningcss@1.30.2)(terser@5.37.0))
       lithent: 1.20.2
       vite: 5.4.11(lightningcss@1.30.2)(terser@5.37.0)
@@ -3428,7 +3428,7 @@ snapshots:
     dependencies:
       '@vitest/spy': 2.1.8
       estree-walker: 3.0.3
-      magic-string: 0.30.17
+      magic-string: 0.30.21
     optionalDependencies:
       vite: 5.4.11(lightningcss@1.30.2)(terser@5.37.0)
 
@@ -3444,7 +3444,7 @@ snapshots:
   '@vitest/snapshot@2.1.8':
     dependencies:
       '@vitest/pretty-format': 2.1.8
-      magic-string: 0.30.17
+      magic-string: 0.30.21
       pathe: 1.1.2
 
   '@vitest/spy@2.1.8':

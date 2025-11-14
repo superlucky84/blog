@@ -21,7 +21,7 @@
   "devDependencies": {
     "vite": "^5.4.8",
     "@lithent/lithent-mdx": "^0.2.4",
-    "@lithent/lithent-vite": "^0.3.1",
+    "@lithent/lithent-vite": "^0.3.2",
     "@tailwindcss/typography": "^0.5.16",
     "@tailwindcss/vite": "^4.0.6",
     "@testing-library/jest-dom": "^6.5.0",
