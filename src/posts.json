@@ -1,6 +1,12 @@
 {
   "posts": [
     {
+      "id": "2025.11.16.concurrency-over-finegrained-speed.mdx",
+      "date": "November 16, 2025",
+      "title": "Why Concurrent Mode Is More Appealing Than Signal-Based Fine-Grained Approaches",
+      "title_ko": "왜 시그널 기반 Fine-grained보다 Concurrent Mode가 더 매력적인가"
+    },
+    {
       "id": "2025.11.9.things-i-learned-from-implementing-the-context-api-myself.mdx",
       "date": "November 9, 2025",
       "title": "Things I Learned from Building the Context API Myself",

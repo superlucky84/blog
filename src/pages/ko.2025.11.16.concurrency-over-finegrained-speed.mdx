@@ -1,0 +1,121 @@
+export const preload = async ({ id, origin }) => {
+  const { views, date } = await fetch(`${origin}/api/views/${id}`).then(
+    response => response.json()
+  );
+  return {
+    layout: {
+      views,
+      date,
+      title: 'Why Concurrent Mode Is More Appealing Than Signal-Based Fine-Grained Approaches',
+      description:
+        'I want to implement both Concurrent Mode and a signal-based fine-grained approach myself — but they’re both so interesting that I can’t decide which one to build first.',
+      openGraph: {
+        title: 'Why Concurrent Mode Is More Appealing Than Signal-Based Fine-Grained Approaches',
+        description:
+        'I want to implement both Concurrent Mode and a signal-based fine-grained approach myself — but they’re both so interesting that I can’t decide which one to build first.',
+        images: [
+          {
+            url: '/assets/posts/concurrency-over-finegrained-speed.png',
+            width: 1024,
+            height: 1024,
+          },
+        ],
+      },
+    },
+  };
+};
+
+
+<img
+  src="/assets/posts/concurrency-over-finegrained-speed.png"
+  style={{ height: '300px', width: '100%', objectFit: 'cover' }}
+/>
+
+## Overview
+
+Building UI libraries is my hobby, and lately I’ve had a delightfully difficult dilemma.
+
+I want to implement both Concurrent Mode and a signal-based fine-grained approach myself — but they’re both so interesting that I can’t decide which one to build first.
+
+I’m the type of person who feels a sense of “I conquered this!” when I understand how a new technology or architecture works and then implement it myself. It’s similar to that thrill you get when you finally defeat a difficult boss in a game.
+
+Recently, while browsing the web, I saw many articles that heavily criticize the VDOM while praising the speed of fine-grained techniques. And at some point, I found myself thinking:
+
+> Is fine-grained speed really the most important value?
+> Why does Concurrent Mode feel more appealing to me instead?
+
+Of course, these two aren’t exactly comparable in a direct sense, but for fun, I want to整理 why **I personally find the value of Concurrent Mode greater than the raw speed of fine-grained approaches**.
+
+## Speed Isn’t Everything
+
+Performance is, of course, an important value in UI libraries. But most modern frameworks have already reached a point where they are “fast enough.”
+
+A fine-grained approach may be a few milliseconds faster, but in **most ordinary web applications**, those tiny differences often don’t meaningfully affect the actual user experience.
+
+Of course, in domains like high-performance charts, data grids, or graphic editors—where DOM operations occur extremely frequently and even slight delays can be critical—those few milliseconds can be decisive. But the main reason people feel that everyday web UIs are “slow” usually has little to do with micro-level computation performance. The real causes lie elsewhere.
+
+If speed were the only absolute value, we would still be building UIs in C or even machine code today. But that’s not the reality. We choose convenient abstractions like `map` and `filter`, and we choose higher-level languages and architectures.
+
+If raw speed were truly all that mattered, we would still be writing every piece of code with plain `for` loops. But we don’t—because structures that are easier for developers to understand, read, and maintain ultimately create more value than micro-optimizations ever could.
+
+## The Slowdown Isn’t Because of the VDOM
+
+People often say things like “the VDOM is slow” or “the VDOM becomes a bottleneck in large-scale apps.” But in reality, more than 90% of actual web performance bottlenecks are *not* caused by VDOM diffing.
+
+The real culprits are layout/reflow costs, heavy resources, network latency, excessive DOM operations, and large JavaScript tasks that monopolize the main thread. In other words, the “sluggishness” most users experience doesn’t come from VDOM diffing—it comes from the browser’s rendering pipeline and main-thread blocking.
+
+## Beyond the Extreme Speed of Fine-Grained Approaches: The Work Management Power of Concurrent Mode
+
+Yes, the virtual DOM does incur some overhead as it walks the tree and computes diffs. But in real-world UI sizes, this cost is rarely fatal.
+
+And fine-grained systems run into the *exact same* problem at scale. State updates propagate in multiple directions, effects start firing simultaneously, and the call stack becomes packed with work.
+
+At that point, what truly matters isn’t simply “update speed.”
+What matters is the ability to split work, adjust priorities, pause and resume long tasks, and let user input run first — in other words, **work management capability**.
+
+Signal-based libraries do try to batch updates, but batching mostly reduces the *number* of updates. When execution begins, everything still runs synchronously, immediately, and all the way to the end.
+
+Concurrent Mode is different. With time slicing, long rendering work is divided into 5ms segments. With priority scheduling, urgent tasks run first. When a high-priority event arrives, React can pause the current work and resume it later.
+
+As an app grows, you eventually end up with 100 signals connected to 100 effects. When one signal changes, a chain reaction fires off 100 effects immediately. Until that entire chain finishes, scrolling, typing — any user input — must wait.
+
+Fine-grained’s “run immediately” behavior is a strength in small apps, but it becomes a limitation as scale increases. Meanwhile, Concurrent Mode’s “controlled execution” may look complex at first, but the larger the system becomes, the more essential it is.
+
+## The Predictability of VDOM’s Declarative Rendering and One-Way Flow
+
+VDOM-based architectures are easy to reason about because they follow a **“declarative, one-way rendering pipeline.”**
+
+Every UI update flows in a single direction:
+
+**state change → render → VDOM → DOM**
+
+Because developers only need to understand this single pipeline, it’s relatively easy to reason about *where* and *why* updates happen. Even as an application scales, this core flow never changes.
+
+In contrast, signal-based fine-grained systems automatically connect state to UI, forming a **dependency graph**. It looks simple at first, but once an application passes a certain level of complexity, that graph begins to spread like a web.
+
+At this point, you suddenly find yourself needing to trace the entire graph to understand things like:
+
+* “How far does this state change propagate?”
+* “Why did this part of the UI update right now?”
+
+In other words, the complexity of fine-grained systems does *not* grow linearly. As the system grows, cognitive load often spikes all at once—almost as if the entire dependency graph jumps into your head at the same time.
+
+Of course, VDOM systems like React also introduce cognitive load through things like `memo` or `useCallback`. But in these cases, the complexity is about **explicitly controlling how much of the same single pipeline to skip**—the fundamental flow doesn’t change.
+
+Fine-grained complexity, however, requires manually tracking an *automatically intertwined dependency network*, whose complexity can suddenly explode as the system grows.
+
+Ultimately, imagining and debugging one stable, unchanging rendering pipeline is far more cognitively manageable than tracking an expanding web of dependencies across an entire application.
+
+## Conclusion
+
+The reason I want to implement Concurrent Mode first is simple.
+
+Fine-grained systems offer impressive micro-level optimization, but I feel that the work-management capabilities provided by Concurrent Mode are far more fundamental for maintaining the overall smoothness, stability, and predictability of an application. I believe this approach ultimately reduces complexity over time and leads the system in a more stable, controllable direction.
+
+Of course, this doesn’t mean that fine-grained approaches are bad. For smaller apps, simple interactions, or highly real-time scenarios, the immediate reactivity of fine-grained systems can actually be the more suitable choice.
+
+However, for more complex web pages—especially those processing large amounts of data, handling real-time streams, and being maintained long-term by multiple teams—the ability to *manage updates* becomes more valuable than raw execution speed.
+
+I, too, like the immediacy and simplicity of fine-grained approaches. But recently I’ve seen a somewhat absolute belief that “fine-grained is always faster and always better,” so in this post I intentionally organized my thoughts from the opposite perspective.
+
+Thank you for reading. I hope you enjoyed it with a light heart.
