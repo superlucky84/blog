@@ -110,7 +110,7 @@ Ultimately, imagining and debugging one stable, unchanging rendering pipeline is
 
 The reason I want to implement Concurrent Mode first is simple.
 
-Fine-grained systems offer impressive micro-level optimization, but I feel that the work-management capabilities provided by Concurrent Mode are far more fundamental for maintaining the overall smoothness, stability, and predictability of an application. I believe this approach ultimately reduces complexity over time and leads the system in a more stable, controllable direction.
+Although the speed benefits of fine-grained control are attractive, I found that Concurrent Mode's work management is more fundamental for ensuring the application's overall smoothness, stability, and predictability. In the long run, this method reduces complexity and guides the system to be more stable and manageable.
 
 Of course, this doesn’t mean that fine-grained approaches are bad. For smaller apps, simple interactions, or highly real-time scenarios, the immediate reactivity of fine-grained systems can actually be the more suitable choice.
 
