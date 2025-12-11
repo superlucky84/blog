@@ -30,584 +30,865 @@ export const preload = async ({ id, origin }) => {
   style={{ height: '300px', width: '100%', objectFit: 'cover' }}
 />
 
+
+[Github](https://github.com/superlucky84/lithent) | [Homepage](https://superlucky84.github.io/lithent/)
+
 ## 소개
 
-[Github](https://github.com/superlucky84/lithent),
-[Homepage](https://superlucky84.github.io/lithent/)
+Lithent는 경량(gzip 4KB)이면서도 예측 가능한 UI를 만들 수 있는 JavaScript 가상돔 라이브러리입니다.
 
-Lithent는 JSX를 기반으로 만들어진 경량(zip 3kb) 가상돔 UI 라이브러리입니다.
+클로저 기반의 명확한 상태 관리와 선택적 확장 기능을 통해, 작은 프로젝트부터 본격적인 SPA까지 유연하게 대응합니다. 빌드 툴 없이 CDN으로 바로 사용할 수도 있고, Vite와 함께 JSX를 사용하는 현대적인 개발 환경에서도 사용할 수 있습니다.
 
-별도의 빌드 툴 없이 스크립트 로드만으로 가볍게 사용할 수 있으며, 이미 그려진 html문서에 동적으로 빈번한 변경이 많은 DOM 영역을 가상돔과 연결하여 쉽게 업데이트하거나 제거할 수 있도록 고안되었습니다. 물론 빌드툴과 함께 사용해도 좋으며 SPA 페이지를 만드는 데 사용해도 좋습니다.
-
-빌드툴과 함께 사용할 경우 JSX를 직접 사용할 수 있으며, 빌드 툴 없이 사용할 경우 라이브러리가 제공하는 [Tagged templates](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates)를 사용하여 JSX와 매우 유사한 방식으로 사용할 수 있습니다.
-
-또한 JSX와 Tagged templates 외에도 라이브러리가 제공하는 `fTags`를 사용하면 함수를 호출하는 방식으로 가상돔을 정의할 수 있습니다.
-
-컴포넌트를의 상태나 기능을 정의할 때, 고차함수 및 클로저의 특성을 이용하여 정의하고 재활용하는 방식을 기본 아이디어로 채택하여 개발했습니다.
+**핵심 철학:**
+- **4KB 코어**: 필수 기능만 담은 경량 코어
+- **클로저 기반 상태**: 복잡한 API 없이 순수 JavaScript 클로저로 상태 관리
+- **수동/반응형 선택**: `renew()` 수동 제어 또는 `lstate` 자동 반응형
+- **점진적 도입**: 정적 HTML에서 풀 SPA까지
 
 ## 목차
 
-1. 기본기능
+### 1. 기본 기능
+- mount / lmount - 컴포넌트 생성
+- updater - 렌더 함수
+- renew - 수동 업데이트
+- render - DOM 마운트
+- Lifecycle Hooks - mountCallback, updateCallback, mountReadyCallback
+- portal - DOM 위치 제어
+- props & children - 컴포넌트 통신
+- ref - DOM 직접 접근
+- innerHTML - Raw HTML 삽입
+- stateless components - 상태 없는 컴포넌트
+- nextTick - DOM 업데이트 대기
 
-- 마운터
-- 업데이터
-- 리뉴어
-- 랜더
-- 마운트 콜백
-- 업데이트 콜백
-- 포털
+### 2. 확장 기능 (Helper)
+- state / lstate - 반응형 상태
+- store / lstore - 전역 상태
+- context / lcontext - 컨텍스트 공유
+- computed - 계산된 값
+- effect - 부수 효과
+- cacheUpdate - 메모이제이션
 
-2. 확장기능
+### 3. 템플릿 옵션
+- JSX - Vite 플러그인
+- HTM Tags - Tagged template literals
+- FTags - 함수형 태그
+- Template Strings - 실험적 템플릿
 
-- state 헬퍼
-- store 헬퍼
-- cacheUpdate 헬퍼
-- effect 헬퍼
-- computed 헬퍼
-- nextTick 헬퍼
+### 4. SSR
+- Server-Side Rendering - renderToString, hydration
 
-3. lTag (Tagged templates 를 이용한 마크업 지원)
-4. fTags (함수 호출방식 마크업 지원)
+---
 
-## 기본기능
+## 기본 기능
 
-Lithent는 가상돔을 사용하는데 최소로 꼭 필요한 기본기능과, 기본기능을 응용하여 조합한 확장기능으로 나누어 개발하였습니다.
-기본기능은 가상돔을 만들고 업데이트하고 실제 html문서에 연결하는 기능입니다.
+Lithent는 가상돔을 사용하는데 꼭 필요한 최소한의 기본 기능을 제공합니다. 기본 기능만으로도 충분히 실용적인 UI를 만들 수 있습니다.
 
-마운터, 업데이터, 리뉴어, 랜더, 마운트 콜백, 업데이트 콜백, 포털이 기본기능에 해당합니다.
+### mount / lmount
 
-## 마운터
+**mount**는 컴포넌트를 생성하는 함수입니다. 클로저를 이용해 상태와 기능을 정의하고, JSX를 반환하는 업데이터 함수를 리턴합니다.
 
-사용자는 Lithent가 제공하는 `mount함수`를 실행하여 컴포넌트를 만듭니다. `마운터`는 컴포넌트의 상태와 기능을 정의하며. 컴포넌트가 처음으로 가상돔으로 만들어질 때 단 한 번 실행됩니다.
+**수동 모드 (mount):**
+```tsx
+import { mount } from 'lithent';
 
-조금 더 자세하게 설명하자면, 사용자는 컴포넌트의 상태와 기능을 정의하는 함수를 만듭니다. 그리고 그 함수를 인자로 갖는 `mount함수`가 실행되면 `mount함수`는 컴포넌트를 리턴해줍니다.
-
-이 과정에서 사용자가 정의한 ‘컴포넌트의 상태와 기능을 정의하는 함수’ 를 곧 `마운터` 라고 합니다.
-
-`마운터`는 자신의 스코핑 내에 변수와 함수를 정의합니다. 여기서 정의한 변수와 함수가 곧 컴포넌트의 상태와 기능이 됩니다. `마운터`는 `업데이터`를 리턴합니다. 업데이트는 JSX를 리턴하는 함수인데 다음 항목에서 자세히 설명하겠습니다.
-
-`마운터`를 정의할 때 `마운터`의 첫 번째 인자로 `리뉴어(renew함수)` 가 제공됩니다. `리뉴어` 는 컴포넌트를 업데이트시킵니다. 그리고 두 번째 인자로 `props`를 제공합니다. `props`는 컴포넌트의 애트리뷰터로부터 넘어온 값입니다.
-
-아래는 `마운터`를 정의하고 컴포넌트를 만드는 실제 코드 예입니다. 컴포넌트는 `count`라는 상태와 `increase`라는 기능을 갖습니다. 그리고 JSX 템플릿을 만드는 함수를 리턴합니다. 타입스크립트를 사용할 경우 `mount함수`는 제네릭으로 `props`의 타입을 정의할 수 있습니다.
-
-```javascript
-import { h, mount } from 'lithent';
-import { state, computed } from 'lithent/helper';
-
-const Component =
-  mount <
-  { increaseCount: number } >
-  ((renew, props) => {
-    let count = 0;
-    const increase = () => {
-      count += props.increaseCount;
-      renew();
-    };
-
-    return () => <button onClick={increase}>count: {count}</button>;
-  });
-
-render(<Component increaseCount={1} />, document.getElementById('root'));
-```
-
-## 업데이터
-
-`업데이터`는 `마운터` 내에 정의되는 `마운터`가 리턴하는 함수입니다. 그리고 `업데이터`는 JSX를 리턴합니다. `업데이터`가 실행되면 실제로 가상돔 객체가 만들어집니다. 왜 이름을 `업데이터`라고 지었냐면 실제로 이 함수는 컴포넌트가 업데이트될 때마다 실행되기 때문입니다.
-
-`마운터`를 설명할 때 예로 보여드렸던 컴포넌트를 다시 보겠습니다.
-
-```javascript
-const Component = mount((renew, props) => {
+const Counter = mount((renew, props) => {
   let count = 0;
+
   const increase = () => {
-    count += props.increaseCount;
-    renew();
+    count++;
+    renew(); // 수동으로 업데이트 트리거
   };
 
-  return props => (
+  return () => <button onClick={increase}>count: {count}</button>;
+});
+```
+
+**자동 반응형 모드 (lmount):**
+```tsx
+import { lmount } from 'lithent';
+import { lstate } from 'lithent/helper';
+
+const Counter = lmount((props) => {
+  const count = lstate(0);
+
+  const increase = () => {
+    count.value++; // 자동으로 업데이트
+  };
+
+  return () => <button onClick={increase}>count: {count.value}</button>;
+});
+```
+
+**마운터 함수의 인자:**
+- 첫 번째 인자: `renew` - 컴포넌트 업데이트 함수 (lmount에서는 생략 가능)
+- 두 번째 인자: `props` - 부모로부터 받은 속성
+- 세 번째 인자: `children` - 자식 요소들
+
+마운터는 컴포넌트가 처음 생성될 때 **단 한 번만** 실행됩니다. 이곳에서 정의한 변수와 함수는 클로저로 보존되어 업데이터에서 계속 사용할 수 있습니다.
+
+### updater
+
+마운터가 리턴하는 함수를 **업데이터**라고 합니다. 업데이터는 JSX를 리턴하며, 컴포넌트가 업데이트될 때마다 실행됩니다.
+
+```tsx
+const Component = mount((renew, props) => {
+  let count = 0;
+  const increase = () => { count++; renew(); };
+
+  // 이 함수가 업데이터입니다
+  return (props) => (
     <button onClick={increase}>
-      count: {count.value}, increaseCount: {props.increaseCount}
+      count: {count}, prop: {props.value}
     </button>
   );
 });
-
-render(<Component increaseCount={1} />, document.getElementById('root'));
 ```
 
-주의 깊게 봐야 할 부분은 `업데이터`가 함수라는 것입니다.
+업데이터는 선택적으로 `props`를 인자로 받을 수 있습니다. 마운터의 props를 클로저로 참조할 수도 있지만, 업데이트 시점의 최신 props를 보장받으려면 업데이터의 인자를 사용하는 것이 안전합니다.
 
-`업데이터`는 컴포넌트의 상태를 돔에 반영하려고 할 때마다 실행되는데, `마운터` 내에 정의된 함수이기 때문에 클로저를 이용해 `마운터의` 변수 및 함수에 접근하여 사용할 수 있습니다.
+### renew
 
-`업데이터`는 첫 번째 인자로 `props`를 제공받습니다. 물론 클로저를 이용하여 마운터에 있는 `props`를 참조할 수도 있습니다. 아래 예제코드를 보십시오.
+`renew` 함수는 컴포넌트를 수동으로 업데이트합니다. 마운터의 첫 번째 인자로 제공되며, 호출 시 업데이터가 재실행되어 UI가 갱신됩니다.
 
-```javascript
-import { h, Fragment, render, mount } from 'lithent';
+```tsx
+const Component = mount(renew => {
+  let items = ['a', 'b'];
 
-const Child =
-  mount <
-  { count: number } >
-  ((_r, props) => {
-    const { count: countFromMounter } = props;
-
-    return ({ count: countFromUpdater }) => (
-      <>
-        <div>count: {props.count}</div>
-        <div>count: {countFromMounter} ("call by value" not working)</div>
-        <div>count: {countFromUpdater}</div>
-      </>
-    );
-  });
-
-const Parent = mount(renew => {
-  let count = 0;
-
-  const change = () => {
-    count += 1;
-    renew();
+  const addItem = () => {
+    items.push('c');
+    renew(); // UI 업데이트 트리거
   };
 
   return () => (
-    <>
-      <Child count={count} />
-      <button onClick={change}>Increase</button>
-    </>
+    <div>
+      <ul>{items.map(item => <li>{item}</li>)}</ul>
+      <button onClick={addItem}>Add</button>
+    </div>
   );
 });
 ```
 
-Child 컴포넌트의 업데이터는 3가지 방식으로 `props`에 들어있는 값을 참조하는 걸 볼 수 있습니다. 여기서 `마운터 props`로부터 미리 꺼내두고 참조하는 값(countFromMounter)은 값이 이미 새로운 메모리 번지로 할당되었기 때문에, 업데이터가 새로 실행돼도 부모 `props`로부터 변경된 값을 반영하지 못합니다. 클로저가 어떻게 작동하는지 정확히 알고 있는 Javascript에 능숙한 개발자라면 그리 헷갈리는 상황은 아닙니다.
+`renew()`는 불필요한 자동화를 제거하여 업데이트 시점을 명확하게 제어할 수 있게 해줍니다. Helper의 `state`, `lstate`를 사용하면 `renew()` 호출을 자동화할 수 있습니다.
 
-## 리뉴어
+### render
 
-`리뉴어`는 마운터 함수의 첫 번째 인자로 제공되는 `renew함수`입니다. `renew`가 실행되면 컴포넌트의 새로운 상태가 반영되어 그려집니다. 사용자는 `마운터` 내에 정의되는 이벤트 핸들러 함수에서 직접 사용할 수 있습니다. 어떻게 사용하는지는 앞선 예제에서 많이 보여드렸으니 여기서는 예제코드를 생략하겠습니다.
+`render` 함수는 가상돔을 실제 DOM에 연결합니다.
 
-리뉴어는 `state 헬퍼`나 `store 헬퍼`를 위해 사용될 수도 있는데, 자세한 내용은 뒤에서 자세히 설명하겠습니다.
-
-## 랜더
-
-Lithent는 `render 함수`를 제공합니다. `render 함수`는 가상돔과 가상돔이 그려질 실제 리얼돔 영역을 연결해 줍니다.
-
-많이 설명할 필요 없이 아래 예제를 보면 바로 이해할 수 있습니다.
-
-```javascript
-/* index.html
-<div>
-  <span>1</span>
-  <span>3</span>
-  <span>5</span>
-</div>
-*/
-
+```tsx
 import { h, render, mount } from 'lithent';
 
-const Component = mount<{ value: number }>(() => ({ value }) => <span>{value}<span>);
+const App = mount(renew => {
+  let count = 0;
+  return () => <div>Count: {count}</div>;
+});
 
-render(<Component value={2} />, element, element.querySelector('span:nth-of-type(2)'));
-const destroy = render(<Component value={4} />, element, element.querySelector('span:nth-of-type(3)'));
+// 기본 사용: appendChild
+render(<App />, document.getElementById('root'));
+
+// insertBefore 사용
+render(
+  <App />,
+  document.getElementById('root'),
+  document.querySelector('.insert-before-me')
+);
 ```
 
-주석처리된 index.html과 같은 DOM이 그려져 있을 때, `render`를 이용해 비어있는 2와 4에 해당하는 가상돔을 있어야 할 순서의 위치에 그려주고 있습니다.
+`render` 함수는 `destroy` 함수를 리턴합니다. `destroy()`를 호출하면 해당 컴포넌트가 언마운트됩니다.
 
-`render`의 두 번째 인자는 가상돔이 어떤 부모 밑에 그려져야 되는지 지정할 수 있으며, 세 번째 인자로 어떤 엘리먼트 앞에 그려져야 되는지 정할 수 있습니다. `insertBefore(DOM API)`처럼 생각하면 됩니다. 만약 세 번째 인자를 생략하면 `appendChild`가 됩니다.
+```tsx
+const destroy = render(<App />, document.getElementById('root'));
 
-`render 함수`는 실행된 후 `destroy 함수`를 리턴해줍니다. `destroy 함수`가 실행되면 `render`로 인해 그려졌던 영역을 언마운트 시킵니다.
+// 나중에 제거
+destroy();
+```
 
-## 마운트 콜백
+### Lifecycle Hooks
 
-컴포넌트로부터 DOM객체가 생성되어 브라우저에 나타나는걸 마운트라고 합니다. 반대되는 개념인 언마운트는 컴포넌트가 브라우저에서 제거되는 걸 의미합니다.
+컴포넌트의 생명주기 시점에 특정 로직을 실행할 수 있습니다.
 
-컴포넌트가 마운트 되거나 언마운트 될 때, 사용자가 지정해 놓은 특정 함수가 실행되도록 할 수 있습니다. Lithent가 제공하는 `mountCallback 함수`로 등록할 수 있습니다.
+**mountCallback:**
+컴포넌트가 DOM에 마운트된 직후 실행됩니다.
 
-아래 예제를 보면 알 수 있듯이 마운트 되고 나면 실행되는 함수를 등록할 수 있고, `mountCallback 함수`가 리턴하는 함수는 언마운트시 실행되는 콜백으로 등록됩니다. 언마운트 됐을 때 아무 후속 처리가 필요 없다면 리턴을 생략하면 됩니다.
+```tsx
+import { mount, mountCallback } from 'lithent';
 
-```javascript
-import { h, mount, mountCallback } from 'lithent';
-
-const Children = mount((_r, props) => {
+const Component = mount(() => {
   mountCallback(() => {
     console.log('mounted');
 
+    // 언마운트 시 실행될 클린업 함수
     return () => {
-      console.log('unmount');
+      console.log('unmounted');
     };
   });
 
-  return () => <span>Children</span>;
+  return () => <div>Component</div>;
 });
 ```
 
-## 업데이트 콜백
+**updateCallback:**
+컴포넌트가 업데이트되기 전과 후에 실행됩니다.
 
-컴포넌트의 상태가 변경되고 `리뉴어(renew)`가 실행되면 컴포넌트가 업데이트됩니다. 컴포넌트가 업데이트를 시작하기 전에 업데이트 콜백이 실행됩니다. 업데이트가 끝나 DOM객체에 반영된 후에는 업데이티드 콜백이 실행됩니다.
+```tsx
+import { mount, updateCallback } from 'lithent';
 
-업데이트콜백은 Lithent가 제공하는 `updateCallback`을 통해 등록할 수 있으며, `updateCallback`이 리턴하는 함수는 컴포넌트의 업데이티가 끝난 후 실행되는 콜백으로 등록됩니다. 업데이트가 완료된 후 아무 후속 처리가 필요 없다면 리턴을 생략하면 됩니다.
+const Component = mount((renew, props) => {
+  updateCallback(
+    () => {
+      console.log('before update');
+      return () => console.log('after update');
+    },
+    () => [props.count] // 의존성: count가 변경될 때만 실행
+  );
 
-```javascript
-const Children =
-  mount <
-  { count: number } >
-  ((_r, props) => {
-    updateCallback(
-      () => {
-        console.log('clean up');
-
-        return () => console.log('updated');
-      },
-      () => [props.count]
-    );
-    return ({ count }) => <span>child updated count: {count}</span>;
-  });
+  return ({ count }) => <div>count: {count}</div>;
+});
 ```
 
-위 예제 코드를 보면 `mountCallback`과는 다르게 `updateCallback`에는 두 번째 인자가 있습니다. 컴포넌트 내에 특정 상태가 변경될 때만 콜백을 실행하기 위함입니다. 배열을 리턴하는 함수로 정의하며, 변경을 감지하고 싶은 값을 배열에 넣어주면 됩니다.
+**mountReadyCallback:**
+가상돔이 준비되었을 때, 실제 DOM에 마운트되기 전에 실행됩니다. `mountCallback`보다 빠르게 실행됩니다.
 
-콜백이나 디팬던시에 `props`를 사용할 때는 `props.` 프리픽스를 전부 다 붙여서 사용해야 정확히 비교됩니다. 왜냐하면 `마운터`는 컴포넌트가 마운트 될 때 한 번만 실행되고 그 안에서 정의된 콜백함수들이나 디펜던시 체크 함수는 컴포넌트가 업데이트될 때마다 클로저를 이용해 `props`값에 접근하기 때문입니다. 앞서 업데이터에서 설명한 이슈와 같습니다.
+```tsx
+import { mount, mountReadyCallback } from 'lithent';
 
-## 포털
+const Component = mount(() => {
+  mountReadyCallback(() => {
+    console.log('virtual dom ready, before actual mount');
 
-포탈(Portal)은 자식 요소를 DOM의 다른 부분에 렌더링할 수 있게 해줍니다.
+    return () => {
+      console.log('cleanup before unmount');
+    };
+  });
 
-사용법은 아래와 같습니다.
+  return () => <div>Component</div>;
+});
+```
 
-```javascript
-import { h, mount, portal } from 'lithent'
+**실행 순서:** mountReadyCallback → 실제 DOM 마운트 → mountCallback
 
-const Component = mount(renew => {
+### portal
+
+포탈은 자식 요소를 DOM의 다른 위치에 렌더링합니다.
+
+```tsx
+import { mount, portal, Fragment } from 'lithent';
+
+const Modal = mount(renew => {
   let count = 0;
-
-  const change = () => {
-    count += 1;
-    renew();
-  };
+  const increase = () => { count++; renew(); };
 
   return () => (
     <Fragment>
-      <button onClick={change}>Update</button>
-      { portal( <Children count={count} />, document.getElementById('portal-area') as HTMLElement) }
+      <button onClick={increase}>Update</button>
+      {portal(
+        <div class="modal">Count: {count}</div>,
+        document.getElementById('modal-root')
+      )}
     </Fragment>
   );
 });
 ```
 
-## 확장기능
+포탈은 모달, 툴팁, 드롭다운 등 부모 DOM 계층 구조를 벗어나야 하는 UI에 유용합니다.
 
-lithent는 기본 기능만으로도 충분히 좋지만 기본 기능을 활용하여 조합하면 더욱 편리하게 사용할 수 있습니다.
+### props & children
 
-사용자가 유용하게 사용할만한 기능들을 미리 코드로 작성해 놨습니다. 사용자는 이 코드를 직접 import 하여 사용해도 좋고, 참고하여 새로운 형태의 확장코드를 만들어도 됩니다.
+컴포넌트는 props와 children을 통해 데이터를 전달받습니다.
 
-헬퍼 코드의 모든 구현은 [저장소](https://github.com/superlucky84/lithent/tree/master/helper/src/hook)에서 확인하세요.
-
-## state 헬퍼
-
-컴포넌트의 상태가 변경될 때마다 확인하여 `renew 함수`를 실행시키는 방식은 사용자가 직접 컴포넌트가 갱신되는 시기를 결정할 수 있으므로 그냥 그대로 사용해도 충분히 유용합니다. 하지만 너무 정밀하게 컴포넌트 갱신시점을 결정할 필요가 없고 그냥 값이 변경될 때마다 컴포넌트를 업데이트하게 하고 싶다면 `state 헬퍼`를 사용하면 됩니다.
-
-아래 코드를 보면 쉽게 사용법을 알수 있습니다.
-
-```javascript
-import { h, Fragment, render, mount } from 'lithent';
-import { state, computed } from "lithent/helper";
-
-const Component = mount(renew => {
-  const count = state < number > (1, renew);
-  const increase = () => {
-    count.value += 1;
-  };
-
+```tsx
+const Child = mount((renew, props, children) => {
   return () => (
-    <>
-      <button type="text" onClick={increase}>
-        increase
-      </button>
-      <span>count: {count.value}</span>
-    </>
+    <div>
+      <h1>{props.title}</h1>
+      <div>{children}</div>
+    </div>
+  );
+});
+
+const Parent = mount(() => {
+  return () => (
+    <Child title="Hello">
+      <p>This is children content</p>
+    </Child>
   );
 });
 ```
 
-`state 헬퍼`는 `renew` 함수를 특정 상태와 묶어주는 역할을 합니다.
-아래 코드는 `state 헬퍼` 구현 코드입니다. 구현 원리는 간단합니다. `state`는 초기값과 `renew 함수`를 받고 `getter`, `setter`를 가진 객체를 반환합니다. 이 객체는 값을 확인할 수 있고 값을 변경할 경우에는 `renew`를 실행시켜 줍니다.
+props는 마운터와 업데이터 모두에서 접근 가능하며, children은 마운터의 세 번째 인자로 제공됩니다.
 
-```javascript
-export const state = <T>(
-  value: T,
-  renew: () => boolean
-): {
-  value: T;
-  v: T;
-} => {
+### ref
+
+`ref`를 사용하면 DOM 요소에 직접 접근할 수 있습니다.
+
+```tsx
+import { mount, ref } from 'lithent';
+
+const Component = mount(() => {
+  const inputRef = ref<HTMLInputElement>();
+
+  const focus = () => {
+    inputRef.value?.focus();
+  };
+
+  return () => (
+    <div>
+      <input ref={inputRef} type="text" />
+      <button onClick={focus}>Focus Input</button>
+    </div>
+  );
+});
+```
+
+ref는 컴포넌트가 마운트된 후에만 `.value` 값이 설정됩니다.
+
+### innerHTML
+
+`innerHTML` 속성을 사용하면 Raw HTML을 안전하게 삽입할 수 있습니다.
+
+```tsx
+const Component = mount(() => {
+  const htmlContent = '<strong>Bold</strong> and <em>italic</em> text';
+
+  return () => <div innerHTML={htmlContent} />;
+});
+```
+
+**주의:** XSS 공격을 방지하기 위해 사용자 입력을 innerHTML에 직접 사용하지 마세요.
+
+### stateless components
+
+상태가 필요 없는 컴포넌트는 `mount` 없이 순수 함수로 작성할 수 있습니다.
+
+```tsx
+// Stateless 컴포넌트
+const Greeting = ({ name }, children) => (
+  <div>
+    <h1>Hello, {name}!</h1>
+    {children}
+  </div>
+);
+
+// 사용
+const App = mount(() => {
+  return () => (
+    <Greeting name="World">
+      <p>Welcome to Lithent</p>
+    </Greeting>
+  );
+});
+```
+
+Stateless 컴포넌트는 props와 children만 받으며, 재사용 가능한 UI 조각을 만드는 데 적합합니다.
+
+### nextTick
+
+`nextTick`은 다음 DOM 업데이트가 완료될 때까지 기다립니다.
+
+```tsx
+import { mount, nextTick } from 'lithent';
+
+const Component = mount(renew => {
+  let count = 0;
+
+  const increase = async () => {
+    count++;
+    renew();
+
+    await nextTick();
+    // 이 시점에서 DOM이 업데이트 완료됨
+    console.log('DOM updated');
+  };
+
+  return () => <button onClick={increase}>count: {count}</button>;
+});
+```
+
+nextTick은 내부적으로 `queueMicrotask`를 사용하여 모든 리렌더링 요청이 처리된 후 실행됩니다.
+
+---
+
+## 확장 기능 (Helper)
+
+Helper는 기본 기능을 활용하여 더 편리하게 사용할 수 있도록 만든 선택적 확장 기능입니다. 필요한 Helper만 import하여 사용할 수 있습니다.
+
+모든 Helper의 구현 코드는 [GitHub 저장소](https://github.com/superlucky84/lithent/tree/master/helper/src/hook)에서 확인할 수 있습니다.
+
+### state / lstate
+
+`state` Helper는 값 변경 시 자동으로 `renew()`를 호출하는 반응형 상태를 만듭니다.
+
+**수동 모드 (state):**
+```tsx
+import { mount } from 'lithent';
+import { state } from 'lithent/helper';
+
+const Counter = mount(renew => {
+  const count = state(0, renew);
+
+  const increase = () => {
+    count.value++; // renew()가 자동으로 호출됨
+  };
+
+  return () => <button onClick={increase}>count: {count.value}</button>;
+});
+```
+
+**자동 모드 (lstate):**
+```tsx
+import { lmount } from 'lithent';
+import { lstate } from 'lithent/helper';
+
+const Counter = lmount(() => {
+  const count = lstate(0); // renew 인자 불필요
+
+  return () => <button onClick={() => count.value++}>count: {count.value}</button>;
+});
+```
+
+state는 간단한 getter/setter 패턴으로 구현되어 있습니다:
+
+```tsx
+export const state = <T>(value: T, renew: () => boolean) => {
   let result = value;
 
   return {
-    get value() {
-      return result;
-    },
+    get value() { return result; },
     set value(newValue: T) {
       result = newValue;
       renew();
-    },
+    }
   };
 };
 ```
 
-## store 헬퍼
+### store / lstore
 
-`store 헬퍼`는 모든 컴포넌트 전역에서 사용할 수 있는 객체를 공유합니다. 이 `store` 객체를 공유받은 컴포넌트는 값을 공유받는 동시에 자신의 `renew` 권한을 `store 헬퍼`에 공유할 수 있습니다.
+`store`는 여러 컴포넌트가 공유하는 전역 상태를 관리합니다.
 
-`store 헬퍼`는 객체의 형태로 사용자가 원하는 데이터 구조를 정의합니다. 아래 예제에서는 문자열 타입으로 text 속성을 넘버 타입의 `count` 속성을 정의하였습니다. `store 헬퍼`가 실행되면 공유할 데이터를 컴포넌트에 할당해 주는 `할당자`를 리턴합니다. 아래 예제 코드에서는 `assignShardStore`가 `할당자`입니다.
+```tsx
+import { mount } from 'lithent';
+import { store } from 'lithent/helper';
 
-`할당자`는 컴포넌트 마운터 내에서 사용되며 첫 번째 인자로 컴포넌트의 `리뉴어(renew)`를 할당받고 실행됩니다. `할당자`는 공유데이터를 프록시 객체를 통해 컴포넌트에게 제공합니다.
-
-공유된 프록시 객체에 공유되고 있는 특정 속성이 변경되면, 그 값을 공유하고 있는 모든 컴포넌트가 업데이트됩니다.
-
-`할당자` 함수의 두 번째 인자를 사용하면, `store`로부터 특정 속성에 대해서만 공유받아 사용할 수 있습니다. 두 번째 인자는 함수의 형태이며 아래 예제처럼 사용하고 싶은 값만 정의하여 배열로 나열하여 리턴해 주면 됩니다. 속성 전체를 전부 사용하고 싶다면 두 번째 인자를 생략하면 됩니다.
-
-```javascript
-import { h, Fragment, render, mount } from 'lithent';
-import { store } from "lithent/helper";
-
-/*
-<div>
-  <span>1</span>
-  <span>2</span>
-  <span>3</span>
-</div>
-*/
-
-const assignShardStore = store<{ text: string; count: number }>({ text: 'sharedText', count: 3 });
-
-const Component = mount(r => {
-  // The value of "shardStore.count" is null.
-  // To get the value, you must include it in the second argument, the function return array.
-  // If you omit the second argument, then all values in the store are fetched.
-  const shardStore = assignShardStore(r, (store) => [store.text]);
-  const changeInput = (event) => {
-    shardStore.text = event.target.value;
-  };
-  return () => <textarea type="text" onInput={changeInput} value={shardStore.text} />;
+// Store 생성
+const useSharedStore = store({
+  text: 'shared text',
+  count: 0
 });
 
-render(<Component />, element, element.querySelector('span:nth-of-type(2)'));
-render(<Component />, element, element.querySelector('span:nth-of-type(3)'));
+const Component1 = mount(renew => {
+  const sharedStore = useSharedStore(renew);
+
+  const changeText = (e) => {
+    sharedStore.text = e.target.value;
+  };
+
+  return () => <input value={sharedStore.text} onInput={changeText} />;
+});
+
+const Component2 = mount(renew => {
+  // 특정 속성만 구독
+  const sharedStore = useSharedStore(renew, (store) => [store.text]);
+
+  return () => <div>{sharedStore.text}</div>;
+});
 ```
 
-`store 헬퍼`의 구현 방법은 `state 헬퍼`의 구현방법과 유사합니다. 다만 `store 헬퍼`는 `state 헬퍼`와는 다르게 여러 컴포넌트의 `renew`를 가지고 있을 수 있으므로, 언마운트 되어 사라진 컴포넌트의 `리뉴어`를 항상 확인하여 제거해줘야 합니다. 이미 제거된 `리뉴어`를 실행하면 리턴 값으로 false를 반환하는 특성을 이용하여 이를 구현합니다..
+**lstore (자동 모드):**
+```tsx
+import { lmount } from 'lithent';
+import { lstore } from 'lithent/helper';
 
-코드는 [저장소](https://github.com/superlucky84/lithent/blob/master/helper/src/hook/store.ts)에서 확인 가능합니다.
+// lstore는 { useStore, watch } 객체를 리턴
+const counterStore = lstore({ count: 0 });
 
-## cacheUpdate 헬퍼
+const Display = lmount(() => {
+  // lmount에서는 useStore() 사용
+  const counter = counterStore.useStore();
+  return () => <div>Count: {counter.count}</div>;
+});
 
-업데이터에 `cacheUpdate 함수`를 사용하여 감싸주면, 불필요한 상태에서는 리렌더링이 발생하지 않도록 설정할 수 있습니다.
+const Controls = lmount(() => {
+  const counter = counterStore.useStore();
+  return () => <button onClick={() => counter.count++}>+</button>;
+});
+```
 
-컴포넌트의 `prop`이나 `state` 또는 다른 어떠한 형태의 상태라도 리렌더링을 시도하는 시점에 이전 상태와 변경된 상태의 값을 비교하여, 값이 같다면 더 이상 업데이트를 시도하지 않도록 합니다.
+lstore는 `{ useStore, watch }` 형태로 리턴됩니다. `useStore`는 lmount에서 자동으로 구독하고, `watch`는 mount에서 renew를 수동으로 전달할 때 사용합니다.
 
-예제를 보면 사용법을 쉽게 알 수 있습니다. 아래의 예는 `count1`의 값만 컴포넌트의 이전 상태와 확인하여 캐시 해주고 있습니다. 오직 `count1`의 값만 확인하며, `count2`는 값이 변경되어도 컴포넌트가 업데이트되지 않습니다.
+store를 사용하면 prop drilling 없이 여러 컴포넌트에서 상태를 공유할 수 있습니다.
 
-```javascript
-import { h, Fragment, render, mount } from 'lithent';
-import { cacheUpdate } from "lithent/helper";
+### context / lcontext
+
+`context`는 컴포넌트 트리를 통해 데이터를 전달합니다. store와 달리 각 Provider마다 독립적인 값을 가질 수 있습니다.
+
+**context 생성:**
+```tsx
+import { mount } from 'lithent';
+import { createContext } from 'lithent/helper';
+
+// 1. Context 타입 정의 및 생성
+type ThemeContext = {
+  theme: string;
+};
+
+const themeContext = createContext<ThemeContext>();
+const { Provider, contextState, useContext } = themeContext;
+
+// 2. Provider에서 contextState로 state 생성
+const App = mount(renew => {
+  // contextState로 state 생성 (renew 없이 권장)
+  const themeState = contextState('light');
+
+  return () => (
+    <Provider theme={themeState}>
+      <Button />
+      <ThemeToggle />
+    </Provider>
+  );
+});
+
+// 3. Consumer에서 useContext로 접근
+const Button = mount(renew => {
+  const ctx = useContext(themeContext, renew);
+
+  return () => (
+    <button style={{ background: ctx.theme.value === 'dark' ? '#333' : '#fff' }}>
+      Click me
+    </button>
+  );
+});
+
+const ThemeToggle = mount(renew => {
+  const ctx = useContext(themeContext, renew);
+
+  const toggleTheme = () => {
+    ctx.theme.value = ctx.theme.value === 'light' ? 'dark' : 'light';
+  };
+
+  return () => <button onClick={toggleTheme}>Toggle Theme</button>;
+});
+```
+
+**선택적 구독:**
+```tsx
+// 특정 키만 구독
+const ctx = useContext(themeContext, renew, ['theme']);
+```
+
+**lcontext (자동 모드):**
+lcontext는 lmount 컴포넌트를 위한 context입니다. renew 관리가 자동화되어 더 간편합니다.
+
+### computed
+
+`computed`는 복잡한 계산식을 미리 처리하여 템플릿을 깔끔하게 유지합니다.
+
+```tsx
+import { mount } from 'lithent';
+import { state, computed } from 'lithent/helper';
 
 const Component = mount(renew => {
-  const count1 = state < number > (0, renew);
-  const count2 = state < number > (0, renew);
+  const count = state(0, renew);
 
-  const insCount1 = () => {
-    count1.value += 1;
-  };
-  const insCount2 = () => {
-    count2.value += 1;
-  };
+  const doubleCount = computed(() => count.value * 2);
+  const quadCount = computed(() => doubleCount.value * 2);
+
+  return () => (
+    <div>
+      <p>count: {count.value}</p>
+      <p>double: {doubleCount.value}</p>
+      <p>quad: {quadCount.value}</p>
+      <button onClick={() => count.value++}>+</button>
+    </div>
+  );
+});
+```
+
+computed 값은 getter로만 접근 가능하며, 업데이터가 실행될 때마다 재계산됩니다.
+
+### effect
+
+`effect`는 `mountCallback`과 `updateCallback`을 결합한 Helper로, 부수 효과를 관리합니다.
+
+```tsx
+import { mount } from 'lithent';
+import { state, effect } from 'lithent/helper';
+
+const Timer = mount(renew => {
+  const seconds = state(0, renew);
+  let intervalId: number;
+
+  effect(
+    // forward: 부수 효과 실행
+    () => {
+      intervalId = setInterval(() => {
+        seconds.value += 1;
+      }, 1000);
+    },
+    // backward: 클린업 (선택적)
+    () => {
+      clearInterval(intervalId);
+    },
+    // dependencies: 의존성 배열을 반환하는 함수 (선택적)
+    () => [] // 빈 배열 = 마운트 시에만 실행
+  );
+
+  return () => <div>Seconds: {seconds.value}</div>;
+});
+```
+
+**인자 구조:**
+- **첫 번째 인자 (forward)**: 부수 효과를 실행하는 함수
+- **두 번째 인자 (backward)**: 클린업 함수 (선택적, undefined 가능)
+- **세 번째 인자 (dependencies)**: 의존성 배열을 반환하는 함수 (선택적, 기본값은 빈 배열)
+
+**의존성 관리:**
+```tsx
+const count = state(0, renew);
+
+// 빈 배열: 마운트 시에만 실행
+effect(() => console.log('Once'), undefined, () => []);
+
+// 특정 값 변경 시 실행
+effect(() => console.log('Count changed'), undefined, () => [count.value]);
+```
+
+**중요:** 클린업은 forward의 리턴이 아니라 **별도의 두 번째 인자**입니다.
+
+### cacheUpdate
+
+`cacheUpdate`는 특정 값이 변경되지 않으면 리렌더링을 방지합니다.
+
+```tsx
+import { mount } from 'lithent';
+import { state, cacheUpdate } from 'lithent/helper';
+
+const Component = mount(renew => {
+  const count1 = state(0, renew);
+  const count2 = state(0, renew);
 
   return cacheUpdate(
-    () => [count1.value],
+    () => [count1.value], // count1만 감지
     () => (
-      <Fragment>
-        depth1: {count1} - {count2}
-        <button onClick={insCount1}>insCount1</button>
-        <button onClick={insCount2}>insCount2</button>
-      </Fragment>
+      <div>
+        count1: {count1.value}, count2: {count2.value}
+        <button onClick={() => count1.value++}>+count1</button>
+        <button onClick={() => count2.value++}>+count2 (no rerender)</button>
+      </div>
     )
   );
 });
-
-render(<Component />, document.getElementById('root'));
 ```
 
-## effect 헬퍼
+`count2`가 변경되어도 UI가 업데이트되지 않아 불필요한 렌더링을 방지할 수 있습니다.
 
-`effect 헬퍼`는 `mountCallback`과 `updateCallback`을 혼합하여 react의 `useEffect`와 같은 효과를 내도록 만든 코드입니다.
+---
 
-첫 번째 인수는 마운트 또는 업데이트 후에 실행된다. 두 번째 인수는 컴포넌트가 언마운트되거나 업데이트하기 전에 실행됩니다. 세 번째 인수는 특정 값이 변경될 때만 업데이트를 감지하도록 종속성을 넣을 수 있으며 생략할 경우 모든 업데이트 시 항상 업데이트 콜백이 실행됩니다.
+## 템플릿 옵션
 
-주의해야 할 점은 세 번째 인수는 배열을 반환하는 것 “함수”여야 합니다. 그리고 `effect 헬퍼`도 다른 기능들과 마찬가지로 마운터의 모든 값에 클로저를 이용해 접근하므로, 사용하려는 값의 `call by value`, `call by reference` 상태를 잘 확인하고 사용해야 합니다.
+Lithent는 다양한 템플릿 문법을 지원합니다.
 
-```javascript
-import { h, Fragment, render, mount } from 'lithent';
-import { state, effect } from "lithent/helper";
+### JSX
 
-const Children = mount((r, props) => {
-  const count = state < number > (0, r);
-  const change = () => {
-    count.v += 1;
-  };
+Vite와 함께 사용할 때 공식 플러그인으로 JSX를 바로 사용할 수 있습니다.
 
-  effect(
-    () => console.log('INJECT'),
-    () => console.log('CLEAN UP'),
-    () => [count.v]
-  );
+```bash
+npm install -D @lithent/lithent-vite
+```
 
-  return () => (
-    <>
-      <button onClick={change} type="button">
-        increase
-      </button>
-      <span>count: {count.v}</span>
-    </>
-  );
+```ts
+// vite.config.ts
+import { defineConfig } from 'vite';
+import lithent from '@lithent/lithent-vite';
+
+export default defineConfig({
+  plugins: [lithent()]
 });
 ```
 
-## computed 헬퍼
+TypeScript 설정:
+```json
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "lithent"
+  }
+}
+```
 
-`computed 헬퍼`는 복잡한 계산식을 JSX 내에서 중복으로 사용할 경우 템플릿이 다소 복잡해 보일 수 있으므로, 미리 값을 계산하여 쉽게 사용할 수 있게 해주는 코드입니다.
+### HTM Tags
 
-아래는 `computed 헬퍼`를 사용하는 간단한 예입니다.
+`lTag`를 사용하면 빌드 툴 없이 JSX와 유사한 문법을 사용할 수 있습니다.
 
-```jsx
-import { h, Fragment, render, mount } from 'lithent';
-import { computed } from "lithent/helper";
+```html
+<script src="https://cdn.jsdelivr.net/npm/lithent/dist/lithent.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lithent/tag/dist/lithentTag.umd.js"></script>
+
+<script>
+  const { render, mount, Fragment } = lithent;
+  const { lTag } = lithentTag;
+
+  const Component = mount(renew => {
+    let count = 0;
+    const increase = () => { count++; renew(); };
+
+    return () => lTag`
+      <${Fragment}>
+        <div>count: ${count}</div>
+        <button onClick=${increase}>Increase</button>
+      <//>
+    `;
+  });
+
+  render(lTag`<${Component} />`, document.getElementById('root'));
+</script>
+```
+
+lTag는 [HTM](https://github.com/developit/htm)을 Lithent의 `h` 함수와 미리 바인딩한 것입니다.
+
+### FTags
+
+`fTags`는 함수 호출 방식으로 가상돔을 정의합니다.
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/lithent/dist/lithent.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lithent/ftags/dist/lithentFTags.umd.js"></script>
+
+<script>
+  const { render } = lithent;
+  const { fTags, fMount, fFragment } = lithentFTags;
+  const { div, button, p } = fTags;
+
+  const Counter = fMount(renew => {
+    let count = 0;
+    const increase = () => { count++; renew(); };
+
+    return () => fFragment(
+      p(`count: ${count}`),
+      button({ onClick: increase }, 'Increase')
+    );
+  });
+
+  render(Counter(), document.getElementById('root'));
+</script>
+```
+
+fTags는 빌드 툴 없이 타입 안전성을 유지할 수 있는 장점이 있습니다.
+
+### Template Strings
+
+`@lithent/lithent-vite` 플러그인의 옵션을 통해 JSX에 Vue와 유사한 디렉티브 문법을 추가로 사용할 수 있습니다. JSX와 완전히 동일하게 사용하되, `l-if`, `l-else`, `l-for` 같은 추가 지시어를 활용할 수 있습니다.
+
+**⚠️ 주의: 이 기능은 아직 실험적인 개발 단계입니다.**
+
+```bash
+npm install -D @lithent/lithent-vite
+```
+
+```ts
+// vite.config.ts
+import { defineConfig } from 'vite';
+import lithent from '@lithent/lithent-vite';
+
+export default defineConfig({
+  plugins: [
+    lithent({
+      template: 'string' // Template Strings 모드 활성화
+    })
+  ]
+});
+```
+
+```tsx
+import { mount } from 'lithent';
 
 const Component = mount(renew => {
   let count = 0;
-  const increase = () => {
-    count += 1;
-    renew();
-  };
-
-  const computed =
-    computed <
-    number >
-    (() => {
-      return [1, 3, 5, 7, 9].reduce(
-        (accumulator, current) => accumulator + current * count,
-        0
-      );
-    });
+  const increase = () => { count++; renew(); };
 
   return () => (
-    <Fragment>
-      <button type="text" onClick={increase}>
-        increase
-      </button>
-      <span>computed: {computed.value}</span>
-    </Fragment>
-  );
-});
-
-render(<Component />, document.getElementById('root'));
-```
-
-## nextTick 헬퍼
-
-`nextTick 헬퍼`는 다음 DOM 업데이트 플러시를 기다리는 유틸리티입니다. 사용자는 컴포넌트의 변경 요청 후, 가상돔이 실제 DOM에 완벽하게 적용된 시점을 보장받은 후 이후 작업을 진행하기 위해 넥스트틱 헬퍼를 사용할 수 있습니다. 예를 들면 특정 이벤트 후 변경되는 컴포넌트의 상태를 테스트하기 위해 사용할 수 있습니다.
-
-Lithent는 동시에 여러번 컴포넌트의 업데이트 요청이 일어나거나 동시에 복수의 컴포넌트의 업데이트가 필요할 경우 불필요한 내부 동작을 줄이기 위해 [queueMicrotask](https://developer.mozilla.org/en-US/docs/Web/API/Window/queueMicrotask)를 사용하여 리랜더링 요청들을 하나로 모아 적절한 시점에 한번에 실행시켜줍니다.
-
-`nextTick 헬퍼`는 브라우저의 마이크로테스크큐에 쌓인 리랜더 요청이 모두 끝난 후 실행 되어야 하는 콜백을 마이크로테스크큐의 맨 마지막에 추가로 넣어줍니다.
-
-```javascript
-nextTick().then(() => {
-  expect(testWrap.outerHTML).toBe(
-    '<div><button>insCount1</button><button>insCount2</button><span>depth1: 0 - 0</span> </div>'
+    <div>
+      <p l-if={count > 0}>Count is positive: {count}</p>
+      <p l-else>Count is zero or negative</p>
+      <button l-on:click={increase}>Increase</button>
+    </div>
   );
 });
 ```
 
-## lTag (Tagged templates 마크업 지원)
+지원 디렉티브: `l-if`, `l-else`, `l-for`, `l-on:*`, `l-bind:*` 등
 
-`lTag`를 사용하면 JSX와 유사한 사용법으로 별도의 트랜스파일러 없이 일반 Javascript 구문을 사용하여 개발할 수 있습니다.
+---
 
-`lTag`는 [HTM](https://github.com/developit/htm)을 Lithent의 `h(createElement)`와 미리 바인딩해 놓은 [Tagged templates](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates)입니다
+## SSR
 
-아래의 예처럼 사용할 수 있습니다.
+Lithent는 서버 사이드 렌더링과 하이드레이션을 지원합니다.
 
-```html
-<script src="https://cdn.jsdelivr.net/npm/lithent@1.7.0/dist/lithent.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/lithent@1.7.0/helper/dist/lithentHelper.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/lithent@1.7.0/tag/dist/lithentTag.umd.js"></script>
+### renderToString
 
-<script>
-  const { h, Fragment, render, mount } = lithent;
-  const { state } = lithentHelper;
-  const { lTag } = lithentTag;
+서버에서 HTML 문자열을 생성합니다.
 
-  const Component = mount((renew, props) => {
-    const count = state(0, renew);
+```tsx
+import { renderToString } from 'lithent/ssr';
+import { App } from './App';
 
-    const change = () => {
-      count.value += props.propValue;
-    };
+// Express 예제
+app.get('/', (req, res) => {
+  const html = renderToString(<App />);
 
-    // Updater
-    return () => lTag`
-    <${Fragment}>
-      <li>count: ${count.value}</li>
-      <button onClick=${change}>increase</button>
-    <//>
-  `;
-  });
-
-  // appendChild or insertBefore
-  // The third argument is an optional value for insertBefore.
-  const destroy = render(
-    lTag`<${Component} propValue=${1} />`,
-    document.getElementById('root'),
-    document.getElementById('#insert-before-this-element')
-  );
-</script>
-```
-
-## fTags (함수 호출방식 마크업 지원)
-
-`fTag`를 사용하면 JSX나 `h (createElement)`를 직접 사용하지 않고도 함수 호출 방식으로 가상돔을 정의할 수 있습니다. 별도의 트랜스파일러도 필요하지 않습니다.
-
-컴포넌트를 생성하기 위한 기본기능의 `mount` 대신 `fMount`를 사용하며, 기본기능의 `Fragment 컴포넌트`대신 `fFragment 함수`를 사용합니다.
-
-`div , section, p` 와 같은 일반 태그들은 `fTag` 객체에서 태그에 해당하는 함수를 가져다가 사용하면 됩니다.
-
-아래의 예처럼 사용할 수 있습니다.
-
-```javascript
-<script src="https://cdn.jsdelivr.net/npm/lithent@1.9.0/dist/lithent.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/lithent@1.9.0/helper/dist/lithentHelper.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/lithent@1.9.0/ftags/dist/lithentFTags.umd.js"></script>
-
-<script>
-// import { render } from 'lithent';
-// import { fTags, fFragment, fMount } from 'lithent/ftags';
-const { render } = lithent;
-const { fTags, fMount, fFragment } = lithentFTags;
-
-const { section, div, p, br, strong } = fTags;
-
-const fTagComponent = fMount((_r, props, children) => {
-  return () =>
-    fFragment(
-      'first inner',
-      div({ style: 'border: 1px solid red' }, 'second inner'),
-      props.firstProp,
-      ...children
-    );
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+      <body>
+        <div id="root">${html}</div>
+        <script src="/client.js"></script>
+      </body>
+    </html>
+  `);
 });
-
-render(
-  fTagComponent(
-    { firstProp: 3 },
-    div({ style: 'border: 1px solid green' }, `Fchildren1`),
-    'Fchildren2',
-    br()
-  ),
-  document.getElementById('root')
-);
-</script>
 ```
+
+### hydration
+
+클라이언트에서 서버 렌더링된 HTML에 이벤트를 연결합니다.
+
+```tsx
+import { hydration } from 'lithent/ssr';
+import { App } from './App';
+
+// 클라이언트
+hydration(<App />, document.getElementById('root'));
+```
+
+hydration은 기존 DOM을 재사용하여 초기 로드 성능을 최적화합니다.
+
+### renderWithHydration
+
+서버/클라이언트 모두에서 사용 가능한 유니버설 렌더 함수입니다.
+
+```tsx
+import { renderWithHydration } from 'lithent/ssr';
+
+// 서버에서는 renderToString으로 동작
+// 클라이언트에서는 hydration으로 동작
+const result = renderWithHydration(<App />, containerElement);
+```
+
+---
+
+## 마치며
+
+Lithent는 **작은 크기**, **명확한 제어**, **선택적 확장**이라는 세 가지 핵심 원칙을 바탕으로 설계되었습니다.
+
+- 4KB 코어로 완전한 UI 구축 가능
+- 클로저 기반의 예측 가능한 상태 관리
+- 필요한 Helper만 선택적으로 사용
+- JSX, HTM, FTags 등 다양한 템플릿 옵션
+- SSR과 하이드레이션 지원
+
+더 자세한 내용은 [공식 문서](https://superlucky84.github.io/lithent/)를 참고하세요.
+
+**프로젝트 링크:**
+- [GitHub](https://github.com/superlucky84/lithent)
+- [npm](https://www.npmjs.com/package/lithent)
+- [Homepage](https://superlucky84.github.io/lithent/)
+

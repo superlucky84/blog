@@ -30,590 +30,863 @@ export const preload = async ({ id, origin }) => {
   style={{ height: '300px', width: '100%', objectFit: 'cover' }}
 />
 
+[Github](https://github.com/superlucky84/lithent) | [Homepage](https://superlucky84.github.io/lithent/)
+
 ## Introduction
 
-[Github](https://github.com/superlucky84/lithent),
-[Homepage](https://superlucky84.github.io/lithent/)
+Lithent is a lightweight (4KB gzipped) JavaScript virtual DOM library that enables predictable UI development.
 
-Lithent is a lightweight (3KB zip) virtual DOM UI library built on JSX.
+With clear closure-based state management and optional extension features, it flexibly handles everything from small projects to full-scale SPAs. You can use it directly from CDN without build tools, or in modern development environments with Vite and JSX.
 
-It can be easily used by simply loading the script, without the need for a separate build tool. It is designed to dynamically update or remove frequently changing DOM areas by connecting them with a virtual DOM, even in already rendered HTML documents. Of course, it can also be used with a build tool, making it suitable for building SPA (Single Page Application) pages.
-
-When used with a build tool, you can directly use JSX, while without a build tool, the library offers [Tagged Templates](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates), allowing you to work in a way that's very similar to JSX.
-
-In addition to JSX and Tagged Templates, the library provides `fTags`, which allows you to define the virtual DOM by calling functions.
-
-The basic idea behind the development is to define and reuse components' states and functionality using higher-order functions and closures.
+**Core Philosophy:**
+- **4KB Core**: Minimal core with only essential features
+- **Closure-based State**: State management with pure JavaScript closures, no complex APIs
+- **Manual/Reactive Choice**: Manual `renew()` control or automatic reactive `lstate`
+- **Progressive Adoption**: From static HTML to full SPA
 
 ## Table of Contents
 
-1. **Basic Features**
-   - Mounting
-   - Updating
-   - Renewing
-   - Rendering
-   - Mount Callback
-   - Update Callback
-   - Portals
-2. **Advanced Features**
-   - State Helper
-   - Store Helper
-   - Cache Update Helper
-   - Effect Helper
-   - Computed Helper
-   - Next Tick Helper
-3. **lTag** (Markup Support via Tagged Templates)
-4. **fTags** (Markup Support via Function Call Style)
+### 1. Basic Features
+- mount / lmount - Component creation
+- updater - Render function
+- renew - Manual updates
+- render - DOM mounting
+- Lifecycle Hooks - mountCallback, updateCallback, mountReadyCallback
+- portal - DOM position control
+- props & children - Component communication
+- ref - Direct DOM access
+- innerHTML - Raw HTML insertion
+- stateless components - Components without state
+- nextTick - Wait for DOM updates
+
+### 2. Extension Features (Helper)
+- state / lstate - Reactive state
+- store / lstore - Global state
+- context / lcontext - Context sharing
+- computed - Computed values
+- effect - Side effects
+- cacheUpdate - Memoization
+
+### 3. Template Options
+- JSX - Vite plugin
+- HTM Tags - Tagged template literals
+- FTags - Functional tags
+- Template Strings - Experimental templates
+
+### 4. SSR
+- Server-Side Rendering - renderToString, hydration
+
+---
 
 ## Basic Features
 
-Lithent is divided into two categories: essential features and extended features that combine the essential functionalities for virtual DOM use.
+Lithent provides the minimum essential features needed to use virtual DOM. Basic features alone are sufficient to build practical UIs.
 
-The essential features are those that help create a virtual DOM, update it, and connect it to the actual HTML document.
+### mount / lmount
 
-The basic features include:
+**mount** is a function that creates components. It uses closures to define state and functionality, returning an updater function that returns JSX.
 
-- **Mounting**
-- **Updating**
-- **Renewing**
-- **Rendering**
-- **Mount Callback**
-- **Update Callback**
-- **Portals**
+**Manual Mode (mount):**
+```tsx
+import { mount } from 'lithent';
 
-## Mounting
-
-The user creates a component by executing the `mount` function provided by Lithent. The **mount** is responsible for defining the component's state and functionality, and it is executed only once when the component is first created as a virtual DOM.
-
-To explain in more detail, the user defines a function that specifies the component's state and functionality. When the `mount` function, which takes this function as an argument, is executed, it returns the component.
-
-In this process, the user-defined "function that defines the component's state and functionality" is referred to as the **mount** function.
-
-The **mount** function defines variables and functions within its own scope. The variables and functions defined here become the component's state and functionality. The **mount** function returns an **updater**. The updater is a function that returns JSX, which will be explained in more detail in the next section.
-
-When defining the **mount** function, the first argument passed to it is the **renew** function. The **renew** function is responsible for updating the component. The second argument is **props**, which contains the values passed from the component's attributes.
-
-Here is an example of defining the **mount** function and creating a component. The component has a state called `count` and a function called `increase`. It then returns a function that generates a JSX template. When using TypeScript, the **mount** function can define the type of **props** through generics.
-
-```javascript
-import { h, mount } from 'lithent';
-import { state, computed } from 'lithent/helper';
-
-const Component =
-  mount <
-  { increaseCount: number } >
-  ((renew, props) => {
-    let count = 0;
-    const increase = () => {
-      count += props.increaseCount;
-      renew();
-    };
-
-    return () => <button onClick={increase}>count: {count}</button>;
-  });
-
-render(<Component increaseCount={1} />, document.getElementById('root'));
-```
-
-## Updating
-
-The **updating** function is the one returned by the **mount** function, which is defined within the **mount** itself. This function returns JSX, and when executed, it creates the virtual DOM object. It's named **updating** because this function is executed every time the component needs to be updated.
-
-Let's take a look again at the component I showed as an example when explaining the **mount** function.
-
-```javascript
-const Component = mount((renew, props) => {
+const Counter = mount((renew, props) => {
   let count = 0;
+
   const increase = () => {
-    count += props.increaseCount;
-    renew();
+    count++;
+    renew(); // Manually trigger update
   };
 
-  return props => (
+  return () => <button onClick={increase}>count: {count}</button>;
+});
+```
+
+**Automatic Reactive Mode (lmount):**
+```tsx
+import { lmount } from 'lithent';
+import { lstate } from 'lithent/helper';
+
+const Counter = lmount((props) => {
+  const count = lstate(0);
+
+  const increase = () => {
+    count.value++; // Automatically updates
+  };
+
+  return () => <button onClick={increase}>count: {count.value}</button>;
+});
+```
+
+**Mounter Function Arguments:**
+- First argument: `renew` - Component update function (can be omitted in lmount)
+- Second argument: `props` - Properties received from parent
+- Third argument: `children` - Child elements
+
+The mounter runs **only once** when the component is first created. Variables and functions defined here are preserved in closures and can be continuously used in the updater.
+
+### updater
+
+The function returned by the mounter is called the **updater**. The updater returns JSX and runs every time the component updates.
+
+```tsx
+const Component = mount((renew, props) => {
+  let count = 0;
+  const increase = () => { count++; renew(); };
+
+  // This function is the updater
+  return (props) => (
     <button onClick={increase}>
-      count: {count.value}, increaseCount: {props.increaseCount}
+      count: {count}, prop: {props.value}
     </button>
   );
 });
-
-render(<Component increaseCount={1} />, document.getElementById('root'));
 ```
 
-The important thing to note is that the `updater` is a function.
+The updater can optionally receive `props` as an argument. You can reference the mounter's props via closure, but using the updater's argument is safer to guarantee the latest props at update time.
 
-The `updater` is executed whenever the component's state needs to be reflected in the DOM. Since it is defined within the `mount` function, it can access and use the variables and functions from the `mount` via closures.
+### renew
 
-The `updater` receives `props` as its first argument. Of course, using closures, it can also reference the `props` within the `mount`. Please see the example code below.
+The `renew` function manually updates a component. It's provided as the first argument of the mounter, and when called, the updater re-runs to refresh the UI.
 
-```javascript
-import { h, Fragment, render, mount } from 'lithent';
+```tsx
+const Component = mount(renew => {
+  let items = ['a', 'b'];
 
-const Child =
-  mount <
-  { count: number } >
-  ((_r, props) => {
-    const { count: countFromMounter } = props;
-
-    return ({ count: countFromUpdater }) => (
-      <>
-        <div>count: {props.count}</div>
-        <div>count: {countFromMounter} ("call by value" not working)</div>
-        <div>count: {countFromUpdater}</div>
-      </>
-    );
-  });
-
-const Parent = mount(renew => {
-  let count = 0;
-
-  const change = () => {
-    count += 1;
-    renew();
+  const addItem = () => {
+    items.push('c');
+    renew(); // Trigger UI update
   };
 
   return () => (
-    <>
-      <Child count={count} />
-      <button onClick={change}>Increase</button>
-    </>
+    <div>
+      <ul>{items.map(item => <li>{item}</li>)}</ul>
+      <button onClick={addItem}>Add</button>
+    </div>
   );
 });
 ```
 
-The `updater` of the Child component can reference the value in `props` in three different ways. Here, the value `countFromMounter`, which is pre-extracted from the `mount` props, is already assigned to a new memory address. Therefore, even when the `updater` is executed again, it cannot reflect the updated value from the parent `props`. This situation is not confusing for developers who are proficient in JavaScript and have a clear understanding of how closures work.
+`renew()` removes unnecessary automation, allowing clear control over update timing. Using Helper's `state` or `lstate` can automate `renew()` calls.
 
-## Renew
+### render
 
-The `renew` is the `renew function` provided as the first argument to the `mount` function. When `renew` is executed, the component's new state is reflected and rendered. The user can use it directly in event handler functions defined within the `mount`. Since we've already shown many examples of how to use it in previous examples, we will omit the example code here.
+The `render` function connects the virtual DOM to the actual DOM.
 
-The `renew` can also be used for `state helper` or `store helper`, and more details will be explained later.
-
-## Render
-
-Lithent provides the `render function`. The `render function` connects the virtual DOM with the actual real DOM area where the virtual DOM will be rendered.
-
-You can easily understand it by looking at the example below, without needing much explanation.
-
-```javascript
-/* index.html
-<div>
-  <span>1</span>
-  <span>3</span>
-  <span>5</span>
-</div>
-*/
-
+```tsx
 import { h, render, mount } from 'lithent';
 
-const Component = mount<{ value: number }>(() => ({ value }) => <span>{value}<span>);
+const App = mount(renew => {
+  let count = 0;
+  return () => <div>Count: {count}</div>;
+});
 
-render(<Component value={2} />, element, element.querySelector('span:nth-of-type(2)'));
-const destroy = render(<Component value={4} />, element, element.querySelector('span:nth-of-type(3)'));
+// Basic usage: appendChild
+render(<App />, document.getElementById('root'));
+
+// Using insertBefore
+render(
+  <App />,
+  document.getElementById('root'),
+  document.querySelector('.insert-before-me')
+);
 ```
 
-When a DOM like the commented-out `index.html` is drawn, `render` is used to place the virtual DOM corresponding to positions 2 and 4 in the correct order.
+The `render` function returns a `destroy` function. Calling `destroy()` unmounts the component.
 
-The second argument of `render` specifies where the virtual DOM should be rendered, meaning under which parent element. The third argument allows you to determine before which element it should be rendered, similar to `insertBefore(DOM API)`. If the third argument is omitted, it defaults to `appendChild`.
+```tsx
+const destroy = render(<App />, document.getElementById('root'));
 
-After the `render` function is executed, it returns a `destroy` function. When the `destroy` function is executed, the area drawn by `render` is unmounted.
+// Remove later
+destroy();
+```
 
-## Mount Callback
+### Lifecycle Hooks
 
-When a DOM object is created from a component and appears in the browser, it is called "mounting." The opposite concept, "unmounting," refers to when a component is removed from the browser.
+You can execute specific logic at component lifecycle points.
 
-You can specify certain functions to be executed when a component is mounted or unmounted. This can be registered using the `mountCallback` function provided by Lithent.
+**mountCallback:**
+Runs immediately after the component is mounted to the DOM.
 
-As shown in the example below, you can register a function to be executed once the component is mounted, and the function returned by `mountCallback` is registered as a callback to be executed during unmounting. If no follow-up actions are needed when unmounting, you can omit the return.
+```tsx
+import { mount, mountCallback } from 'lithent';
 
-```javascript
-import { h, mount, mountCallback } from 'lithent';
-
-const Children = mount((_r, props) => {
+const Component = mount(() => {
   mountCallback(() => {
     console.log('mounted');
 
+    // Cleanup function to run on unmount
     return () => {
-      console.log('unmount');
+      console.log('unmounted');
     };
   });
 
-  return () => <span>Children</span>;
+  return () => <div>Component</div>;
 });
 ```
 
-## Update Callback
+**updateCallback:**
+Runs before and after component updates.
 
-When a component's state changes and the `renew` function is executed, the component is updated. Before the update process starts, the update callback is executed. After the update finishes and the changes are reflected in the DOM object, the updated callback is executed.
+```tsx
+import { mount, updateCallback } from 'lithent';
 
-The update callback can be registered using `updateCallback` provided by Lithent, and the function returned by `updateCallback` is registered as a callback that runs after the component's update is completed. If no follow-up actions are needed after the update, you can omit the return.
+const Component = mount((renew, props) => {
+  updateCallback(
+    () => {
+      console.log('before update');
+      return () => console.log('after update');
+    },
+    () => [props.count] // Dependencies: only runs when count changes
+  );
 
-```javascript
-const Children =
-  mount <
-  { count: number } >
-  ((_r, props) => {
-    updateCallback(
-      () => {
-        console.log('clean up');
-
-        return () => console.log('updated');
-      },
-      () => [props.count]
-    );
-    return ({ count }) => <span>child updated count: {count}</span>;
-  });
+  return ({ count }) => <div>count: {count}</div>;
+});
 ```
 
-In the example code above, unlike `mountCallback`, the `updateCallback` has a second argument. This is for executing the callback only when a specific state within the component changes. It is defined as a function that returns an array, and you can place the values you want to detect changes for in that array.
+**mountReadyCallback:**
+Runs when the virtual DOM is ready, before actual DOM mounting. Executes faster than `mountCallback`.
 
-When using `props` in the callback or dependency array, you must include the `props.` prefix for each instance to ensure accurate comparison. This is because the `mount` function is executed only once when the component is mounted, and the callback functions or dependency check functions defined inside it access the `props` values using closures each time the component updates. This is similar to the issue explained in the updater section earlier.
+```tsx
+import { mount, mountReadyCallback } from 'lithent';
 
-## Portal
+const Component = mount(() => {
+  mountReadyCallback(() => {
+    console.log('virtual dom ready, before actual mount');
 
-A portal allows you to render a child element to a different part of the DOM.
+    return () => {
+      console.log('cleanup before unmount');
+    };
+  });
 
-Here’s how you use it.
+  return () => <div>Component</div>;
+});
+```
 
-```javascript
-import { h, mount, portal } from 'lithent';
+**Execution Order:** mountReadyCallback → Actual DOM mount → mountCallback
 
-const Component = mount(renew => {
+### portal
+
+Portals render child elements at a different location in the DOM.
+
+```tsx
+import { mount, portal, Fragment } from 'lithent';
+
+const Modal = mount(renew => {
   let count = 0;
-
-  const change = () => {
-    count += 1;
-    renew();
-  };
+  const increase = () => { count++; renew(); };
 
   return () => (
     <Fragment>
-      <button onClick={change}>Update</button>
-      { portal( <Children count={count} />, document.getElementById('portal-area') as HTMLElement) }
+      <button onClick={increase}>Update</button>
+      {portal(
+        <div class="modal">Count: {count}</div>,
+        document.getElementById('modal-root')
+      )}
     </Fragment>
   );
 });
 ```
 
-## Advanced Features
+Portals are useful for UIs that need to escape parent DOM hierarchy, such as modals, tooltips, and dropdowns.
 
-Lithent is great with just its basic features, but when combined with additional functionality, it becomes even more convenient to use.
+### props & children
 
-We’ve pre-written some useful features that users might find beneficial. You can directly import and use this code, or refer to it to create your own extensions.
+Components receive data through props and children.
 
-All implementations of the helper code can be found in the [repository](https://github.com/superlucky84/lithent/tree/master/helper/src/hook).
-
-## State Helper
-
-The approach where the user manually determines when the component should be updated by executing the `renew` function every time the state changes is useful and gives control over the update timing. However, if you don’t need to control the update timing so precisely and simply want the component to update whenever a value changes, you can use the `state helper`.
-
-The following code shows how to use it easily.
-
-```javascript
-import { h, Fragment, render, mount } from 'lithent';
-import { state, computed } from 'lithent/helper';
-
-const Component = mount(renew => {
-  const count = state < number > (1, renew);
-  const increase = () => {
-    count.value += 1;
-  };
-
+```tsx
+const Child = mount((renew, props, children) => {
   return () => (
-    <>
-      <button type="text" onClick={increase}>
-        increase
-      </button>
-      <span>count: {count.value}</span>
-    </>
+    <div>
+      <h1>{props.title}</h1>
+      <div>{children}</div>
+    </div>
+  );
+});
+
+const Parent = mount(() => {
+  return () => (
+    <Child title="Hello">
+      <p>This is children content</p>
+    </Child>
   );
 });
 ```
 
-The `state helper` binds the `renew` function to a specific state.
+Props are accessible in both mounter and updater, while children are provided as the mounter's third argument.
 
-The code below is the implementation of the `state helper`. The principle behind it is simple. The `state` takes an initial value and the `renew` function, and returns an object with `getter` and `setter`. This object allows checking the value and, when the value is changed, it triggers the execution of `renew`.
+### ref
 
-```javascript
-export const state = <T>(
-  value: T,
-  renew: () => boolean
-): {
-  value: T;
-  v: T;
-} => {
+Using `ref` allows direct access to DOM elements.
+
+```tsx
+import { mount, ref } from 'lithent';
+
+const Component = mount(() => {
+  const inputRef = ref<HTMLInputElement>();
+
+  const focus = () => {
+    inputRef.value?.focus();
+  };
+
+  return () => (
+    <div>
+      <input ref={inputRef} type="text" />
+      <button onClick={focus}>Focus Input</button>
+    </div>
+  );
+});
+```
+
+The ref's `.value` is only set after the component is mounted.
+
+### innerHTML
+
+The `innerHTML` property allows safe insertion of raw HTML.
+
+```tsx
+const Component = mount(() => {
+  const htmlContent = '<strong>Bold</strong> and <em>italic</em> text';
+
+  return () => <div innerHTML={htmlContent} />;
+});
+```
+
+**Warning:** Do not use user input directly in innerHTML to prevent XSS attacks.
+
+### stateless components
+
+Components without state can be written as pure functions without `mount`.
+
+```tsx
+// Stateless component
+const Greeting = ({ name }, children) => (
+  <div>
+    <h1>Hello, {name}!</h1>
+    {children}
+  </div>
+);
+
+// Usage
+const App = mount(() => {
+  return () => (
+    <Greeting name="World">
+      <p>Welcome to Lithent</p>
+    </Greeting>
+  );
+});
+```
+
+Stateless components only receive props and children, suitable for creating reusable UI pieces.
+
+### nextTick
+
+`nextTick` waits until the next DOM update is complete.
+
+```tsx
+import { mount, nextTick } from 'lithent';
+
+const Component = mount(renew => {
+  let count = 0;
+
+  const increase = async () => {
+    count++;
+    renew();
+
+    await nextTick();
+    // DOM update is complete at this point
+    console.log('DOM updated');
+  };
+
+  return () => <button onClick={increase}>count: {count}</button>;
+});
+```
+
+nextTick uses `queueMicrotask` internally to execute after all re-render requests are processed.
+
+---
+
+## Extension Features (Helper)
+
+Helpers are optional extensions built on top of basic features for more convenient use. You can import only the Helpers you need.
+
+All Helper implementation code can be found in the [GitHub repository](https://github.com/superlucky84/lithent/tree/master/helper/src/hook).
+
+### state / lstate
+
+The `state` Helper creates reactive state that automatically calls `renew()` when values change.
+
+**Manual Mode (state):**
+```tsx
+import { mount } from 'lithent';
+import { state } from 'lithent/helper';
+
+const Counter = mount(renew => {
+  const count = state(0, renew);
+
+  const increase = () => {
+    count.value++; // renew() is automatically called
+  };
+
+  return () => <button onClick={increase}>count: {count.value}</button>;
+});
+```
+
+**Automatic Mode (lstate):**
+```tsx
+import { lmount } from 'lithent';
+import { lstate } from 'lithent/helper';
+
+const Counter = lmount(() => {
+  const count = lstate(0); // No renew argument needed
+
+  return () => <button onClick={() => count.value++}>count: {count.value}</button>;
+});
+```
+
+state is implemented with a simple getter/setter pattern:
+
+```tsx
+export const state = <T>(value: T, renew: () => boolean) => {
   let result = value;
 
   return {
-    get value() {
-      return result;
-    },
+    get value() { return result; },
     set value(newValue: T) {
       result = newValue;
       renew();
-    },
+    }
   };
 };
 ```
 
-## store helper
+### store / lstore
 
-The `store helper` shares an object that can be used globally across all components. Components that receive this `store` object not only get the shared value, but also can share their `renew` permissions with the `store helper`.
+`store` manages global state shared by multiple components.
 
-The `store helper` allows users to define the data structure they want in the form of an object. In the example below, the `text` property is defined as a string type and the `count` property is defined as a number type. When the `store helper` is executed, it returns an `assigner` that assigns the shared data to the component. In the example below, `assignShardStore` is the `assigner`.
-
-The `assigner` is used within the component's mounter and is executed after receiving the component's `renew` as its first argument. The `assigner` provides shared data to the component through a proxy object.
-
-When a specific property within the shared proxy object is changed, all components sharing that value will be updated.
-
-By using the second argument of the `assigner` function, you can choose to only share specific properties from the `store`. The second argument is in the form of a function, and as shown in the example below, you can define the values you want to use and return them as an array. If you want to use all properties, you can simply omit the second argument.
-
-```javascript
-import { h, Fragment, render, mount } from 'lithent';
+```tsx
+import { mount } from 'lithent';
 import { store } from 'lithent/helper';
 
-/*
-<div>
-  <span>1</span>
-  <span>2</span>
-  <span>3</span>
-</div>
-*/
-
-const assignShardStore = store<{ text: string; count: number }>({ text: 'sharedText', count: 3 });
-
-const Component = mount(r => {
-  // The value of "shardStore.count" is null.
-  // To get the value, you must include it in the second argument, the function return array.
-  // If you omit the second argument, then all values in the store are fetched.
-  const shardStore = assignShardStore(r, (store) => [store.text]);
-  const changeInput = (event) => {
-    shardStore.text = event.target.value;
-  };
-  return () => <textarea type="text" onInput={changeInput} value={shardStore.text} />;
+// Create store
+const useSharedStore = store({
+  text: 'shared text',
+  count: 0
 });
 
-render(<Component />, element, element.querySelector('span:nth-of-type(2)'));
-render(<Component />, element, element.querySelector('span:nth-of-type(3)'));
+const Component1 = mount(renew => {
+  const sharedStore = useSharedStore(renew);
+
+  const changeText = (e) => {
+    sharedStore.text = e.target.value;
+  };
+
+  return () => <input value={sharedStore.text} onInput={changeText} />;
+});
+
+const Component2 = mount(renew => {
+  // Subscribe to specific properties only
+  const sharedStore = useSharedStore(renew, (store) => [store.text]);
+
+  return () => <div>{sharedStore.text}</div>;
+});
 ```
 
-The implementation method of the `store helper` is similar to that of the `state helper`. However, unlike the `state helper`, the `store helper` can hold multiple `renew` functions from different components. Therefore, it is important to continuously check and remove the `renew` function of any components that have been unmounted. This can be implemented by leveraging the fact that executing a `renew` function that has already been removed will return `false`.
+**lstore (Automatic Mode):**
+```tsx
+import { lmount } from 'lithent';
+import { lstore } from 'lithent/helper';
 
-You can check the code at the [repository](https://github.com/superlucky84/lithent/blob/master/helper/src/hook/store.ts).
+// lstore returns a { useStore, watch } object
+const counterStore = lstore({ count: 0 });
 
-## cacheUpdate Helper
+const Display = lmount(() => {
+  // Use useStore() in lmount
+  const counter = counterStore.useStore();
+  return () => <div>Count: {counter.count}</div>;
+});
 
-By wrapping the updater with the `cacheUpdate` function, you can prevent unnecessary re-renders for unchanged states.
+const Controls = lmount(() => {
+  const counter = counterStore.useStore();
+  return () => <button onClick={() => counter.count++}>+</button>;
+});
+```
 
-Whether it's a component's `prop`, `state`, or any other form of state, when an attempt to re-render occurs, it compares the previous state with the updated state. If the values are the same, it prevents any further updates.
+lstore returns `{ useStore, watch }`. `useStore` automatically subscribes in lmount, while `watch` is used in mount when manually passing renew.
 
-You can easily understand how to use it by looking at the example below. In this example, only the value of `count1` is checked against the previous state and cached. Only `count1` is checked, and even if `count2` changes, the component will not be updated.
+Using store allows sharing state across multiple components without prop drilling.
 
-```javascript
-import { h, Fragment, render, mount } from 'lithent';
-import { cacheUpdate } from 'lithent/helper';
+### context / lcontext
+
+`context` passes data through the component tree. Unlike store, each Provider can have independent values.
+
+**Creating context:**
+```tsx
+import { mount } from 'lithent';
+import { createContext } from 'lithent/helper';
+
+// 1. Define and create Context type
+type ThemeContext = {
+  theme: string;
+};
+
+const themeContext = createContext<ThemeContext>();
+const { Provider, contextState, useContext } = themeContext;
+
+// 2. Create state with contextState in Provider
+const App = mount(renew => {
+  // Create state with contextState (recommended without renew)
+  const themeState = contextState('light');
+
+  return () => (
+    <Provider theme={themeState}>
+      <Button />
+      <ThemeToggle />
+    </Provider>
+  );
+});
+
+// 3. Access with useContext in Consumer
+const Button = mount(renew => {
+  const ctx = useContext(themeContext, renew);
+
+  return () => (
+    <button style={{ background: ctx.theme.value === 'dark' ? '#333' : '#fff' }}>
+      Click me
+    </button>
+  );
+});
+
+const ThemeToggle = mount(renew => {
+  const ctx = useContext(themeContext, renew);
+
+  const toggleTheme = () => {
+    ctx.theme.value = ctx.theme.value === 'light' ? 'dark' : 'light';
+  };
+
+  return () => <button onClick={toggleTheme}>Toggle Theme</button>;
+});
+```
+
+**Selective Subscription:**
+```tsx
+// Subscribe to specific keys only
+const ctx = useContext(themeContext, renew, ['theme']);
+```
+
+**lcontext (Automatic Mode):**
+lcontext is context for lmount components. Renew management is automated for convenience.
+
+### computed
+
+`computed` pre-processes complex calculations to keep templates clean.
+
+```tsx
+import { mount } from 'lithent';
+import { state, computed } from 'lithent/helper';
 
 const Component = mount(renew => {
-  const count1 = state < number > (0, renew);
-  const count2 = state < number > (0, renew);
+  const count = state(0, renew);
 
-  const insCount1 = () => {
-    count1.value += 1;
-  };
-  const insCount2 = () => {
-    count2.value += 1;
-  };
+  const doubleCount = computed(() => count.value * 2);
+  const quadCount = computed(() => doubleCount.value * 2);
+
+  return () => (
+    <div>
+      <p>count: {count.value}</p>
+      <p>double: {doubleCount.value}</p>
+      <p>quad: {quadCount.value}</p>
+      <button onClick={() => count.value++}>+</button>
+    </div>
+  );
+});
+```
+
+Computed values are getter-only and recalculated whenever the updater runs.
+
+### effect
+
+`effect` is a Helper that combines `mountCallback` and `updateCallback` to manage side effects.
+
+```tsx
+import { mount } from 'lithent';
+import { state, effect } from 'lithent/helper';
+
+const Timer = mount(renew => {
+  const seconds = state(0, renew);
+  let intervalId: number;
+
+  effect(
+    // forward: Execute side effect
+    () => {
+      intervalId = setInterval(() => {
+        seconds.value += 1;
+      }, 1000);
+    },
+    // backward: Cleanup (optional)
+    () => {
+      clearInterval(intervalId);
+    },
+    // dependencies: Function returning dependency array (optional)
+    () => [] // Empty array = run only on mount
+  );
+
+  return () => <div>Seconds: {seconds.value}</div>;
+});
+```
+
+**Argument Structure:**
+- **First argument (forward)**: Function that executes the side effect
+- **Second argument (backward)**: Cleanup function (optional, can be undefined)
+- **Third argument (dependencies)**: Function returning dependency array (optional, defaults to empty array)
+
+**Dependency Management:**
+```tsx
+const count = state(0, renew);
+
+// Empty array: run only on mount
+effect(() => console.log('Once'), undefined, () => []);
+
+// Run when specific value changes
+effect(() => console.log('Count changed'), undefined, () => [count.value]);
+```
+
+**Important:** Cleanup is **a separate second argument**, not a return from forward.
+
+### cacheUpdate
+
+`cacheUpdate` prevents re-rendering if specific values haven't changed.
+
+```tsx
+import { mount } from 'lithent';
+import { state, cacheUpdate } from 'lithent/helper';
+
+const Component = mount(renew => {
+  const count1 = state(0, renew);
+  const count2 = state(0, renew);
 
   return cacheUpdate(
-    () => [count1.value],
+    () => [count1.value], // Only detect count1
     () => (
-      <Fragment>
-        depth1: {count1} - {count2}
-        <button onClick={insCount1}>insCount1</button>
-        <button onClick={insCount2}>insCount2</button>
-      </Fragment>
+      <div>
+        count1: {count1.value}, count2: {count2.value}
+        <button onClick={() => count1.value++}>+count1</button>
+        <button onClick={() => count2.value++}>+count2 (no rerender)</button>
+      </div>
     )
   );
 });
-
-render(<Component />, document.getElementById('root'));
 ```
 
-## effect Helper
+Even if `count2` changes, the UI won't update, preventing unnecessary renders.
 
-The `effect Helper` combines the functionality of `mountCallback` and `updateCallback` to provide an effect similar to React's `useEffect`.
+---
 
-The first argument runs after the mount or update. The second argument runs before the component is unmounted or updated. The third argument allows you to specify dependencies that will trigger the update only when certain values change; if omitted, the callback runs on every update.
+## Template Options
 
-An important note is that the third argument must be a function that returns an array. Also, since the `effect Helper` accesses all values of the mounter through closures, it is important to check the `call by value` and `call by reference` states of the values you intend to use.
+Lithent supports various template syntaxes.
 
-```javascript
-import { h, Fragment, render, mount } from 'lithent';
-import { state, effect } from 'lithent/helper';
+### JSX
 
-const Children = mount((r, props) => {
-  const count = state < number > (0, r);
-  const change = () => {
-    count.v += 1;
-  };
+When using with Vite, you can use JSX directly with the official plugin.
 
-  effect(
-    () => console.log('INJECT'),
-    () => console.log('CLEAN UP'),
-    () => [count.v]
-  );
+```bash
+npm install -D @lithent/lithent-vite
+```
 
-  return () => (
-    <>
-      <button onClick={change} type="button">
-        increase
-      </button>
-      <span>count: {count.v}</span>
-    </>
-  );
+```ts
+// vite.config.ts
+import { defineConfig } from 'vite';
+import lithent from '@lithent/lithent-vite';
+
+export default defineConfig({
+  plugins: [lithent()]
 });
 ```
 
-## computed Helper
+TypeScript configuration:
+```json
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "lithent"
+  }
+}
+```
 
-The `computed Helper` is a tool that simplifies templates when complex calculations are used repeatedly within JSX, making the template appear more manageable by pre-calculating values for easy use.
+### HTM Tags
 
-Below is a simple example of how to use the `computed Helper`.
+Using `lTag` allows JSX-like syntax without build tools.
 
-```jsx
-import { h, Fragment, render, mount } from 'lithent';
-import { computed } from 'lithent/helper';
+```html
+<script src="https://cdn.jsdelivr.net/npm/lithent/dist/lithent.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lithent/tag/dist/lithentTag.umd.js"></script>
+
+<script>
+  const { render, mount, Fragment } = lithent;
+  const { lTag } = lithentTag;
+
+  const Component = mount(renew => {
+    let count = 0;
+    const increase = () => { count++; renew(); };
+
+    return () => lTag`
+      <${Fragment}>
+        <div>count: ${count}</div>
+        <button onClick=${increase}>Increase</button>
+      <//>
+    `;
+  });
+
+  render(lTag`<${Component} />`, document.getElementById('root'));
+</script>
+```
+
+lTag is [HTM](https://github.com/developit/htm) pre-bound to Lithent's `h` function.
+
+### FTags
+
+`fTags` defines virtual DOM using function calls.
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/lithent/dist/lithent.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lithent/ftags/dist/lithentFTags.umd.js"></script>
+
+<script>
+  const { render } = lithent;
+  const { fTags, fMount, fFragment } = lithentFTags;
+  const { div, button, p } = fTags;
+
+  const Counter = fMount(renew => {
+    let count = 0;
+    const increase = () => { count++; renew(); };
+
+    return () => fFragment(
+      p(`count: ${count}`),
+      button({ onClick: increase }, 'Increase')
+    );
+  });
+
+  render(Counter(), document.getElementById('root'));
+</script>
+```
+
+fTags has the advantage of maintaining type safety without build tools.
+
+### Template Strings
+
+You can use additional Vue-like directive syntax with JSX through the `@lithent/lithent-vite` plugin options. It works exactly like JSX, but with additional directives such as `l-if`, `l-else`, and `l-for`.
+
+**⚠️ Warning: This feature is still in experimental development stage.**
+
+```bash
+npm install -D @lithent/lithent-vite
+```
+
+```ts
+// vite.config.ts
+import { defineConfig } from 'vite';
+import lithent from '@lithent/lithent-vite';
+
+export default defineConfig({
+  plugins: [
+    lithent({
+      template: 'string' // Enable Template Strings mode
+    })
+  ]
+});
+```
+
+```tsx
+import { mount } from 'lithent';
 
 const Component = mount(renew => {
   let count = 0;
-  const increase = () => {
-    count += 1;
-    renew();
-  };
-
-  const computed =
-    computed <
-    number >
-    (() => {
-      return [1, 3, 5, 7, 9].reduce(
-        (accumulator, current) => accumulator + current * count,
-        0
-      );
-    });
+  const increase = () => { count++; renew(); };
 
   return () => (
-    <Fragment>
-      <button type="text" onClick={increase}>
-        increase
-      </button>
-      <span>computed: {computed.value}</span>
-    </Fragment>
-  );
-});
-
-render(<Component />, document.getElementById('root'));
-```
-
-## nextTick Helper
-
-The `nextTick Helper` is a utility that waits for the next DOM update flush. After a component's change request, the user can use the `nextTick Helper` to ensure that the virtual DOM is fully applied to the actual DOM before proceeding with subsequent tasks. For example, it can be used to test the state of a component after a specific event has triggered changes.
-
-When multiple component update requests happen simultaneously or several components need updates at the same time, Lithent uses [queueMicrotask](https://developer.mozilla.org/en-US/docs/Web/API/Window/queueMicrotask) to minimize unnecessary internal operations, gathering all re-rendering requests and executing them in a timely manner.
-
-The `nextTick Helper` adds a callback to the microtask queue at the very end, ensuring it runs after all rendering requests in the browser's microtask queue have been completed.
-
-```javascript
-nextTick().then(() => {
-  expect(testWrap.outerHTML).toBe(
-    '<div><button>insCount1</button><button>insCount2</button><span>depth1: 0 - 0</span> </div>'
+    <div>
+      <p l-if={count > 0}>Count is positive: {count}</p>
+      <p l-else>Count is zero or negative</p>
+      <button l-on:click={increase}>Increase</button>
+    </div>
   );
 });
 ```
 
-## lTag (Tagged Templates Markup Support)
+Supported directives: `l-if`, `l-else`, `l-for`, `l-on:*`, `l-bind:*`, etc.
 
-By using `lTag`, you can develop using regular JavaScript syntax similar to JSX, without the need for a separate transpiler.
+---
 
-`lTag` is a [Tagged template](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates) pre-bound to Lithent's `h(createElement)` and follows the [HTM](https://github.com/developit/htm) convention.
+## SSR
 
-It can be used as shown in the example below.
+Lithent supports server-side rendering and hydration.
 
-```html
-<script src="https://cdn.jsdelivr.net/npm/lithent@1.7.0/dist/lithent.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/lithent@1.7.0/helper/dist/lithentHelper.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/lithent@1.7.0/tag/dist/lithentTag.umd.js"></script>
+### renderToString
 
-<script>
-  const { h, Fragment, render, mount } = lithent;
-  const { state } = lithentHelper;
-  const { lTag } = lithentTag;
+Generates HTML strings on the server.
 
-  const Component = mount((renew, props) => {
-    const count = state(0, renew);
+```tsx
+import { renderToString } from 'lithent/ssr';
+import { App } from './App';
 
-    const change = () => {
-      count.value += props.propValue;
-    };
+// Express example
+app.get('/', (req, res) => {
+  const html = renderToString(<App />);
 
-    // Updater
-    return () => lTag`
-    <${Fragment}>
-      <li>count: ${count.value}</li>
-      <button onClick=${change}>increase</button>
-    <//>
-  `;
-  });
-
-  // appendChild or insertBefore
-  // The third argument is an optional value for insertBefore.
-  const destroy = render(
-    lTag`<${Component} propValue=${1} />`,
-    document.getElementById('root'),
-    document.getElementById('#insert-before-this-element')
-  );
-</script>
-```
-
-## fTags (Function Call Style Markup Support)
-
-By using `fTags`, you can define the virtual DOM using function calls, without directly using JSX or `h (createElement)`. No separate transpiler is required.
-
-Instead of using the default `mount` function to create components, `fMount` is used, and instead of the default `Fragment component`, the `fFragment function` is used.
-
-For standard tags like `div`, `section`, `p`, you can simply use the corresponding functions from the `fTag` object.
-
-It can be used as shown in the example below.
-
-```javascript
-<script src="https://cdn.jsdelivr.net/npm/lithent@1.9.0/dist/lithent.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/lithent@1.9.0/helper/dist/lithentHelper.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/lithent@1.9.0/ftags/dist/lithentFTags.umd.js"></script>
-
-<script>
-// import { render } from 'lithent';
-// import { fTags, fFragment, fMount } from 'lithent/ftags';
-const { render } = lithent;
-const { fTags, fMount, fFragment } = lithentFTags;
-
-const { section, div, p, br, strong } = fTags;
-
-const fTagComponent = fMount((_r, props, children) => {
-  return () =>
-    fFragment(
-      'first inner',
-      div({ style: 'border: 1px solid red' }, 'second inner'),
-      props.firstProp,
-      ...children
-    );
+  res.send(`
+    <!DOCTYPE html>
+    <html>
+      <body>
+        <div id="root">${html}</div>
+        <script src="/client.js"></script>
+      </body>
+    </html>
+  `);
 });
-
-render(
-  fTagComponent(
-    { firstProp: 3 },
-    div({ style: 'border: 1px solid green' }, `Fchildren1`),
-    'Fchildren2',
-    br()
-  ),
-  document.getElementById('root')
-);
-</script>
 ```
+
+### hydration
+
+Attaches events to server-rendered HTML on the client.
+
+```tsx
+import { hydration } from 'lithent/ssr';
+import { App } from './App';
+
+// Client
+hydration(<App />, document.getElementById('root'));
+```
+
+Hydration optimizes initial load performance by reusing existing DOM.
+
+### renderWithHydration
+
+A universal render function that works on both server and client.
+
+```tsx
+import { renderWithHydration } from 'lithent/ssr';
+
+// Acts as renderToString on server
+// Acts as hydration on client
+const result = renderWithHydration(<App />, containerElement);
+```
+
+---
+
+## Conclusion
+
+Lithent is designed around three core principles: **small size**, **clear control**, and **selective extension**.
+
+- Build complete UIs with 4KB core
+- Predictable closure-based state management
+- Selectively use only needed Helpers
+- Various template options: JSX, HTM, FTags, etc.
+- SSR and hydration support
+
+For more details, see the [official documentation](https://superlucky84.github.io/lithent/).
+
+**Project Links:**
+- [GitHub](https://github.com/superlucky84/lithent)
+- [npm](https://www.npmjs.com/package/lithent)
+- [Homepage](https://superlucky84.github.io/lithent/)
