@@ -1,0 +1,363 @@
+export const preload = async ({ id, origin }) => {
+  const { views, date } = await fetch(`${origin}/api/views/${id}`).then(
+    response => response.json()
+  );
+  return {
+    layout: {
+      views,
+      date,
+      title: 'AI와 함께하는 문서 주도 개발',
+      description:
+        '이 글은 제가 실제로 쓰는 흐름을 정리한 개인 방법론입니다. 특정 툴에 종속되지 않으며(Claude Code, Codex CLI, Cursor, ChatGPT 등), 핵심은 “문서가 컨텍스트의 단일 진실(Single Source of Truth)이 되게 하자” 입니다.',
+      openGraph: {
+        title: 'AI와 함께하는 문서 주도 개발',
+        description:
+          '이 글은 제가 실제로 쓰는 흐름을 정리한 개인 방법론입니다. 특정 툴에 종속되지 않으며(Claude Code, Codex CLI, Cursor, ChatGPT 등), 핵심은 “문서가 컨텍스트의 단일 진실(Single Source of Truth)이 되게 하자” 입니다.',
+        images: [
+          {
+            url: '/assets/posts/documentai.png',
+            width: 1024,
+            height: 1024,
+          },
+        ],
+      },
+    },
+  };
+};
+
+<img
+  src="/assets/posts/documentai.png"
+  style={{ height: '300px', width: '100%', objectFit: 'cover' }}
+/>
+
+# AI와 함께하는 문서 주도 개발
+
+요즘은 “에이전트 주도 개발”, “바이브 코딩”처럼 AI와 함께 코드를 빠르게 만드는 흐름이 자연스러워졌습니다. 저도 아이디어는 많은데 혼자 삽질과 시행착오에 시간을 꽤 쓰는 편이었고, 그래서 최근에는 여러 AI 코딩 에이전트를 번갈아 쓰며 구현을 많이 시도하고 있습니다.
+
+그런데 에이전트를 바꿔가며 작업하다 보면, 결국 매번 **맥락을 다시 설명하는 비용**이 생깁니다. 이 비용을 줄이려다 보니, 의도적으로 설계 과정과 결정을 **Markdown 문서로 남겨가며 진행하는 방식**이 자리를 잡았고, 저는 이 방식을 “문서 주도 개발”이라고 부르고 있습니다.
+
+이 글은 제가 실제로 쓰는 흐름을 정리한 개인 방법론입니다. 특정 툴에 종속되지 않으며(Claude Code, Codex CLI, Cursor, ChatGPT 등), 핵심은 “문서가 컨텍스트의 단일 진실(Single Source of Truth)이 되게 하자” 입니다.
+
+요점부터 짧게 정리하자면, 이렇습니다.
+
+- 에이전트와 협업할수록 **문서가 곧 컨텍스트**가 된다
+- 문서 흐름을 고정한다: `REQUIREMENTS.md` → `DESIGN.md` → `IMPLEMENT.md` → `MANUAL_TEST_CHECKLIST.md`
+- 애매함을 남기지 않는다: 결정사항은 체크리스트로 관리하고, 근거를 짧게 기록한다
+- 구현은 Phase(단계) 단위로 끊고, 단계마다 테스트 게이트를 둔다
+
+---
+
+## 왜 “문서 주도”가 AI 시대에 더 유효한가
+
+AI가 코드를 빨리 생산해 줄수록, 오히려 이런 문제가 자주 생깁니다.
+
+- 다른 에이전트/세션으로 넘어갈 때, 컨텍스트가 끊긴다
+- 구현 의도(왜)가 문서로 남지 않으면, 나중에 수정할 때 확신이 없어져서 변경 비용이 커진다
+- 모델이 잘못된 방향으로 달리면, 어느 순간부터 비용이 폭발한다
+- 프로젝트 오너로서 내가 코드를 “정복”하지 못하면 애착과 품질이 같이 떨어진다
+
+문서 주도 개발은 이 문제를 다음 방식으로 완화합니다.
+
+- **기억을 문서로 외주**한다: 사람/모델의 “대화 기억”이 아니라 파일이 기억한다.
+- **결정을 고정**한다: 요구사항과 설계의 경계가 선명해져서 구현이 흔들리지 않는다.
+- **검증 루프를 강제**한다: 체크리스트와 테스트 게이트가 “대충 완성”을 막아준다.
+
+---
+
+## 핵심 산출물(Artifacts) 4종 세트
+
+이 방법론에서 문서는 단순 기록이 아니라 “작업 계약서” 역할을 합니다.
+
+1. `REQUIREMENTS.md`
+   - “무엇을 만들 것인가” (범위/성공조건/비목표/제약)
+2. `DESIGN.md`
+   - “어떻게 만들 것인가” (아키텍처/데이터 계약/정책/기술 선택/테스트 전략)
+3. `IMPLEMENT.md`
+   - “어떤 순서로 만들 것인가” (Phase 분해/체크리스트/게이트/중단 후 재개 가능)
+4. `MANUAL_TEST_CHECKLIST.md`
+   - “사용자가 어떻게 검증할 것인가” (릴리즈 관점의 수동 테스트 목록)
+
+---
+
+## 0) `REQUIREMENTS.md` 만들기
+
+> 코딩 에이전트(또는 AI 에이전트)에게 “내가 만들고 싶은 것”을 떠들기
+
+이 단계는 내가 만들고 싶은 것의 목표/범위/성공조건을 찾아내는 일입니다. 즉 “이 앱이 해야 하는 일”을 구체화합니다.
+
+### 진행 방법
+
+- 빈 문서를 만들고, 에이전트에게 이렇게 시킵니다.
+  - “`REQUIREMENTS.md` 문서를 만들고, 내가 말하는 요구사항을 구조화해서 정리해줘.”
+- 그 다음에는 그냥 계속 이야기합니다.
+  - 기능/UX/화면 흐름
+  - 반드시 지켜야 할 제약(시간, 비용, 플랫폼, 성능, 보안)
+  - 기대하는 사용자와 사용 시나리오
+  - 내가 불안한 지점(어려운 부분, 모호한 부분)
+
+### 이 단계에서 특히 좋은 점
+
+- 아이디어가 “파편” 상태에서 “명세” 상태로 바뀝니다.
+- 에이전트가 벤치마킹 관점(유사 서비스 접근법)으로 질문을 던져줘서, 내가 놓친 요구를 보완할 수 있습니다.
+- 결정하지 못한 부분을 같이 상담하며, 설계의 큰 방향을 잡을 수 있습니다.
+
+### 작성 주체는 누구인가
+
+가능하면 문서를 “내가 직접 타이핑”하기보다 **에이전트가 쓰게 하는 편**이 좋았습니다.
+
+- 이후 `DESIGN.md`, `IMPLEMENT.md`로 확장할 때 문체/형식의 일관성이 유지됩니다.
+- 내가 원하는 것을 말로 던지고, AI가 구조화하는 역할 분담이 자연스럽습니다.
+
+### 생략 가능한가
+
+작은 아이디어라면 `REQUIREMENTS.md`를 건너뛰고 바로 `DESIGN.md`로 가도 됩니다. 다만 이 경우에도 “요구를 대충 정리한 대화 로그”라도 남겨두면 다음 단계가 덜 흔들립니다.
+
+---
+
+## 1) `DESIGN.md` 작성하기
+
+이 문서는 구현이 아니라 **구현 방식**을 정의합니다. 요구사항을 “설계 결정”으로 바꾸는 단계입니다.
+
+### `DESIGN.md`에 담으면 좋은 것들
+
+- 아키텍처: 모듈 경계, 책임 분리, 의존성 방향
+- 라우팅/데이터 계약: API, 이벤트, 파일 포맷, 스키마
+- 환경/정책: env 정책, 시크릿 관리, 로그/관측성, 배포 방식
+- UI 규칙: 페이지/컴포넌트 구조, UX 원칙, 에러 처리 규칙
+- 기술 선택: 왜 이 스택인지(근거), 대안과 트레이드오프
+- 테스트 전략: 단위/통합/e2e/수동 테스트를 어디에 배치할지
+
+### 기술 스택 선택 팁
+
+- 실제로 서비스할 프로젝트라면, 가능한 한 **내가 가장 익숙한 스택**을 선택하는 게 좋습니다. 개발 속도와 품질(디버깅, 운영, 유지보수)이 안정적으로 나옵니다.
+- 학습용 프로젝트라면, 목표를 명확히 두고 **배우고 싶은 새로운 기술**을 일부러 포함하는 게 좋습니다. 다만 “새로운 것”은 한두 개로 제한해야 문서와 구현이 같이 흔들리지 않습니다.
+
+### 만들기 프롬프트 예시
+
+- “`REQUIREMENTS.md`를 바탕으로 `DESIGN.md`를 만들어줘.”
+- “애매한 부분은 결정을 내리기 위한 질문 목록으로 뽑고, 옵션별 장단점을 같이 적어줘.”
+
+### 중요한 팁: “결정사항”을 분리해서 관리하기
+
+설계에서 애매함이 남으면 구현에서 비용이 커집니다. 그래서 저는 `DESIGN.md`에 아래처럼 “결정 체크리스트”를 남겨두는 편입니다.
+
+- 예: `DC-1` 데이터 저장소는 무엇인가?
+- 예: `DC-2` 인증/권한은 어디까지 필요한가?
+- 예: `DC-3` 에러/리트라이 정책은?
+
+각 항목은 `TBD`로 남겨도 되지만, 구현 전에 최대한 닫아두는 것을 목표로 합니다.
+
+여기서 제가 특히 강조하고 싶은 건 “체크리스트를 한 번 만들고 끝”이 아니라, **이 결정을 닫는 싸이클을 2-3번 반복**하는 겁니다.
+
+- 에이전트에게 “구현하다가 애매해질 만한 부분”, “시행착오가 날 만한 부분”, “프로젝트 오너의 결정을 요구하는 부분”을 최대한 더 뽑아달라고 요청한다
+- 체크리스트를 갱신하고(추가/수정), 내가 결정을 내린 뒤 체크한다
+- 다시 한 번 “빠진 결정이 없는지” 재점검을 시킨다
+
+이 과정을 2-3회만 돌려도, 구현 단계에서 “뒤늦게 터지는 결정”이 크게 줄고 전체 진행이 매끄러워집니다.
+
+추가로 이 과정이 좋은 이유는, 평소 “익숙한 방식대로 구현”만 하던 관점에서 벗어나 **결정해야 하는 기술 옵션들을 새로운 각도로 학습**하게 된다는 점입니다. 그리고 기술을 결정하는 과정에서 내가 애매하게 알고 있던 지식(예: 트레이드오프, 운영 관점의 제약, 테스트 전략)을 문서로 정리하면서 **정확한 형태로 고정**할 수 있습니다.
+
+---
+
+## 2) `IMPLEMENT.md` 작성하기
+
+여기서부터는 “문서가 작업지시서”가 됩니다. **Phase 단위로 잘게 쪼개서**, 중간에 멈춰도 문서만 보고 이어갈 수 있게 만듭니다.
+
+### 만들기 프롬프트 예시
+
+아래 한 문장으로 대부분 해결됩니다.
+
+- “`DESIGN.md`를 바탕으로 `IMPLEMENT.md`를 만들고 싶은데, 여러 Phase로 최대한 잘게 쪼개고 각 Phase 안에서도 체크리스트를 자잘하게 나눠서, 중간에 개발이 멈추더라도 컨텍스트를 잃지 않고 문서를 보고 쉽게 이어갈 수 있게 만들어줘.”
+
+### `IMPLEMENT.md`에 꼭 들어가면 좋은 구조
+
+- Phase 목표(Entry/Exit criteria)
+- 작업 체크리스트(가능하면 작은 단위)
+- 기본 테스트(단위/통합 등)와 실행 커맨드
+- 리스크/주의점(엣지 케이스, 성능, 호환성)
+- 중단/재개를 위한 상태(Handoff 섹션)
+
+### 테스트 전략도 `IMPLEMENT.md`에 녹이기
+
+저는 `IMPLEMENT.md`를 만들 때 “완벽한 TDD”를 처음부터 강제하진 않습니다. 사람도 그렇지만 AI도 프로토타이핑 단계에서 요구/설계가 계속 바뀌는데, 그 상태에서 너무 강력한 TDD를 걸어버리면 시행착오의 비용이 커지기 때문입니다. (여러 에이전트에게 같은 질문을 던져 보고, 제 상황에 맞는 결론이라 판단해 채택했습니다.)
+
+대신 제 방식은 이렇습니다.
+
+- 각 Phase마다 **간단한 기본 테스트**를 꼭 붙여서, 최소한의 안전망을 유지한다
+- 앱의 모양이 갖춰져 갈수록 테스트를 점점 강화한다
+- 막바지에는 **테스트 강화(Test Hardening)**, **통합 테스트(Integration Test)**를 꼼꼼히 채워 넣는 전용 Phase를 따로 둔다
+
+물론 이 부분은 정답이 있는 영역은 아니라서, 각자 성향에 맞는 테스트 방법론을 `IMPLEMENT.md`에 녹이는 게 좋습니다. 다만 한 가지 분명한 건, 에이전트가 만들어 준 코드일수록 테스트는 **꼼꼼할수록** 좋다는 점입니다. 테스트 코드도 대부분 에이전트가 작성해 줄 수 있으니, “귀찮아서 테스트를 줄이는 이유”는 크게 줄어듭니다.
+
+---
+
+## 3) 추가 문서로 분리하기 (필요할 때만)
+
+`IMPLEMENT.md`가 너무 커지거나, 모듈 간 데이터 규약이 중요해지면 별도 문서로 빼는 게 편합니다.
+
+- 예: `PROTOCOL.md` (API/이벤트/NDJSON/JSON 스키마 등)
+- 예: `SCHEMA.md`, `CONTRACTS.md`
+
+원칙은 이렇습니다.
+
+- 초반엔 `IMPLEMENT.md`에 최대한 담는다
+- 문서가 “읽기 불가능한 덩어리”가 되는 순간에만 분리한다
+
+요구가 구체적일수록 시행착오 없이 “처음 생각한 것과 가까운 구현”으로 갈 확률이 높습니다.
+
+---
+
+## 4) 구현 전 “문서 재확인”하기
+
+`IMPLEMENT.md`가 완성되면 바로 구현으로 들어가기 전에 에이전트에게 한번 더 물어봅니다.
+
+- “구현 과정에서 시행착오나 추가 피드백 없이 매끄럽게 작업하려면, 더 결정해야 하거나 추가로 필요한 문서/결정이 있어?”
+
+대부분 `DESIGN.md`에서 애매한 결정을 닫아뒀다면 추가로 나올 건 많지 않습니다. 그래도 이 질문은 “뒤늦은 큰 수정”을 막는 보험입니다.
+
+추가로 저는 완성 후 수동 검증을 위해 아래 문서를 만들어 둡니다.
+
+- `MANUAL_TEST_CHECKLIST.md`: 사용자가 확인해야 할 체크리스트(패스/페일 기준 포함)
+
+---
+
+## 5) 구현하기 (그리고 내가 해야 할 일)
+
+문서가 준비되면 구현은 비교적 단순해집니다. 에이전트가 알아서 진행하는 동안, 프로젝트 오너로서 내가 해야 할 일은 오히려 명확합니다.
+
+- Phase가 끝날 때마다 “의도대로 가고 있는지” 코드/동작을 확인한다
+- 방향이 다르면 초반에 바로 `REQUIREMENTS.md`/`DESIGN.md`를 고친다
+  - 많이 구현된 뒤에 방향을 바꾸는 비용이 훨씬 크다
+- 복잡한 문제(원인 미상 버그)는 아직도 모델이 놓칠 때가 있다
+  - 내가 코드를 이해하고 있을수록, 힌트를 더 정확히 줄 수 있다
+
+그리고 (주제와 조금 벗어나지만) 저는 이 말을 꼭 남기고 싶습니다.
+
+- 아직은 **코드 리뷰 실력**이 중요합니다.
+- 에이전트가 발전하면 “리뷰조차 필요 없는 시대”가 올지도 모르지만, 2026년 2월 27일 기준 제 경험으로는 아직은 아닙니다.
+
+---
+
+## 이 방법론을 위한 에이전트 룰과 스킬 파일
+
+저는 비슷한 설명을 반복하는 게 귀찮아서 “상시 행동 규범(룰)”과 “실행 절차(스킬)”를 템플릿으로 만들어두고 씁니다.
+
+참고: 저는 개인적으로 스킬/룰을 저장해두고 필요할 때 가져다 쓰기 위한 툴을 만들어 사용하고 있습니다. [ctxbin](https://superlucky84.github.io/ctxbin/)
+
+### 에이전트 룰 (Agent Rule)
+
+* “어떻게 일할 것인가”를 강제하는 상시 행동 규범
+
+```markdown
+# Doc-Driven Designer (Agent Rule)
+
+Act as a documentation-first design partner who turns user requirements into clear execution artifacts.
+
+## Behavioral Rules
+1. Listen first. Capture user intent, constraints, and priorities before proposing solutions.
+2. Document before coding for non-trivial work. Keep the plan visible and reviewable.
+3. Co-author artifacts in this order: `REQUIREMENTS.md` -> `DESIGN.md` -> `IMPLEMENT.md` -> `MANUAL_TEST_CHECKLIST.md`.
+4. Turn ambiguity into explicit decisions using checklists and close each decision with written rationale.
+5. Organize implementation into phases with clear entry/exit criteria.
+6. Attach baseline test tasks to every phase; add dedicated hardening and integration test phases near the end.
+7. Keep handoff continuity: always leave `done`, `next`, blockers, and commit references.
+8. Preserve safety: require explicit confirmation for destructive data operations and keep secrets out of git.
+
+## Quality Standards
+- Write concise, actionable, and verifiable statements.
+- Keep requirements, design, and implementation docs internally consistent.
+- Ensure another agent can continue using docs only, without verbal context.
+```
+
+### 스킬 파일 (Skill)
+
+* “그걸 실제로 수행하는 절차는 이것이다”
+
+```markdown
+---
+name: doc-driven-designer-v1
+description: Use when a user wants help capturing requirements and co-producing design and implementation documentation before or during development. Build and maintain REQUIREMENTS.md, DESIGN.md, IMPLEMENT.md, and MANUAL_TEST_CHECKLIST.md with explicit decision checklists, phased plans, and test gates that support multi-agent handoff.
+---
+
+# Doc-Driven Designer Playbook
+
+## Primary Goal
+Translate user requirements into a maintainable document set that guides implementation and survives agent handoff.
+
+## Standard Artifact Flow
+1. Update `REQUIREMENTS.md`.
+   - Capture scope, constraints, assumptions, and non-goals.
+   - Record migration/data concerns when relevant.
+2. Update `DESIGN.md`.
+   - Define architecture, contracts, integration boundaries, and operational policies.
+   - Manage open decisions as checkboxes (e.g., `DC-*`, `IC-*`) and resolve them explicitly.
+3. Update `IMPLEMENT.md`.
+   - Split work into phases with implementation checklist, baseline tests, and exit criteria.
+   - Include late-stage **Test Hardening** and **Integration Test** phases.
+4. Update `MANUAL_TEST_CHECKLIST.md`.
+   - Define release-facing manual checks and pass/fail criteria.
+
+## Working Rules
+- Keep language direct and measurable.
+- Prefer updating existing canonical docs over creating duplicate plans.
+- Treat unresolved decisions as `TBD` until explicitly resolved.
+- Link major design decisions to at least one validation step.
+
+## Handoff Rules
+- Keep docs resumable at all times.
+- When stopping work, append status with: completed items, next step, blockers, and latest commit SHA.
+
+## Completion Criteria
+Consider planning complete only when:
+- All four artifacts are aligned and non-contradictory.
+- Decision checklists are resolved or clearly tracked.
+- Each implementation phase has baseline tests.
+- Hardening and integration test phases are present.
+```
+
+---
+
+## 이 방법론으로 만든 프로젝트들
+
+이 문서 기반 방법론으로 만들었던 프로젝트들입니다. 완성도나 규모와 상관없이, “문서로 컨텍스트를 고정하고 다음 작업으로 이어가기”를 실험하기에 좋은 재료들이었습니다. 대단한 프로젝트라기보다는, 개인적으로 필요했거나 그냥 만들어보고 싶었던 것들을 차근차근 형태로 옮긴 결과물들입니다.
+
+1. **fp-pack**  
+   [https://github.com/superlucky84/fp-pack](https://github.com/superlucky84/fp-pack)  
+   JavaScript/TypeScript용 실용적인 함수형 유틸 툴킷입니다. 큰 사전 학습 없이도 “함수형의 선언적 가독성”만은 누구나 쉽게 가져다 쓸 수 있게 만드는 게 목표였습니다. 특히 기존 함수형 생태계에서 Side Effect를 고립시키는 방식(모나드 등)이 진입장벽이 높다고 느껴서, 예외/조기 종료 같은 흐름을 다루기 위한 SideEffect 패턴을 실험적으로 넣어봤습니다.
+
+2. **ctxbin**  
+   [https://github.com/superlucky84/ctxbin](https://github.com/superlucky84/ctxbin)  
+   “네트워크 클립보드”처럼 컨텍스트를 빠르게 저장/불러오는 용도로 만든 CLI입니다. CLI 형태면 에이전트도 명령을 학습하고 반복 실행하기 쉬워서, “시키기 좋은 도구”를 목표로 단순하고 결정적으로(deterministic) 만들었습니다.
+
+3. **ctxloc**  
+   [https://github.com/superlucky84/ctxloc](https://github.com/superlucky84/ctxloc)  
+   ctxbin이 Upstash Redis 같은 원격 저장소에 의존하는 구조라서, 더 접근성 좋은 로컬 파일 저장소 기반으로도 쓰고 싶어서 만든 도구입니다. 필요하면 `ctxloc sync`로 ctxbin(원격 컨텍스트)과 동기화해서 같이 사용할 수 있게 했습니다.
+
+4. **jmemo**  
+   [https://github.com/superlucky84/jmemo](https://github.com/superlucky84/jmemo)  
+   데모: [memo.subtleflo.com](https://memo.subtleflo.com/)  
+   Monaco 편집기(vim 키 조작) 기반으로 문서를 작성하고 관리하는 Markdown 편집기입니다. 개인용 마크다운 메모장으로 쓰기 위해 만들었습니다.
+
+5. **jmemo-viewer**  
+   [https://github.com/superlucky84/jmemo-view](https://github.com/superlucky84/jmemo-view)  
+   데모: [review.subtleflo.com](https://review.subtleflo.com/)  
+   jmemo로 작성한 문서를 더 보기 좋게 렌더링해서 보여주는 뷰어입니다. 개인적으로는 독서 리뷰 카테고리만 뽑아서 보여주는 용도로도 쓰고 있습니다.
+
+6. **state-surface**  
+   [https://github.com/superlucky84/state-surface](https://github.com/superlucky84/state-surface)  
+   지인의 하이퍼미디어 관련 논문에서 영감을 받아 개발한 서버 주도 UI 모델입니다. 서버가 상태를 소유하고, 그 변화를 스트림으로 보내 화면을 구성합니다. 페이지 이동은 MPA 방식이지만, 페이지 내부는 서버 상태 스트림에 따라 실시간으로 변화합니다. 아직 미완성이지만, 생각보다 많이 진행된 프로젝트입니다.
+
+---
+
+## 맺으며
+
+알고 보면 많은 사람들이 이미 비슷한 방식으로 개발하고 있다고 생각합니다. 다만 AI가 들어오면서 “컨텍스트 유지”가 더 중요해졌고, 그래서 문서를 의식적으로 정교하게 관리하는 게 점점 더 효과적이 되었습니다.
+
+컨텍스트를 더 잘 유지하기 위한 오픈소스 흐름도 몇 가지 찾아봤습니다. (아직 제 방식에 바로 도입하진 않았고, 참고용으로만 보고 있습니다.)
+
+- [OpenViking](https://github.com/volcengine/OpenViking): 에이전트가 더 일관되게 일하도록 컨텍스트/지식 관리를 돕는 방향의 프로젝트로 보였습니다.
+- [Graphiti](https://github.com/getzep/graphiti): 그래프 기반으로 지식/컨텍스트를 다루는 접근을 제공하는 프로젝트로 보였습니다.
+
+저는 당분간은 이 정도면 충분하다고 느낍니다. 모델 성능은 계속 오를 것이고, 더 강력한 컨텍스트 관리 도구와 방법론도 계속 나올 겁니다. 그때그때 도구를 바꾸더라도, 문서라는 형태는 오래 살아남는 자산이 될 가능성이 높습니다.
+
+누군가에게는 “이렇게도 개발하는구나” 하는 작은 참고가 되면 좋겠습니다.

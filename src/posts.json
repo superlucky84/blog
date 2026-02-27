@@ -1,6 +1,12 @@
 {
   "posts": [
     {
+      "id": "2026.2.27.doc-driven-development-with-ai.mdx",
+      "date": "February 27, 2026",
+      "title": "Doc-Driven Development With AI",
+      "title_ko": "AI와 함께하는 문서 주도 개발"
+    },
+    {
       "id": "2025.11.16.concurrency-over-finegrained-speed.mdx",
       "date": "November 16, 2025",
       "title": "Why Concurrent Mode Is More Appealing Than Signal-Based Fine-Grained Approaches",
