@@ -1,6 +1,12 @@
 {
   "posts": [
     {
+      "id": "2026.8.10.refactoring-key-diff-in-my-own-virtual-dom.mdx",
+      "date": "August 10, 2026",
+      "title": "Refactoring the Key Diff in My Own Virtual DOM",
+      "title_ko": "직접 만든 가상돔의 key diff 리팩토링 스토리"
+    },
+    {
       "id": "2026.2.27.doc-driven-development-with-ai.mdx",
       "date": "February 27, 2026",
       "title": "Doc-Driven Development With AI",

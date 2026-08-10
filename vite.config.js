@@ -5,6 +5,7 @@ import dts from 'vite-plugin-dts';
 import fs from 'fs';
 import lithentMdx from '@lithent/lithent-mdx';
 import lithentVitePlugin from '@lithent/lithent-vite';
+import remarkGfm from 'remark-gfm';
 
 const cachedEntries = getEntries();
 
@@ -21,7 +22,7 @@ export default defineConfig(async ({ mode }) => ({
     dts({
       outputDir: ['dist'],
     }),
-    lithentMdx(),
+    lithentMdx({ mdxOptions: { remarkPlugins: [remarkGfm] } }),
     lithentVitePlugin(),
   ],
   resolve: {

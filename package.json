@@ -19,7 +19,6 @@
     "time-ago": "^0.2.1"
   },
   "devDependencies": {
-    "vite": "^5.4.8",
     "@lithent/lithent-mdx": "^0.2.6",
     "@lithent/lithent-vite": "^0.3.3",
     "@tailwindcss/typography": "^0.5.16",
@@ -28,7 +27,6 @@
     "@typescript-eslint/eslint-plugin": "^8.17.0",
     "@typescript-eslint/parser": "^8.17.0",
     "autoprefixer": "^10.4.20",
-    "tailwindcss": "^3.3.2",
     "chokidar": "^4.0.1",
     "eslint": "^9.16.0",
     "eslint-config-prettier": "^9.1.0",
@@ -37,8 +35,11 @@
     "jsdom": "^25.0.1",
     "postcss": "^8.4.24",
     "prettier": "^3.4.2",
+    "remark-gfm": "^4.0.1",
+    "tailwindcss": "^3.3.2",
     "terser": "^5.18.1",
     "typescript": "^5.6.3",
+    "vite": "^5.4.8",
     "vite-plugin-checker": "^0.8.0",
     "vite-plugin-dts": "^4.5.0",
     "vitest": "^2.1.2"

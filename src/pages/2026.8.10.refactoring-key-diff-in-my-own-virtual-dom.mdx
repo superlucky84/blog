@@ -1,0 +1,473 @@
+export const preload = async ({ id, origin }) => {
+  const { views, date } = await fetch(`${origin}/api/views/${id}`).then(
+    response => response.json()
+  );
+  return {
+    layout: {
+      views,
+      date,
+      title: 'Refactoring the Key Diff in My Own Virtual DOM',
+      description:
+        'One piece of my virtual DOM library had bothered me for years: the code that minimizes DOM moves when a keyed list is re-rendered. I finally rewrote it with LIS, and swapping two items in a list of 10,000 went from 2,719ms down to 83ms.',
+      openGraph: {
+        title: 'Refactoring the Key Diff in My Own Virtual DOM',
+        description:
+          'One piece of my virtual DOM library had bothered me for years: the code that minimizes DOM moves when a keyed list is re-rendered. I finally rewrote it with LIS, and swapping two items in a list of 10,000 went from 2,719ms down to 83ms.',
+        images: [
+          {
+            url: '/assets/posts/refactoring-key-diff-in-my-own-virtual-dom.png',
+            width: 1024,
+            height: 1024,
+          },
+        ],
+      },
+    },
+  };
+};
+
+<img
+  src="/assets/posts/refactoring-key-diff-in-my-own-virtual-dom.png"
+  style={{ height: '300px', width: '100%', objectFit: 'cover' }}
+/>
+
+## Overview
+
+There was a piece of code in my virtual DOM library that had bothered me for a long time. It was the part that minimizes DOM moves when a keyed list is re-rendered, and I had come up with the approach entirely on my own, without borrowing it from anywhere. It was correct, and fast enough in the common cases, but I knew it did far more work than necessary in certain situations — and I left it that way anyway.
+
+This time I rewrote that part using LIS (Longest Increasing Subsequence). To put the result up front: swapping the position of just two items in a list of 10,000 went from 2,719ms down to 83ms. And a branch I had built long ago to handle one special case became entirely unnecessary — that story comes at the end.
+
+### Before you read
+
+A few things I should say up front.
+
+First, this is not an explanation of React's internals. What I cover here is the implementation of a virtual DOM library I built and use myself. That said, the problem you run into when re-rendering a keyed list is much the same in any virtual DOM, so if you have used React or Vue and wondered what `key` actually does under the hood, this may be worth reading.
+
+The LIS approach I applied here is closer to what Vue 3 does. From what I gather, React does not use LIS and picks what to move with something simpler, so its move count is not always minimal. I have not gone through React's internals myself to verify this, so I will leave it at that.
+
+That does not mean React is behind. LIS is not free — it allocates an array for previous positions, another for backtracking, a set for the result, every single time, and it takes more code. This change did grow my library's bundle a little.
+
+More importantly, in the common case where order does not change, either approach gives you the same result. Appending to the end of a list, deleting from the middle, updating content only. Where LIS wins is when an already-rendered list gets shuffled, which is relatively rare — and real-world lists are usually in the tens or hundreds, so the difference is often hard to feel.
+
+So this post is less an argument that "you should use LIS" and more a record of how I finally did a piece of homework I had put off for a long time.
+
+I should also add that I did this work with the help of Claude Code. And a large part of why I am writing this post is to record the exact implementation path I took, so I can come back to it once I have forgotten. This is a personal blog, so I am not hiding that either.
+
+### Why minimize DOM moves
+
+People who use a virtual DOM usually write something like this.
+
+```jsx
+<ul>
+  {items.map(item => <li key={item.id}>{item.text}</li>)}
+</ul>
+```
+
+When `items` changes, the list has to be re-rendered. You could pull every `<li>` out of the DOM and put it back, and the screen would look identical. But there are invisible side effects.
+
+- CSS animations and transitions the user carefully set up get cut off
+- Focus is lost on an element being typed into
+- Elements like `<iframe>` and `<video>` have their state reset
+
+So it is not enough to arrive at the right result — what matters is **moving only what actually changed, as little as possible**.
+
+### The algorithm I had built
+
+The key-diff in my virtual DOM was not adapted from any optimized algorithm. What I came up with was this.
+
+1. Take **only the keys the two lists have in common**
+2. Compare the order on both sides; **if nothing is inverted**, leave the common items alone and insert only the new ones in place
+3. If the order is off **even slightly**, re-insert every item from scratch
+
+Here is how it behaves case by case.
+
+| Change to the list | Common key order | Actual DOM moves |
+|---|---|---|
+| Content only `[1,2,3]` → `[1,2,3]` | kept | none ✅ |
+| Append `[1,2,3]` → `[1,2,3,4]` | kept | only the new one ✅ |
+| Insert in middle `[1,2,3]` → `[1,9,2,3]` | kept | only the inserted one ✅ |
+| Partial delete `[1,2,3,4]` → `[1,3]` | kept | none ✅ |
+| Swap two `[1,2,3,4]` → `[1,4,3,2]` | broken | **everything** ❌ |
+| Reverse `[1,2,3,4]` → `[4,3,2,1]` | broken | **everything** ❌ |
+
+I built it this way because **I wanted the most effective implementation I could get out of the least code**. As the table shows, the top four rows are most of what you meet in practice — adding items to a list, removing them, updating their content. Meanwhile, **an already-rendered list getting reordered is not common.**
+
+So I figured this was enough for ordinary use. With little code, I could minimize DOM moves for the most common patterns.
+
+### What kept nagging at me
+
+I thought it was correct and effective enough, but two things kept bothering me.
+
+**First, the time complexity was O(n²).**
+
+Pulling out the common keys, then repeatedly checking for inversions, generates a pile of pointless comparisons. As the list grows, that cost grows quadratically. I knew this instinctively, but at the time there were plenty of bigger problems left in the implementation, so I settled for it. It was also a tricky part of the code, which made me reluctant to poke at it.
+
+**Second, the bottom two rows of the table were far too expensive.**
+
+Re-inserting everything when the order is off means that in a list of 10,000, **swapping exactly two items costs 10,000 DOM moves**. I told myself it was an uncommon case, but uncommon does not mean it never happens.
+
+I later learned about LIS and kept thinking I should apply it to my virtual DOM. But touching it carelessly could break the correctness I had worked hard to get right, so I never quite got around to it.
+
+### Then I got some credits
+
+I use Claude Code heavily in my day-to-day work, and one day it handed out free tokens to try out fable. So I decided to spend those credits on the long-postponed problem: improving keyed-list re-render performance with LIS.
+
+Here is the order I will tell it in.
+
+- What the old implementation looked like (`chkDiffLoopOrder` and the `'L'` type)
+- What LIS is, and why it is the same problem as minimizing DOM moves
+- How I worked it into the actual virtual DOM code (the `oi` property and right-to-left placement)
+- Why the `'L'` type became entirely unnecessary as a result
+
+
+## The old implementation had a marker called 'L'
+
+Before getting into it, I need to name a few things in the old code. These names will keep coming up.
+
+The rule I described above — "if nothing is inverted, leave them alone; if anything is off, re-insert everything" — was split across two pieces of code.
+
+The first is `chkDiffLoopOrder`, the function that inspects the order. It lines up only the common keys from both lists and checks whether the order matches. This function is the O(n²) I mentioned earlier.
+
+```js
+const chkDiffLoopOrder = (newWDom, originalWDom) => {
+  // keep only the new children that also existed before
+  const newChildren = [...newWDom.children].filter(item =>
+    origChildren.find(o => getKey(item) === getKey(o)));
+
+  // keep only the old children that also exist in the new list
+  const filteredChildren = origChildren.filter(item =>
+    newChildren.find(n => getKey(item) === getKey(n)));
+
+  // put the two intersections side by side and check the order
+  return filteredChildren.length === newChildren.length &&
+         filteredChildren.every((item, i) => getKey(item) === getKey(newChildren[i]));
+};
+```
+
+You can see the shape of a `find` inside a `filter`, twice. The bigger the list, the more these comparisons grow — quadratically.
+
+The second piece is the `'L'` type, the marker that holds the result of that check. If the order is judged to be preserved, `'L'` is stamped on the list node, and in the render phase each child looks at that marker to decide whether it has to move.
+
+```js
+const typeSortedUpdate = (newWDom) => {
+  typeUpdate(newWDom);            // update content
+  ...
+  if (parentWDom.nr !== 'L') {    // <- if the parent is 'L', we never get here
+    typeAdd(newWDom, ...);        // re-insert
+  }
+};
+```
+
+A list stamped with `'L'` **leaves alone every child that does not need to move.** Anything already in position gets its content updated without touching its DOM position, and only genuinely new children go find their spot and get inserted. Append one item to the end of a list and only that one is attached while the rest are never touched — that is the path the top four rows of the table take.
+
+The other side is the path where I gave up on optimizing. If even one inversion appears among the common keys, you have to work out which items to keep and which to move, and I did not want to write the code to carry that computation. So I decided to just re-insert everything. Without `'L'`, the insertion anchor becomes the position after the whole list, and the children get re-attached one by one from the left, which rebuilds the list wholesale.
+
+So `'L'` was **a marker holding a yes/no verdict: "this list needs no reordering."** `chkDiffLoopOrder` asks, `'L'` carries the answer around, and the render phase reads that answer to decide between leaving things in place and rebuilding everything. Having no middle ground was the limitation of this structure.
+
+How that whole structure disappears later is the ending of this post.
+
+
+## What LIS is
+
+LIS stands for Longest Increasing Subsequence. The name sounds grand, but the meaning is simple: given a sequence of numbers, **find the longest ascending group you can pick while preserving order.**
+
+### A subsequence does not have to be contiguous
+
+The first thing to get straight is the word "subsequence." Unlike a substring, the elements do not have to be adjacent. **You may skip over things; you only have to keep going left to right.**
+
+```
+[3, 1, 4, 1, 5, 9, 2, 6]
+    ^  ^     ^        ^
+    1  4     5        6     <- the picked [1, 4, 5, 6], length 4
+```
+
+`1 → 4 → 5 → 6` is scattered through the original sequence, but it never reverses the order of appearance and the values keep growing, so it is a valid increasing subsequence. The longest such group is the LIS, and for this sequence the answer is length 4.
+
+That is LIS as an algorithm. The reason I immediately thought of my virtual DOM when I first learned about it is that **this is exactly the same problem as minimizing DOM moves**. Let me unpack why.
+
+### Turning list reordering into a sequence of numbers
+
+When a keyed list is re-rendered, we know two things.
+
+- **The order of the new list** — exactly what the user passed via JSX, and that is the correct answer.
+- **Which position each item held in the previous render** — we can find that by matching on keys.
+
+Lay out that second piece of information in the order of the new list, and you have your sequence of numbers. Say we swapped B and D in a list of five.
+
+```
+before:  [A, B, C, D, E]
+          0  1  2  3  4    <- each item's previous position
+
+after:   [A, D, C, B, E]
+          0  3  2  1  4    <- write those numbers in the new order and you get this sequence
+```
+
+`[0, 3, 2, 1, 4]`. Everything about "what moved and how" is captured in this one sequence.
+
+### Increasing = the relative order is already correct
+
+Here is the core of it. In this sequence, **two items whose values increase do not need to swap places.**
+
+Why? Take items X and Y, where X is to the left of Y in the new list. If X's previous position number is also smaller (meaning X was to the left before as well), then their front-to-back relationship has been the same from the start until now. There is no reason to pull either one out and move it.
+
+Conversely, a pair whose values decrease has been flipped, so one of the two must move.
+
+In other words, **the items in an increasing subsequence form a group whose ordering is mutually consistent.** Nail them down in place like pillars and slot the rest in between, and the list is complete.
+
+In the example above, the increasing subsequences of `[0, 3, 2, 1, 4]` top out at length 3, such as `[0, 1, 4]` (A, B, E). So three of the five stay put and **only two need to move.** We changed exactly two items, B and D, so it lines up precisely.
+
+My old algorithm would have decided the order was broken here and re-inserted all five. In a list of 10,000, that is 10,000 DOM moves to change two items.
+
+### Why the "longest" one specifically
+
+The more items you can leave in place, the fewer you have to move. That is why you need not just any increasing subsequence but the **longest** one.
+
+```
+number of moves = total count − LIS length
+```
+
+That single line is why LIS guarantees the minimum number of moves. And this is not merely a decent answer — it is a **mathematically proven minimum**. There is no way to leave more items in place than the LIS. If there were, you would have found an increasing subsequence longer than the LIS, contradicting the definition of "longest."
+
+It is also interesting to plug the unchanged-order case into that formula. The sequence is increasing from the start, so the LIS covers everything and the move count is 0. **The "nothing needs to move" case that my old algorithm handled via the `'L'` verdict is contained inside LIS as-is.** That is exactly why I could delete the order-checking logic I had written separately.
+
+### How to compute it quickly
+
+The simplest way is, at each position, to look back over everything before it for "the longest one ending in a value smaller than mine." That is O(n²) — unusable in a project whose whole point was removing an O(n²).
+
+Fortunately there is a well-known O(n log n) method using binary search. The idea is to roll a single array called `tails`, continuously updating **"the smallest possible final value of an increasing subsequence of length k."** The reasoning is that a smaller tail is better, because it leaves room to append more numbers after it.
+
+Feeding `[0, 3, 2, 1, 4]` in one at a time from the left goes like this.
+
+```
+0  ->  tails = [0]           empty, so just append
+3  ->  tails = [0, 3]        larger than the last (0), so append
+2  ->  tails = [0, 2]        smaller than 3; replace the first value >= 2 (that is 3)
+1  ->  tails = [0, 1]        smaller than 2; replace the first value >= 1 (that is 2)
+4  ->  tails = [0, 1, 4]     larger than the last (1), so append
+
+-> the length of tails, 3, is the LIS length
+```
+
+While values keep growing you only ever append; you binary-search for a replacement slot only when a smaller value shows up. So in the common case where order is preserved, it effectively runs in O(n).
+
+### The trap: the length is right, but the elements may not be
+
+There is one trap you absolutely have to know about when implementing this. **The `tails` array tells you the LIS length exactly, but its contents are not the actual LIS.**
+
+```
+seq:  [1, 3, 5, 2]
+
+1  ->  tails = [1]
+3  ->  tails = [1, 3]
+5  ->  tails = [1, 3, 5]
+2  ->  tails = [1, 2, 5]     smaller than 3, so 3 is replaced by 2
+
+tails = [1, 2, 5] -- but in the original, 5 comes before 2.
+[1, 2, 5] is a combination that could never be built. The real LIS is [1, 3, 5].
+```
+
+`tails` is only a scratchpad of "the best tail candidate for each length," so values overwritten along the way can leave behind a combination that does not actually exist. If you only need the length you can stop here, but **we need the list of which items to leave in place.**
+
+So the real implementation keeps one more array, `prev`. As each element goes in, it leaves a footprint saying "I was appended after this element," and at the end you follow those footprints backwards to reconstruct the true LIS. Vue 3's `getSequence` implementation contains this backtracking code too, and mine follows the same structure.
+
+To summarize.
+
+- Build a sequence out of **which position each item in the new list previously held**
+- **Compute the LIS** of that sequence → the list of items to leave in place
+- **Move only the items not in the LIS** in the actual DOM
+
+Now let us look at how I worked this principle into the actual virtual DOM code.
+
+
+## Applying LIS to my virtual DOM
+
+To apply LIS, you need to know where each item sat in the previous ordering — otherwise you cannot build the `tails` array when the new keyed list's order diverges from the old one.
+
+So the stage where the new virtual DOM is built has to carry the index information: what position an item with the same key held before. I added a property called `oi` on top of the existing structure to remember the old key's index.
+
+### Recording the order while matching pairs
+
+Where to plant `oi` was obvious. There is already code that matches by key, so at the very moment a pair is found, you can also write down "you used to be at position N."
+
+```js
+const diffLoopChildren = (newWDom, originalWDom) => {
+  const origChildren = originalWDom.children || [];
+
+  // 1) turn the old children into a key -> index map
+  const keyMap = new Map();
+  origChildren.forEach((item, index) => {
+    const key = getKey(item);
+    if (!keyMap.has(key)) keyMap.set(key, index);
+  });
+
+  // 2) walk the new children and look up their match in the map
+  const remaked = (newWDom.children || []).map(item => {
+    const key = getKey(item);
+    const origIndex = keyMap.get(key);
+    const matched = origIndex !== undefined;
+
+    if (matched) keyMap.delete(key);   // drop a key once it is used
+
+    const child = makeNewWDomTree(
+      item,
+      matched ? origChildren[origIndex] : undefined
+    );
+    if (matched) child.oi = origIndex;  // * remember the previous position
+
+    return child;
+  });
+
+  // 3) whatever is left in the map = the items removed this round
+  return [remaked, [...keyMap.values()].map(index => origChildren[index])];
+};
+```
+
+There was an unexpected payoff here. The old code scanned the previous array with `find` for every new item and pulled matches out with `splice`. That was one axis of the O(n²) I mentioned.
+
+**But because the new requirement — "remember the index" — forced me to build a `key → index` map anyway, once the map existed, `find` and `splice` naturally disappeared.** Lookups became O(1), and a used key just gets `delete`d, so nothing has to be shifted in an array. The structure where whatever remains in the map is the set to delete is preserved as well.
+
+I set out to apply LIS, and the complexity of the matching stage came down with it.
+
+### diff only records; render decides
+
+I settled on one principle here. **The diff phase only records `oi`; it does not decide what to do with it.**
+
+In the old structure, the diff phase called `chkDiffLoopOrder` and decided "does this need reordering?" by itself. But computing the LIS requires looking at all the list's children at once, and acting on the result by moving actual DOM is the render phase's job. It is natural to keep the decision next to the execution.
+
+So I split the roles like this.
+
+```
+diff   : match by key -> record oi on each child
+render : gather the oi values -> compute LIS -> decide who moves -> move the DOM
+```
+
+`oi` only acts as the bridge between the two. As a result the diff side actually got shorter.
+
+### Asking LIS "who is allowed to stay put"
+
+In the render phase we sweep the children once from left to right, doing two things: updating content and, at the same time, gathering the sequence to feed to LIS.
+
+```js
+children.forEach((item, index) => {
+  if (item.nr === 'A' || item.nr === 'S') {
+    created[index] = wDomToDom(item);   // only build the element (insert later)
+  } else if (item.nr === 'T') {
+    typeUpdate(item);                   // content only -- no re-insertion
+  } else {
+    wDomUpdate(item);
+  }
+
+  if (item.oi !== undefined && created[index] === undefined) {
+    matchedIndexes.push(index);
+    oiSeq.push(item.oi);                // * the LIS input sequence
+  }
+});
+
+// the items that are allowed to stay put
+const stay = new Set(getLisPositions(oiSeq).map(pos => matchedIndexes[pos]));
+```
+
+The part worth noting is that **newly created elements are not inserted right away; they are just parked in the `created` array.** The old code inserted them into the DOM the moment they were built, which meant computing "where does this go" on the spot. Separating creation from insertion lets the insertion positions all be decided later, in one pass.
+
+And `'T'` children only get their content updated via `typeUpdate`. Previously this is where re-insertion happened immediately, but now **LIS decides whether anything moves**, so we leave them alone.
+
+### But *where* do we insert?
+
+LIS tells you **who** has to move, but not **where** it goes. That is a separate problem, and it is where I got stuck one more time.
+
+To position something in the DOM you need `insertBefore(node, anchor)` — that is, "the first element that will come to my right." The old code searched each item's right-hand siblings to find that anchor, so with n items that search repeated n times, which was O(n²) as well.
+
+The solution was to **iterate from right to left**.
+
+```js
+let anchor = /* the element following the whole list */;
+
+for (let i = children.length - 1; i >= 0; i--) {
+  const item = children[i];
+  const isNew = created[i] !== undefined;
+  const needMove = item.oi !== undefined && !isNew && !stay.has(i);
+
+  if (isNew || needMove) {
+    parentEl.insertBefore(isNew ? created[i] : item.el, anchor || null);
+  }
+
+  // my element becomes the anchor for my left-hand neighbor
+  const first = findChildFragmentNextElement([item]);
+  if (first) anchor = first;
+}
+```
+
+The principle is simple. An item's anchor is ultimately "the element of the item immediately to its right," and if you process from the right, you already have that value in hand. Each item takes the `anchor`, uses it, then puts its own element into `anchor` and hands it to its left-hand neighbor. **It comes down to rolling a single variable, with no searching at all.**
+
+Items in the LIS (`stay`) skip the insertion and just update `anchor` on their way past. They do not move themselves, but they are still a valid anchor for their left-hand neighbor.
+
+Going the other way, left to right, this does not work. Inserting a left-hand item does not give you an anchor for the right-hand ones, so you end up searching to the right every time. That direction problem is exactly why the old code was O(n²).
+
+One more thing: when **new items are appended consecutively at the end of the list**, no anchor is needed at all. They go at the very back, so appending them in order with `appendChild` is enough. Adding items to the end of a list is the most common pattern in practice, so I carved out a fast path for just that case.
+
+Putting it together, updating one list flows like this.
+
+```
+1. left -> right : update content + create new elements + collect oi
+2.               : compute LIS -> settle which items stay
+3. tail          : trailing new items are simply appended
+4. right -> left : insert only new and moving items before the anchor
+```
+
+
+## Why the new algorithm has no need for the 'L' type
+
+The old implementation had a render type called `'L'`. Its name was `LOOP_CHILDREN_NOT_SORTED_UPDATE`, meaning **"this list is an update that needs no reordering."**
+
+It worked like this. In the diff phase, `chkDiffLoopOrder` checked whether the order of the common keys was preserved, and if so, `'L'` was stamped on the list node. Then in the render phase the children saw that marker and skipped re-insertion.
+
+```js
+const typeSortedUpdate = (newWDom) => {
+  typeUpdate(newWDom);            // update content
+  ...
+  if (parentWDom.nr !== 'L') {    // <- if the parent is 'L', we never get here
+    typeAdd(newWDom, ...);        // re-insert
+  }
+};
+```
+
+In other words, `'L'` was a marker holding **the answer to the yes/no question "can all of them stay in place?"**
+
+### A yes/no question became a counting question
+
+The question LIS answers is more general than that.
+
+```
+old :  "Can ALL of them stay in place?"     -> yes / no
+LIS :  "How many of them can stay?"         -> 0 ~ n
+```
+
+And **the old question's "yes" is exactly the case where the new question's answer is n (all of them).**
+
+If the order did not change at all, the `oi` sequence is increasing from the start, like `[0, 1, 2, 3, 4]`. Then the LIS covers everything, every item lands in the `stay` set, and nobody gets `insertBefore`d in the placement pass. **The work the `'L'` branch used to do is reproduced exactly** — with no separate marker and no up-front check.
+
+A branch built for a special case got absorbed into the general solution once I implemented it.
+
+### Deleting one marker made the code shrink in a chain
+
+Once nothing assigned `'L'` anymore, everything that referenced it became dead code. Here is what I actually deleted.
+
+- The entire `chkDiffLoopOrder` function (25 lines, the O(n²) one)
+- The `'L'` verdict block inside `addReRenderTypeProperty`
+- `'L'` in the `RenderType` type definition
+- The `L: typeUpdate` entry in the render handler map
+- The `parentWDom.nr !== 'L'` branch in `typeSortedUpdate`
+- The `parentWDom.nr !== 'L'` condition in `typeAdd`'s anchor computation
+
+Keeping the core as small as possible is an important goal for my virtual DOM, so I care even about one extra constant. I started this expecting the code to grow from adding LIS, but the list above offset enough of it that the net increase was smaller than I feared.
+
+More precisely, the algorithm itself got more sophisticated while **the branching actually shrank.** Since we no longer ask "is the order the same?" separately, the fork that used to depend on that answer is gone too.
+
+Looking back, I think that was a good sign. When an exception branch built for a special case disappears and things collapse into a single general computation, that direction is usually right.
+
+### Conclusion
+
+What I worried about most going in was bundle size. Keeping the core small is an important goal for this library, and I figured that if adding LIS pushed past that line, I might lose more than I gained. In the end the deleted code offset much of what was added, so I got to finish a long-postponed piece of homework at a cost I could live with.
+
+fable 5 takes a long time thinking, and there were moments during the work where I doubted the results — but once I saw what came out, the performance was better than I expected. More than anything, I appreciated that it did not rewrite everything in one shot, and instead broke the work into pieces small enough for me to follow and review. This was something I had put off because I was afraid of breaking the correctness of the existing implementation, and that approach is ultimately what let me start.
+
+The version with this improvement is released as [1.22.0](https://github.com/superlucky84/lithent/releases/tag/lithent%401.22.0).
