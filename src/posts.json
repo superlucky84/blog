@@ -1,6 +1,12 @@
 {
   "posts": [
     {
+      "id": "2026.10.29.docatlas-doc-driven-development.mdx",
+      "date": "October 29, 2026",
+      "title": "DocAtlas: Growing My Doc-Driven Development Workflow",
+      "title_ko": "DocAtlas: 문서 주도 개발을 계속 발전시켜 보기"
+    },
+    {
       "id": "2026.8.10.refactoring-key-diff-in-my-own-virtual-dom.mdx",
       "date": "August 10, 2026",
       "title": "Refactoring the Key Diff in My Own Virtual DOM",
