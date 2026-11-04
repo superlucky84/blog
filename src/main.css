@@ -3,12 +3,10 @@
 @tailwind utilities;
 
 @layer base {
-  :root.init {
-    color-scheme: dark;
-    opacity: 0;
-  }
-  :root.dark {
-    color-scheme: dark;
-    background-color: rgb(28 28 28 / var(--tw-bg-opacity));
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      background-color: rgb(28 28 28 / var(--tw-bg-opacity));
+    }
   }
 }

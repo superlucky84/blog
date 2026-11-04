@@ -1,6 +1,6 @@
 import type { TagFunction } from 'lithent';
-import { mount, mountCallback } from 'lithent';
-import { computed, state } from 'lithent/helper';
+import { mount } from 'lithent';
+import { computed } from 'lithent/helper';
 import LoadingText from '@/components/Loading';
 import PageWrap from '@/components/PageWrap';
 import Header from '@/components/Header';
@@ -19,13 +19,8 @@ const Layout = mount<{
   params: Record<string, string>;
   query: Record<string, string>;
 }>((r, props) => {
-  let systemColor = 'dark';
   const { origin } = props;
   const routeRef = routeWatch(r);
-  const mode = state('init', r);
-  const isDark = computed(() => {
-    return mode.v === 'system' ? systemColor === 'dark' : mode.v === 'dark';
-  });
   const isIndex = computed(() => ['index.tsx', 'ko.tsx'].includes(props.id));
   const preload = computed(
     () =>
@@ -44,19 +39,8 @@ const Layout = mount<{
   );
   const gtmId = getGtmId();
 
-  mountCallback(() => {
-    systemColor = window.matchMedia('(prefers-color-scheme: dark)').matches
-      ? 'dark'
-      : 'light';
-
-    mode.v = localStorage.getItem('theme') || 'system';
-  });
-
   return ({ page: Page, id }) => (
-    <html
-      lang="en"
-      class={mode.v === 'init' ? 'init' : isDark.v ? 'dark' : 'light'}
-    >
+    <html lang="en">
       <head>
         <title>{preload.value?.title || "superlucky84's blog"}</title>
         <Meta origin={origin} preload={preload} id={id} />
@@ -85,11 +69,11 @@ const Layout = mount<{
                 style="display:none;visibility:hidden"></iframe>`}
         />
         <main class="p-6 pt-3 md:pt-6 min-h-[calc(100vh-64px)]">
-          <Header mode={mode} isIndex={isIndex} isDark={isDark} id={id} />
+          <Header isIndex={isIndex} id={id} />
           {routeRef.loading.value ? (
             <LoadingText />
           ) : isIndex.v ? (
-            <Page isDark={isDark} />
+            <Page />
           ) : (
             <PageWrap preload={preload} id={id}>
               <Page components={mdxComponents} />

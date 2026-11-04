@@ -22,7 +22,7 @@ export const preload = async ({ origin }: { origin: string }) => {
   return { layout: { title: 'Subtleflo' }, list };
 };
 
-const Index = mount<{ isDark: { v: boolean } }>(() => {
+const Index = mount(() => {
   const preload = getPreloadData<{
     list: {
       id: string;
@@ -41,7 +41,7 @@ const Index = mount<{ isDark: { v: boolean } }>(() => {
     navigate(path);
   };
 
-  return ({ isDark }) => (
+  return () => (
     <Fragment>
       <main class="max-w-2xl m-auto mb-10 text-base">
         <div class="pb-1 flex text-sm text-center dark:text-gray-400 text-gray-500 mb-negative-4">
@@ -95,10 +95,8 @@ const Index = mount<{ isDark: { v: boolean } }>(() => {
                         </span>
                       )}
                       <span
-                        class="pl-1 grow font-extrabold font-bloglist"
-                        style={{
-                          color: getLabColor(isDark.v, item.order, totalLengh),
-                        }}
+                        class="pl-1 grow font-extrabold font-bloglist text-[color:var(--title-light)] dark:text-[color:var(--title-dark)]"
+                        style={`--title-light: ${getLabColor(false, item.order, totalLengh)}; --title-dark: ${getLabColor(true, item.order, totalLengh)};`}
                       >
                         {item.title}
                       </span>

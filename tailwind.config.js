@@ -2,7 +2,7 @@ import typography from '@tailwindcss/typography';
 
 /** @type {import('tailwindcss').Config} */
 export default {
-  darkMode: 'class',
+  darkMode: 'media',
   content: ['./src/**/*.{tsx,ts,js,jsx,mdx}', './server.js'],
   safelist: [],
   theme: {
