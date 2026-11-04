@@ -1,13 +1,10 @@
 import { mount } from 'lithent';
 import { computed } from 'lithent/helper';
-import clsx from '@/helper/clsx';
 import { navigate } from '@/base/route';
 import { transformFilename } from '@/helper/calculator';
 import Logo from '@/components/Logo';
 
 const Header = mount<{
-  mode: { v: string };
-  isDark: { v: boolean };
   isIndex: { v: boolean };
   id: string;
 }>((_r, props) => {
@@ -29,81 +26,10 @@ const Header = mount<{
     navigate(newPath.replace('/index', ''));
   };
 
-  const toggleMode = () => {
-    const { mode } = props;
-    if (props.mode.v === 'system') {
-      mode.v = 'dark';
-    } else if (mode.v === 'dark') {
-      mode.v = 'light';
-    } else if (mode.v === 'light') {
-      mode.v = 'system';
-    }
-
-    if (mode.v === 'system') {
-      localStorage.removeItem('theme');
-    } else {
-      localStorage.setItem('theme', mode.v);
-    }
-  };
-
-  return ({ mode, isDark, isIndex }) => (
+  return ({ isIndex }) => (
     <header class="flex mb-5 md:mb-10 items-center">
-      <Logo goHome={goHome} isDark={isDark} isIndex={isIndex} />
+      <Logo goHome={goHome} isIndex={isIndex} />
       <nav class="text-xs grow justify-end items-center flex gap-1 md:gap-3">
-        <button
-          onClick={toggleMode}
-          aria-label="Toggle theme"
-          class={clsx([
-            'inline-flex  active:bg-gray-300 transition-[background-color] dark:active:bg-[#242424] rounded-sm p-1',
-            'hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424]',
-            'theme-system:!bg-inherit',
-            '[&_.moon-icon]:hidden',
-            'dark:[&_.sun-icon]:hidden',
-            'dark:[&_.moon-icon]:inline',
-          ])}
-        >
-          <span class={`text-[9px] text-gray-400 mr-1`}>{mode.v}</span>
-          <span class="sun-icon">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              aria-hidden="true"
-              focusable="false"
-              data-prefix="fas"
-              data-icon="sun"
-              class="svg-inline--fa fa-sun fa-w-16 "
-              role="img"
-              viewBox="0 0 512 512"
-              style="font-size: 1.2rem;"
-            >
-              <path
-                fill="currentColor"
-                d="M256 160c-52.9 0-96 43.1-96 96s43.1 96 96 96 96-43.1 96-96-43.1-96-96-96zm246.4 80.5l-94.7-47.3 33.5-100.4c4.5-13.6-8.4-26.5-21.9-21.9l-100.4 33.5-47.4-94.8c-6.4-12.8-24.6-12.8-31 0l-47.3 94.7L92.7 70.8c-13.6-4.5-26.5 8.4-21.9 21.9l33.5 100.4-94.7 47.4c-12.8 6.4-12.8 24.6 0 31l94.7 47.3-33.5 100.5c-4.5 13.6 8.4 26.5 21.9 21.9l100.4-33.5 47.3 94.7c6.4 12.8 24.6 12.8 31 0l47.3-94.7 100.4 33.5c13.6 4.5 26.5-8.4 21.9-21.9l-33.5-100.4 94.7-47.3c13-6.5 13-24.7.2-31.1zm-155.9 106c-49.9 49.9-131.1 49.9-181 0-49.9-49.9-49.9-131.1 0-181 49.9-49.9 131.1-49.9 181 0 49.9 49.9 49.9 131.1 0 181z"
-              ></path>
-            </svg>
-          </span>
-          <span class="moon-icon">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              aria-hidden="true"
-              focusable="false"
-              data-prefix="fas"
-              data-icon="moon"
-              class="svg-inline--fa fa-moon fa-w-16 "
-              role="img"
-              viewBox="0 0 512 512"
-              style="font-size: 1.1rem;"
-            >
-              <path
-                fill="currentColor"
-                d="M283.211 512c78.962 0 151.079-35.925 198.857-94.792 7.068-8.708-.639-21.43-11.562-19.35-124.203 23.654-238.262-71.576-238.262-196.954 0-72.222 38.662-138.635 101.498-174.394 9.686-5.512 7.25-20.197-3.756-22.23A258.156 258.156 0 0 0 283.211 0c-141.309 0-256 114.511-256 256 0 141.309 114.511 256 256 256z"
-              ></path>
-            </svg>
-          </span>
-        </button>
         <button
           class="hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424] p-1"
           onClick={changeLanguage}
@@ -120,10 +46,11 @@ const Header = mount<{
         <a
           href="https://bsky.app/profile/superlucky84.bsky.social"
           target="_blank"
-          class="inline-flex hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424] items-center p-1 rounded-sm transition-[background-color] whitespace-nowrap -mr-2"
+          aria-label="Bluesky"
+          class="inline-flex hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424] items-center p-1 rounded-sm transition-[background-color]"
         >
           <svg
-            class="mr-1"
+            aria-hidden="true"
             fill="none"
             viewBox="0 0 64 57"
             width="13"
@@ -133,8 +60,46 @@ const Header = mount<{
               fill="currentColor"
               d="M13.873 3.805C21.21 9.332 29.103 20.537 32 26.55v15.882c0-.338-.13.044-.41.867-1.512 4.456-7.418 21.847-20.923 7.944-7.111-7.32-3.819-14.64 9.125-16.85-7.405 1.264-15.73-.825-18.014-9.015C1.12 23.022 0 8.51 0 6.55 0-3.268 8.579-.182 13.873 3.805ZM50.127 3.805C42.79 9.332 34.897 20.537 32 26.55v15.882c0-.338.13.044.41.867 1.512 4.456 7.418 21.847 20.923 7.944 7.111-7.32 3.819-14.64-9.125-16.85 7.405 1.264 15.73-.825 18.014-9.015C62.88 23.022 64 8.51 64 6.55c0-9.818-8.578-6.732-13.873-2.745Z"
             ></path>
-          </svg>{' '}
-          Follow<span class="hidden md:inline">&nbsp;me</span>
+          </svg>
+        </a>
+        <a
+          href="https://x.com/superlucky84"
+          target="_blank"
+          aria-label="X"
+          class="inline-flex hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424] items-center p-1 rounded-sm transition-[background-color]"
+        >
+          <svg viewBox="0 0 24 24" width="14" height="16" aria-hidden="true">
+            <path
+              fill="currentColor"
+              d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+            ></path>
+          </svg>
+        </a>
+        <a
+          href="https://github.com/superlucky84"
+          target="_blank"
+          aria-label="GitHub"
+          class="inline-flex hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424] items-center p-1 rounded-sm transition-[background-color]"
+        >
+          <svg viewBox="0 0 24 24" width="15" height="16" aria-hidden="true">
+            <path
+              fill="currentColor"
+              d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"
+            ></path>
+          </svg>
+        </a>
+        <a
+          href="https://www.linkedin.com/in/superlucky84/"
+          target="_blank"
+          aria-label="LinkedIn"
+          class="inline-flex hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424] items-center p-1 rounded-sm transition-[background-color] -mr-2"
+        >
+          <svg viewBox="0 0 24 24" width="14" height="16" aria-hidden="true">
+            <path
+              fill="currentColor"
+              d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"
+            ></path>
+          </svg>
         </a>
       </nav>
     </header>

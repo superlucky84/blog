@@ -1,22 +1,19 @@
 import { mount, mountCallback } from 'lithent';
-import { state, computed } from 'lithent/helper';
+import { state } from 'lithent/helper';
 import clsx from '@/helper/clsx';
-import { getLabColor } from '@/helper/labColor';
 
 const Logo = mount<{
   goHome: (event: Event) => void;
-  isDark: { v: boolean };
   isIndex: { v: boolean };
-}>((r, props) => {
+}>(r => {
   let timeoutFlag: number | null = null;
   const aniState = [state('', r), state('', r), state('', r)];
   const getRandomDelay = () => Math.floor(Math.random() * (10000 - 60)) + 60;
-  const animationClassName = computed(() =>
-    props.isDark.v ? 'animate-glitch' : 'animate-glitchwhite'
-  );
+  // Light mode uses the white glitch, dark mode the colored one.
+  const animationClassName = 'animate-glitchwhite dark:animate-glitch';
 
   const runAnimation = () => {
-    aniState.forEach(item => (item.v = animationClassName.v));
+    aniState.forEach(item => (item.v = animationClassName));
 
     timeoutFlag = setTimeout(() => {
       aniState.forEach(item => (item.v = ''));
@@ -35,15 +32,15 @@ const Logo = mount<{
     };
   });
 
-  return ({ goHome, isDark, isIndex }) => (
+  return ({ goHome, isIndex }) => (
     <span class="text-md md:text-lg whitespace-nowrap font-bold">
       <a
-        class="relative hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424] p-2 rounded-sm -ml-2"
+        class={clsx([
+          'relative hover:bg-gray-200 dark:hover:bg-[#313131] active:bg-gray-300 dark:active:bg-[#242424] p-2 rounded-sm -ml-2',
+          !isIndex.v && 'text-title-light dark:text-title-dark',
+        ])}
         href="/"
         onClick={goHome}
-        style={{
-          color: isIndex.v ? 'inherit' : getLabColor(isDark.v, 0, 1),
-        }}
       >
         <span class="opacity-0">Subtleflo</span>
         {aniState.map((item, index) => (
