@@ -49,7 +49,17 @@ async function createServer() {
   app.set('trust proxy', true);
 
   if (!isDev) {
-    app.use('/dist', express.static(path.resolve(__dirname, 'dist')));
+    app.use(
+      '/dist',
+      express.static(path.resolve(__dirname, 'dist'), {
+        setHeaders: (res, filePath) => {
+          // Built files carry a content hash in their name, so they never change.
+          if (/-[A-Za-z0-9_-]{8}\.(js|css)$/.test(filePath)) {
+            res.set('Cache-Control', 'public, max-age=31536000, immutable');
+          }
+        },
+      })
+    );
   }
 
   app.use(

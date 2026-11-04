@@ -34,37 +34,15 @@ const Meta = mount<{ origin: string; id: string; preload: { v: Preload } }>(
           crossorigin
           type="font/woff2"
         />
-        {isKo.v && (
-          <>
-            <link
-              rel="preload"
-              href="/assets/GangwonEdu.woff"
-              as="font"
-              crossorigin
-              type="font/woff"
-            />
-            <link
-              rel="preload"
-              href="/assets/PretendardStd-Regular.woff2"
-              as="font"
-              crossorigin
-              type="font/woff2"
-            />
-            <link
-              rel="preload"
-              href="/assets/PretendardStd-Bold.woff2"
-              as="font"
-              crossorigin
-              type="font/woff2"
-            />
-            <link
-              rel="preload"
-              href="/assets/PretendardStd-Medium.woff2"
-              as="font"
-              crossorigin
-              type="font/woff2"
-            />
-          </>
+        {/* Only the Korean post list uses GangwonEdu (for the titles). */}
+        {id === 'ko.tsx' && (
+          <link
+            rel="preload"
+            href="/assets/GangwonEdu.woff2"
+            as="font"
+            crossorigin
+            type="font/woff2"
+          />
         )}
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Subtleflo" />
