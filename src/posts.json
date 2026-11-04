@@ -1,6 +1,12 @@
 {
   "posts": [
     {
+      "id": "2026.11.5.tuning-lithent-for-js-framework-benchmark.mdx",
+      "date": "November 5, 2026",
+      "title": "Tuning Lithent for js-framework-benchmark",
+      "title_ko": "js-framework-benchmark에 등재하기 위한 Lithent 성능 개선기"
+    },
+    {
       "id": "2026.10.29.docatlas-doc-driven-development.mdx",
       "date": "October 29, 2026",
       "title": "DocAtlas: Growing My Doc-Driven Development Workflow",
