@@ -1,6 +1,12 @@
 {
   "posts": [
     {
+      "id": "2026.11.24.breaking-free-from-jsx.mdx",
+      "date": "November 24, 2026",
+      "title": "Breaking Free from JSX: Building My Own Template Parser",
+      "title_ko": "JSX로부터 독립하기: 템플릿 파서를 직접 만들며"
+    },
+    {
       "id": "2026.11.5.tuning-lithent-for-js-framework-benchmark.mdx",
       "date": "November 5, 2026",
       "title": "Tuning Lithent for js-framework-benchmark",
