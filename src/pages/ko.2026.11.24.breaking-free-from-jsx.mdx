@@ -85,15 +85,30 @@ start = 5, end = 7  →  "de"
 
 이렇게 확인한 두 문자가 `<`와 `/`라면 닫는 태그를 읽는 함수로 들어간다. 그 안에서 `advance()`를 두 번 호출해 두 문자를 소비한다. **소비한다**는 건 현재 문자를 읽고 `position`을 실제로 한 칸 옮겨 다음 문자로 넘어간다는 뜻이다. 줄과 열 정보도 이때 함께 갱신된다. [Lexer 소스](https://github.com/superlucky84/lithent/blob/72222f3f7128d648b71b47f46f2865a7c9d3b2bc/packages/lithentTemplateParser/src/parser/lexer.ts#L47)
 
-예제 첫 줄의 토큰을 `타입(값)` 형태로 줄여 쓰면 이렇다. `Hello `의 마지막 공백도 토큰 값의 일부다.
+렉서가 맨 앞 예제를 끝까지 읽으면 아래와 같은 토큰 배열이 나온다. 이 배열이 다음 단계인 파서의 입력이 된다. 실제 토큰에는 `start`와 `end` 위치(줄, 열, 오프셋)도 들어 있지만 여기서는 `type`과 `value`만 남겼다. `Hello `의 마지막 공백도 토큰 값의 일부다.
 
-```text
-TAG_OPEN_START("<") IDENTIFIER("div") TAG_OPEN_END(">")
-TAG_OPEN_START("<") IDENTIFIER("p")   TAG_OPEN_END(">")
-TEXT("Hello ") EXPRESSION_START("{") EXPRESSION_CONTENT("name") EXPRESSION_END("}") TEXT("!")
-TAG_CLOSE_START("</") IDENTIFIER("p")   TAG_OPEN_END(">")
-TAG_CLOSE_START("</") IDENTIFIER("div") TAG_OPEN_END(">")
-EOF
+```js
+// tokenize('<div><p>Hello {name}!</p></div>')
+[
+  { type: 'TAG_OPEN_START',     value: '<' },
+  { type: 'IDENTIFIER',         value: 'div' },
+  { type: 'TAG_OPEN_END',       value: '>' },
+  { type: 'TAG_OPEN_START',     value: '<' },
+  { type: 'IDENTIFIER',         value: 'p' },
+  { type: 'TAG_OPEN_END',       value: '>' },
+  { type: 'TEXT',               value: 'Hello ' },
+  { type: 'EXPRESSION_START',   value: '{' },
+  { type: 'EXPRESSION_CONTENT', value: 'name' },
+  { type: 'EXPRESSION_END',     value: '}' },
+  { type: 'TEXT',               value: '!' },
+  { type: 'TAG_CLOSE_START',    value: '</' },
+  { type: 'IDENTIFIER',         value: 'p' },
+  { type: 'TAG_OPEN_END',       value: '>' },
+  { type: 'TAG_CLOSE_START',    value: '</' },
+  { type: 'IDENTIFIER',         value: 'div' },
+  { type: 'TAG_OPEN_END',       value: '>' },
+  { type: 'EOF',                value: '' },
+]
 ```
 
 ### 파서가 토큰에서 부모와 자식을 찾는 법
