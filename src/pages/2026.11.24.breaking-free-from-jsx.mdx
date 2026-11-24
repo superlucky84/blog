@@ -85,15 +85,30 @@ The important thing here is the difference between **looking** and **consuming**
 
 If the two characters checked this way are `<` and `/`, it enters the function that reads a closing tag. Inside, it calls `advance()` twice to consume the two characters. **Consuming** means reading the current character and actually moving `position` one step forward to the next character. Line and column information is updated at the same time. [Lexer source](https://github.com/superlucky84/lithent/blob/72222f3f7128d648b71b47f46f2865a7c9d3b2bc/packages/lithentTemplateParser/src/parser/lexer.ts#L47)
 
-Here are the tokens for the first line of the example, abbreviated as `TYPE(value)`. The trailing space of `Hello ` is part of the token value.
+When the lexer has read the opening example to the end, it produces the token array below. This array becomes the input to the next step, the parser. Real tokens also carry `start` and `end` positions (line, column and offset), but here I kept only `type` and `value`. The trailing space of `Hello ` is part of the token value.
 
-```text
-TAG_OPEN_START("<") IDENTIFIER("div") TAG_OPEN_END(">")
-TAG_OPEN_START("<") IDENTIFIER("p")   TAG_OPEN_END(">")
-TEXT("Hello ") EXPRESSION_START("{") EXPRESSION_CONTENT("name") EXPRESSION_END("}") TEXT("!")
-TAG_CLOSE_START("</") IDENTIFIER("p")   TAG_OPEN_END(">")
-TAG_CLOSE_START("</") IDENTIFIER("div") TAG_OPEN_END(">")
-EOF
+```js
+// tokenize('<div><p>Hello {name}!</p></div>')
+[
+  { type: 'TAG_OPEN_START',     value: '<' },
+  { type: 'IDENTIFIER',         value: 'div' },
+  { type: 'TAG_OPEN_END',       value: '>' },
+  { type: 'TAG_OPEN_START',     value: '<' },
+  { type: 'IDENTIFIER',         value: 'p' },
+  { type: 'TAG_OPEN_END',       value: '>' },
+  { type: 'TEXT',               value: 'Hello ' },
+  { type: 'EXPRESSION_START',   value: '{' },
+  { type: 'EXPRESSION_CONTENT', value: 'name' },
+  { type: 'EXPRESSION_END',     value: '}' },
+  { type: 'TEXT',               value: '!' },
+  { type: 'TAG_CLOSE_START',    value: '</' },
+  { type: 'IDENTIFIER',         value: 'p' },
+  { type: 'TAG_OPEN_END',       value: '>' },
+  { type: 'TAG_CLOSE_START',    value: '</' },
+  { type: 'IDENTIFIER',         value: 'div' },
+  { type: 'TAG_OPEN_END',       value: '>' },
+  { type: 'EOF',                value: '' },
+]
 ```
 
 ### How the parser finds parents and children in the tokens
